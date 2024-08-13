@@ -1,0 +1,16 @@
+{
+    "motion correction": {
+        "name":"moco-1",
+        "type":"mcflirt",
+        "ref vol":"8",
+        "smooth":"4",
+        "crop start":"false",
+        "crop end":"false",
+        "cost":"corratio",
+        "mean":"false",
+        "search angle":"0",
+        "celtc":"0",
+        "ct":"false",
+        "report":"true"
+    }
+}
