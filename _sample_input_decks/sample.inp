@@ -1,0 +1,34 @@
+*Start
+  # Variables
+  *Parameter
+    irb = '7935'
+    sub = 'F1746'
+    
+    mri_id = '8422'
+    pet_id = 'pbr701'
+  
+  # Sink location
+  *Sink
+    /Volumes/Seagate/results/sub-${sub}/ses-${pet_id}
+  
+  # MRI Imports
+  *Reconall, name=ses-${mri_id}, Status=Execute
+    /data/export/home/eric/BIDSify/irb-${irb}/rawdata/sub-${sub}/ses-${mri_id}/anat/sub-${sub}_ses-${mri_id}_T1w.nii.gz
+    
+  # PET Imports
+  *Image, name=ses-${pet_id}_pet, Method=nibabel
+    /data/export/home/eric/BIDSify/irb-${irb}/rawdata/sub-${sub}/ses-${pet_id}/pet/sub-${sub}_ses-${pet_id}_pet.nii.gz
+  # Modules
+  *Motion Correction, Name=ses-${pet_id}_moco, Type=twostep, Ref Vol=8, Smooth=4, Crop Start=4
+    @ses-${pet_id}_pet.ses-${pet_id}_pet
+  *Camra, Name=ses-${pet_id}_coreg, Type=LCF, DOF=6, Cost=mutualinfo
+    @ses-${pet_id}_moco.ses-${pet_id}_moco
+    @ses-${mri_id}.T1
+    @ses-${mri_id}.brainmask
+    @ses-${mri_id}.wm_mask
+    @ses-${mri_id}.gm_mask
+  *TACs, name=ses-${pet_id}_tacs
+    @ses-${pet_id}_coreg.ses-${pet_id}_coreg
+    @ses-${mri_id}.bilateral_wmparc
+    
+*End

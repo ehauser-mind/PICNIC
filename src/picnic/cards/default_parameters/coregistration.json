@@ -1,0 +1,13 @@
+{
+    "coregistration": {
+        "name":"coreg-1",
+        "type":"flirt",
+        "cost":"mutualinfo",
+        "dof":"6",
+        "crop start":"0",
+        "crop end":"0",
+        "smooth":"0",
+        "search angle":"35",
+        "report":"true"
+    }
+}

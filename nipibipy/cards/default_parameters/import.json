@@ -1,7 +1,0 @@
-{
-    "import": {
-        "name":"image-1",
-        "method":"nibabel",
-        "report":"true"
-    }
-}

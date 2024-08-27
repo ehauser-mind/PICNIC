@@ -1,8 +1,0 @@
-{
-    "tacs": {
-        "name":"tacs",
-        "type":"deterministic",
-        "units":"uci",
-        "report":"true"
-    }
-}

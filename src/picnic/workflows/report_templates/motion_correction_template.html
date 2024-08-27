@@ -1,0 +1,24 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <title>Motion Correction Report</title>
+  </head>
+  <body>
+    <H1>Motion Correction Report</H1>
+      <H2>Parameters</H2>
+        <ul>
+          <li>type = ${type}</li>
+          <li>reference volume = ${ref_vol}</li>
+          <li>smooth = ${smooth}</li>
+          <li>crop start = ${crop_start}</li>
+          <li>crop end = ${crop_end}</li>
+          <li>cost = ${cost}</li>
+          <li>mean = ${mean}</li>
+          <li>search angle = ${search_angle}</li>
+        </ul>
+      <H2>Motion Correction Video</H2>
+        <p>Uncorrected (top), Corrected (middle) and Correction Parameters (bottom)</p>
+          <video class="tab" loop controls>Your browser does not support the &lt;video&gt; tag.
+            <source src="motion_correction.mp4"/>
+          </video>
+  </body>
+</html>
