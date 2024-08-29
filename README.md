@@ -27,3 +27,6 @@ pip install -U git+git@github.com:ehauser-mind/PICNIC.git
 cd PICNIC
 ./nipybipy/run.py my_input_deck.inp
 ```
+
+and stuff
+
