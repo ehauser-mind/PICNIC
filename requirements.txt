@@ -5,7 +5,7 @@ matplotlib~=3.8
 pandas~=2.2
 # Independent of yml file
 setuptools~=73.0.1
-PySimpleGUI~=5.0.6
+PySimpleGUI~=4.70.1
 pillow~=10.4.0
 nibabel~=5.2.1
 nilearn~=0.10.4
