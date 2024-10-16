@@ -9,26 +9,30 @@
 
 # =======================================
 # Functions
-def _find_associated_sidecar(in_filepaths, workflow_sidecars=[], out_basename=''):
+def _find_associated_sidecar(in_filepaths, workflow_sidecars=None, out_basename=''):
     """
-    take all the side cars and combine them to one file
-    
+    take all the sidecars and combine them to one file
+
     :Parameters:
-      -. `in_filepath` : list, a list of the side cars defined by the user
+      -. `in_filepath` : list, a list of the sidecars defined by the user
       -. `workflow_sidecars` : str or list, some workflows (like dcm2niix) will
-        create side cars based on the dicom stack
+        create sidecars based on the dicom stack
       -. `out_basename` : str, the final basename of this sidecar (should be
         the same as the image)
     """
-    import json, os, glob
-    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
-    
-    # look for the associated side car in the same dir as the file
+
+    import os
+    import json
+    import glob
+    from picnic.interfaces.utility import nibabel_image_types
+
+
+    # look for the associated sidecar in the same dir as the file
     base_sidecars = []
     for in_filepath in in_filepaths:
         if os.path.isfile(in_filepath):
             dirname, filename = os.path.split(in_filepath)
-            for img_type in NIBABEL_IMAGE_TYPES:
+            for img_type in nibabel_image_types:
                 if filename.endswith(img_type):
                     basename = filename.replace(img_type, '')
                     break
@@ -36,12 +40,14 @@ def _find_associated_sidecar(in_filepaths, workflow_sidecars=[], out_basename=''
         else:
             base_sidecars += glob.glob(os.path.join(in_filepath, '*.json'))
     
-    # combine all the side car filenames in one list element
-    if isinstance(workflow_sidecars, str):
-        workflow_sidecars = [workflow_sidecars]
+    # combine all the sidecar filenames in one list element
+    if workflow_sidecars is None:
+        workflow_sidecars = list()
+    elif isinstance(workflow_sidecars, str):
+        workflow_sidecars = [workflow_sidecars, ]
     all_side_cars = base_sidecars + workflow_sidecars
     
-    # loop over all the side cars, open them, read the json file and store it
+    # loop over all the sidecars, open them, read the json file and store it
     #  as r
     r = {}
     for sc in reversed(all_side_cars):
@@ -74,12 +80,15 @@ def _rename_image(basename, in_file, sidecar=None):
       -. `in_file` : file-like str, the file being renamed
       -. `sidecar` : file-like str or None, the associated sidecar
     """
-    import os, shutil
-    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
-    
+
+    import os
+    import shutil
+    from picnic.interfaces.utility import nibabel_image_types
+
     # get the extension type
+    ext = ""
     dirname, filename = os.path.split(in_file)
-    for img_type in NIBABEL_IMAGE_TYPES:
+    for img_type in nibabel_image_types:
         if filename.endswith(img_type):
             ext = img_type
             break
@@ -95,16 +104,19 @@ def _rename_image(basename, in_file, sidecar=None):
         return (new_image_path, new_sidecar)
     return new_image_path
 
+
 def _rename_textfile(basename, in_file):
     """
-    a custom rename module to bypass nipype's Rename module
+    A custom rename module to bypass nipype's Rename module
     
     :Parameter:
       -. `basename` : str, basename of the renamed file
       -. `in_file` : file-like str, the file being renamed
     """
-    import os, shutil
-    
+
+    import os
+    import shutil
+
     # get the extension type
     ext = os.path.splitext(in_file)[-1]
     
@@ -114,9 +126,10 @@ def _rename_textfile(basename, in_file):
     
     return new_path
 
+
 def _pop_list(in_list, index=None, filename_to_exclude=None):
     """
-    nipype doesn't give too many options to manipulate lists that act as 
+    nipype doesn't give too many options to manipulate lists that act as
     connections. (Limited to merge and select as of v1.8.5) This function was 
     added specifically to remove items from a list
     
@@ -126,9 +139,10 @@ def _pop_list(in_list, index=None, filename_to_exclude=None):
       -. `filename_to_exclude` : file-like str or None, include to remove an
         item based on its name
     """
+
     import os
-    
-    # loop over all the items in the in_list to see if the index or filename 
+
+    # loop over all the items in the in_list to see if the index or filename
     #  should be popped
     out_list = []
     for idx, itm in enumerate(in_list):
@@ -137,13 +151,3 @@ def _pop_list(in_list, index=None, filename_to_exclude=None):
             out_list.append(itm)
     
     return out_list
-
-# =======================================
-# Main
-def main():
-    pass
-
-if __name__ == '__main__':
-    main()
-
-

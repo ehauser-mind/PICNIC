@@ -17,17 +17,17 @@ def _fill_report_template(html_template, parameters, basename='report'):
       -. `parameters` : dict, {nipibipy optional parameter : associated value
         to said param}
     """
-    # imports
-    from string import Template
+
     import os
-    
+    from string import Template
+
     # loop over all the parameters and create bullet points
     parameter_lines = ''
     parameter_lines += '        <ul>\n'
     for key in parameters.keys():
         parameter_lines += '          <li>' + key + ' = ' + str(parameters[key]) + '</li>\n'
     parameter_lines += '        </ul>\n'
-    
+
     # read in the template
     with open(html_template) as f:
         tmplate = Template(f.read())
@@ -41,13 +41,3 @@ def _fill_report_template(html_template, parameters, basename='report'):
         _ = f.write(subbed)
     
     return os.path.abspath(filename)
-
-# =======================================
-# Main
-def main():
-    pass
-
-if __name__ == '__main__':
-    main()
-
-

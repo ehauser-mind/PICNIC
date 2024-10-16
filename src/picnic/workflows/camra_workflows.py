@@ -14,18 +14,12 @@ from nipype.interfaces.fsl.maths import ApplyMask, BinaryMaths, MathsCommand
 from nipype.interfaces.fsl import (
     IsotropicSmooth, MeanImage, FLIRT, ApplyXFM, BET
 )
-# from picnic.interfaces.nibabel_nodes import _reorient_image, _crop_image, _binarize_images, _resample_image
-# from picnic.interfaces.custom_fsl_interfaces import ApplyXfm4D
-# from picnic.interfaces.io_nodes import _rename_image, _find_associated_sidecar, _rename_textfile
-# from picnic.interfaces.nilearn_nodes import _create_report
-# from picnic.interfaces.string_template_nodes import _fill_report_template
-# from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
-from interfaces.nibabel_nodes import _reorient_image, _crop_image, _binarize_images, _resample_image
-from interfaces.custom_fsl_interfaces import ApplyXfm4D
-from interfaces.io_nodes import _rename_image, _find_associated_sidecar, _rename_textfile
-from interfaces.nilearn_nodes import _create_report
-from interfaces.string_template_nodes import _fill_report_template
-from workflows.custom_workflow_constructors import NipibipyWorkflow
+
+from picnic.interfaces.nibabel_nodes import _reorient_image, _crop_image, _binarize_images, _resample_image
+from picnic.interfaces.io_nodes import _rename_image, _find_associated_sidecar, _rename_textfile
+from picnic.interfaces.nilearn_nodes import _create_report
+from picnic.interfaces.string_template_nodes import _fill_report_template
+from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
 
 
 # =======================================
@@ -162,6 +156,8 @@ class CamraWorkflow():
         """ use nibabel to crop the image
         """
 
+        from nipype.interfaces.fsl import IsotropicSmooth, MeanImage
+
         # crop out starting or ending frames for time averaging
         self.wf.add_node(
             interface = Function(
@@ -222,6 +218,9 @@ class CamraWorkflow():
         Parameters
         ----------
         """
+
+        from nipype.interfaces.fsl import BET
+        from nipype.interfaces.fsl.maths import MathsCommand, ApplyMask
 
         # filter out non brain and smooth the image
         self.wf.add_node(
@@ -290,6 +289,8 @@ class CamraWorkflow():
         """ create a brainmask using BET
         """
 
+        from nipype.interfaces.fsl import BET
+
         # use bet2 to create a brainmask
         self.wf.add_node(
             interface = BET(),
@@ -306,6 +307,8 @@ class CamraWorkflow():
     def segment_t1(self):
         """ segment the t1 using FAST
         """
+
+        from nipype.interfaces.spm import Segment
 
         # use FAST to segement the t1
         self.wf.add_node(
@@ -482,6 +485,10 @@ class CamraWorkflow():
         softwares
         """
 
+
+        from nipype.interfaces.fsl import FLIRT
+        from nipype.interfaces.spm import Coregister
+        from nipype.interfaces.fsl.maths import MathsCommand
 
         # sources
         sources = ['@tmean.out_file']
@@ -819,6 +826,9 @@ class LcfCamraWorkflow(CamraWorkflow):
         coregistration
         """
 
+        from nipype.interfaces.fsl import FLIRT, ApplyXFM, MeanImage
+        from picnic.interfaces.custom_fsl_interfaces import ApplyXfm4D
+
         # merge inputs into the coregistration so we have apples to apples
         self.wf.add_node(
             interface = Merge(2),
@@ -1004,10 +1014,11 @@ def _move_source(source, target):
     target - file-like str
         filepath of the target
     """
-    import nibabel as nib
+
     import os
     import numpy as np
-    
+    import nibabel as nib
+
     # load target
     target_image = nib.load(target)
     target_center = (
@@ -1050,8 +1061,9 @@ def _create_schedules(in_file, filename='lcf_schedule.txt'):
     filename - str
         the name of the schedule file
     """
+
     import os
-    
+
     # get the names
     dirname, filename = os.path.split(in_file)
     basename = filename.split('.')[0]
@@ -1081,9 +1093,10 @@ def _read_lowest_cost(cost_files, coregistered_files=None, rank=1):
     rank - int
         the rank of the cost files to use (default is 1)
     """
+
     import os
     from scipy import stats
-    
+
     # loop over all the cost files from flirt schedule
     all_costs = []
     for c in cost_files:
@@ -1111,11 +1124,13 @@ def _grab_flirt_transforms(in_mat_files, crop_start, original_image):
         the original, un-motion corrected image. This determines how many frames
         we need
     """
+
     import os
-    import nibabel as nib
     import shutil
     import glob
-    
+    import nibabel as nib
+
+
     # if tuple, force to be list
     if not isinstance(in_mat_files, list):
         in_mat_files = [in_mat_files]

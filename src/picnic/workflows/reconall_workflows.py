@@ -7,18 +7,13 @@ from pathlib import Path
 from nipype import Function
 from nipype.interfaces.utility import Select, Merge
 
-from workflows.custom_workflow_constructors import NipibipyWorkflow
-from interfaces.nibabel_nodes import (
-    _reorient_image,
-    _create_bilateral_atlas,
-    _generate_wholebrain_mask,
-    _generate_gray_matter_mask,
-    _generate_white_matter_mask,
-    _generate_subcortical_mask,
-    _generate_ventricle_mask
+from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
+from picnic.interfaces.nibabel_nodes import (
+    _reorient_image, _create_bilateral_atlas, _binarize_images
 )
-from interfaces.io_nodes import _rename_image
-from interfaces.string_template_nodes import _fill_report_template
+from picnic.interfaces.io_nodes import _rename_image, _pop_list
+from picnic.interfaces.string_template_nodes import _fill_report_template
+
 
 # =======================================
 # Constants
@@ -79,7 +74,7 @@ class ReconallWorkflow():
     @property
     def params(self):
         return self._params
-    
+
     @params.setter
     def params(self, all_paras):
         # remove the leading underscore for all parameters that have them
@@ -88,9 +83,9 @@ class ReconallWorkflow():
             if parameter_name.startswith('_'):
                 parameter_name = parameter_name[1:]
             parameters[parameter_name] = parameter_value
-        
+
         self._params = parameters
-    
+
     def build_workflow(self, sink_directory):
         """ create a nipype workflow to run freesurfer's reconall
         
@@ -194,10 +189,12 @@ class ReconallWorkflow():
         ) 
     
     def generate_bilateral_rois(self):
-        """ using a lookup table (defined as a static file in the nipibipy's
+        """
+        Using a lookup table (defined as a static file in the nipibipy's
         sub-package) create a bilateral atlas and associated json for the 
         pre-determined atlases
         """
+
         for atlas in DETERMINISTIC_ATLASES:
             # select the atlas from the renamed niftis
             self.wf.add_node(
@@ -240,7 +237,7 @@ class ReconallWorkflow():
                     'json_out_file'
                 ]
             )
-    
+
     def generate_wholebrain_mask(self):
         """ create a whole brain mask from the aseg
         """
@@ -279,7 +276,7 @@ class ReconallWorkflow():
                 'out_file'
             ]
         )
-    
+
     def generate_gray_matter_mask(self):
         """ create the gray matter mask by including some rois from the aseg
         """
@@ -295,7 +292,7 @@ class ReconallWorkflow():
                 'out',
             )
         )
-        
+
         # create gray matter mask
         self.wf.add_node(
             interface = Function(
@@ -318,7 +315,7 @@ class ReconallWorkflow():
                 'out_file'
             ]
         )
-    
+
     def generate_white_matter_mask(self):
         """ create the white matter mask by including some rois from the aseg
         """
@@ -396,7 +393,7 @@ class ReconallWorkflow():
                 'out_file'
             ]
         )
-    
+
     def generate_ventricle_mask(self):
         """ create the white matter mask by including some rois from the aseg
         """
@@ -492,8 +489,9 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
         Parameters
         ----------
         """
+
         from nipype.interfaces.freesurfer import ReconAll
-        
+
         # use reconall
         if self.params['execution_type'] == 't1-only':
             self.wf.add_node(
@@ -548,9 +546,10 @@ class ReadReconallWorkflow(ReconallWorkflow):
         Parameters
         ----------
         """
+
         import os
         from nipype.interfaces.io import FreeSurferSource
-        
+
         # break up provided filepath into freesurfer subject id/dir
         p = os.path.split(self.inflows['filepath'])
         
@@ -564,4 +563,3 @@ class ReadReconallWorkflow(ReconallWorkflow):
             },
             outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
         )
-

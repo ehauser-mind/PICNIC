@@ -7,16 +7,12 @@ from nipype import Function
 from nipype.interfaces.utility import Select, Rename, Merge
 from nipype.interfaces.dcm2nii import Dcm2niix, Dcm2nii
 
-# from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
-# from picnic.interfaces.nibabel_nodes import _merge_images, _reorient_image
-# from picnic.interfaces.io_nodes import _find_associated_sidecar
-# from picnic.interfaces.nilearn_nodes import _create_report
-# from picnic.interfaces.string_template_nodes import _fill_report_template
-from workflows.custom_workflow_constructors import NipibipyWorkflow
-from interfaces.nibabel_nodes import _merge_images, _reorient_image
-from interfaces.io_nodes import _find_associated_sidecar
-from interfaces.nilearn_nodes import _create_report
-from interfaces.string_template_nodes import _fill_report_template
+from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
+from picnic.interfaces.nibabel_nodes import _merge_images
+from picnic.interfaces.io_nodes import _find_associated_sidecar
+from picnic.interfaces.nilearn_nodes import _create_report
+from picnic.interfaces.string_template_nodes import _fill_report_template
+
 
 # =======================================
 # Constants
@@ -147,7 +143,7 @@ class ImageWorkflow():
                 'out_file'
             ]
         )
-    
+
     def search_for_jsons(self):
         """ search for any associated jsons
         """
@@ -186,7 +182,7 @@ class ImageWorkflow():
                 'out_file'
             ]
         )
-    
+
     def create_report(self):
         """ create a report
         """
@@ -277,6 +273,9 @@ class NibabelLoadWorkflow(ImageWorkflow):
         """ use nibabel to load an image modality, extract its affine and 
         resave it as a nifti gz
         """
+
+        from picnic.interfaces.nibabel_nodes import _reorient_image
+
         self.wf.add_mapnode(
             interface = Function(
                 input_names = [

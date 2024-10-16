@@ -15,12 +15,9 @@ How To Use This Module
 """
 # =======================================
 # Imports
+import sys
 import os
-import importlib
-import argparse
-import pandas
-import copy
-from pathlib import Path
+import shutil
 
 from picnic.input_deck_reader import read_input_deck
 
@@ -47,19 +44,19 @@ class ProcessInputs():
         # set up attributes to describe the processed inputs
         self.inps = pargs.i
         self.dox = pargs.dox
-        
+
         self.pipelines = []
-        
+
         # if the user provides items for the dox, run the dox method
         if not self.dox is None:
             self.fill_dox()
-    
+
     def fill_dox(self):
         """
         use the csv build a dox and create new inps
         """
         self.inps = insert_parameters(self.inps, self.dox)
-    
+
     def initialize_pipelines(self):
         """
         initialize all of the pipelines
@@ -80,7 +77,7 @@ class Pipeline():
         """
         self.input_deck_path = fn
         self.inp = read_input_deck(fn)
-        
+
         self.pipeline_instances = {}
         self.pipeline_workflows = {}
         self.sink_directory = os.getcwd()
@@ -93,7 +90,7 @@ class Pipeline():
         for card in self.inp.cards:
             if card.cardname[1:] == 'sink':
                 self.sink_directory = card.datalines[0][0]
-        
+
         # loop over all the cards
         for card in self.inp.cards:
             if not card.cardname[1:] == 'sink':
@@ -103,7 +100,7 @@ class Pipeline():
                     'cards.' + '_'.join(card.cardname[1:].lower().split(' '))
                 )
                 instance = getattr(module, instance_name)
-                
+
                 # replace all the instance calls
                 new_datalines = []
                 for dataline in card.datalines:
@@ -125,7 +122,7 @@ class Pipeline():
                         new_dataline.append(data)
                     new_datalines.append(new_dataline)
                 card.datalines = new_datalines
-                
+
                 # initialize, build the workflow and run it
                 name = card.parameters['name']
                 self.pipeline_instances[name] = instance(card)
@@ -138,7 +135,7 @@ class Pipeline():
 def create_parser():
     """
     use argparse to correctly parse the arguments supplied by the user
-    
+
     :Return:
       -. an ArgumentParser obj
     """
@@ -156,10 +153,10 @@ def infer_class_name_from_card_name(card_name):
     returns a string of the suspected class name by giving a card name. This
     assumes all spaces will be removed, the first word will be capitalized and
     CamelCase will be used for subsequent words.
-    
+
     :Parameters:
       -. `card_name` : a string, the name of the card
-    
+
     :Return:
       -.  a string
     """
@@ -171,18 +168,18 @@ def insert_parameters(inps, dox_file):
     creates new input decks from a list of template inps and a test readable
     dox file. This function will iterate over the template inps and add new
     parameters for each new run in the dox.
-    
+
     :Parameters:
       -. `inps` : a list, the inp templates
       -. `dox_file` : a file-like str, the text readable table
-    
+
     :Return:
       -. a list, of newly created input decks
     """
     # read in the dox file
     df = pandas.read_csv(dox_file, index_col=0)
     number_of_runs = df.shape[1]
-    
+
     # Loop over each input deck provided
     new_inps = []
     for inp in inps:
@@ -198,25 +195,25 @@ def insert_parameters(inps, dox_file):
                         parameter_flag = False
                         if line.lower().startswith('*parameter'):
                             parameter_flag = True
-                            
+
                     if not parameter_flag:
                         all_lines.append(line)
-                    
-                    # because *parameter is special and it is how we are 
-                    #  createing new input decks we are going to isolate 
+
+                    # because *parameter is special and it is how we are
+                    #  createing new input decks we are going to isolate
                     #  all these lines and set them aside
                     else:
                         if not line.lower().startswith('*parameter'):
                             k, v = [a.strip() for a in line.split('=')]
                             parameters[k] = v
-        
+
         # now that we've read the entire input deck, we want to add in the new
         #  parameters as described by the dox file
         for idx, run in enumerate(df.columns):
             new_parameters = copy.deepcopy(parameters)
             for parameter_name in df.index:
                 new_parameters[parameter_name] = df.loc[parameter_name][run]
-            
+
             # write out the new input deck with the additional parameters
             new_inp = '_'.join([
                 os.path.splitext(os.path.basename(inp))[0],
@@ -230,7 +227,7 @@ def insert_parameters(inps, dox_file):
                         for key, value in new_parameters.items():
                             _ = g.write(key + ' = ' + value + '\n')
             new_inps.append(new_inp)
-    
+
     return new_inps
 
 # =======================================
@@ -240,7 +237,7 @@ if __name__ == '__main__':
     parser = create_parser()
     pargs = parser.parse_args()
     arginputs = ProcessInputs(pargs)
-    
+
     # create the pipelines
     pipelines = []
     failed_runs = []

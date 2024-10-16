@@ -5,20 +5,13 @@ import os
 
 from nipype import Function
 from nipype.interfaces.utility import Select, Rename, Merge
-from nipype.interfaces.dcm2nii import Dcm2niix, Dcm2nii
 
-# from picnic.workflows.image_workflows import ImageWorkflow
-# from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
-# from picnic.interfaces.string_template_nodes import _fill_report_template
-# from picnic.interfaces.nibabel_nodes import _reorient_image, _merge_images
-# from picnic.interfaces.io_nodes import _find_associated_sidecar
-# from picnic.interfaces.nilearn_nodes import _create_report
-from workflows.image_workflows import ImageWorkflow
-from workflows.custom_workflow_constructors import NipibipyWorkflow
-from interfaces.string_template_nodes import _fill_report_template
-from interfaces.nibabel_nodes import _reorient_image, _merge_images
-from interfaces.io_nodes import _find_associated_sidecar
-from interfaces.nilearn_nodes import _create_report
+from picnic.workflows.image_workflows import ImageWorkflow
+from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
+from picnic.interfaces.string_template_nodes import _fill_report_template
+from picnic.interfaces.nibabel_nodes import _merge_images
+from picnic.interfaces.io_nodes import _find_associated_sidecar
+from picnic.interfaces.nilearn_nodes import _create_report
 
 
 # =======================================
@@ -281,6 +274,9 @@ class NibabelLoadWorkflow(ImageWorkflow):
         """ use nibabel to load an image modality, extract its affine and 
         resave it as a nifti gz
         """
+
+        from picnic.interfaces.nibabel_nodes import _reorient_image
+
         self.wf.add_mapnode(
             interface = Function(
                 input_names = [
@@ -321,6 +317,9 @@ class Dcm2niixWorkflow(ImageWorkflow):
     def convert_to_nii(self):
         """ use dcm2niix to convert a list of dicoms to nii
         """
+
+        from nipype.interfaces.dcm2nii import Dcm2niix
+        from picnic.interfaces.nibabel_nodes import _reorient_image
 
         # use dcm2niix
         self.wf.add_mapnode(
@@ -384,6 +383,9 @@ class Dcm2niiWorkflow(ImageWorkflow):
     def convert_to_nii(self):
         """ use dcm2niix to convert a list of dicoms to nii
         """
+
+        from nipype.interfaces.dcm2nii import Dcm2nii
+        from picnic.interfaces.nibabel_nodes import _reorient_image
 
         # use dcm2nii
         self.wf.add_mapnode(
