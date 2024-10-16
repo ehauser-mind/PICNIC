@@ -8,13 +8,24 @@ Python, FSL, FreeSurfer, AFNI, Connectome Workbench, and PICNIC are
 already installed inside the docker container, so you don't have to
 deal with those dependencies on your own.
 
+You can use a provided wrapper script for the simplest interface.
+
+```bash
+/path/to/picnic/scripts/run_picnic_in_docker \
+  /path/to/input_deck.inp \
+  /path/to/your/read_only_data \
+  /path/to/your/writable_results
+```
+
+Or you can use docker directly for more control.
+
 ```bash
 docker pull mfschmidt/picnic:latest
 docker run --rm \
--v /path/to/your/data:/input:ro \
--v /path/to/your/results:/output:rw \
--v /path/to/your/input_deck.txt:/input_deck.txt:ro \
-mfschmidt/picnic:latest /input /output
+  -v /path/to/your/data:/input:ro \
+  -v /path/to/your/results:/output:rw \
+  -v /path/to/your/input_deck.inp:/input_deck.inp:ro \
+  mfschmidt/picnic:latest /input_deck.inp
 ```
 
 ## Run PICNIC directly
@@ -25,5 +36,5 @@ its dependencies already installed.
 ```bash
 pip install -U git+git@github.com:ehauser-mind/PICNIC.git
 cd PICNIC
-./nipybipy/run.py my_input_deck.inp
+./src/picnic/run.py my_input_deck.inp
 ```
