@@ -35,18 +35,19 @@ class NipibipyWorkflow():
         self.all_nodes = {}
         
         # self.workflow = Workflow(name)
-        self.workflow = Workflow(name, base_dir='/Volumes/Seagate/tmp')
+        self.workflow = Workflow(name, base_dir=os.path.join(sink_directory))
         self.sink = False
         if sink_directory:
             self.sink = Node(
                 DataSink(
-                    parameterization = False, 
-                    base_directory = os.path.join(sink_directory)
+                    parameterization=False,
+                    base_directory=os.path.join(sink_directory)
                 ),
                 name=name+'_sink', 
             )
-    
-    def add_node(self, interface, name, inflows, outflows, to_sink=[]):
+
+
+    def add_node(self, interface, name, inflows, outflows, to_sink=None):
         """ add a node to the current workflow
         
         Parameters
@@ -66,9 +67,10 @@ class NipibipyWorkflow():
         """
         self.all_nodes[name] = NipibipyNode(Node(interface=interface, name=name), outflows)
         self.assign_node_inputs(name, inflows)
-        self.sink_outflows(name, to_sink)
-        
-    def add_mapnode(self, interface, name, inflows, outflows, iterfield, to_sink=[]):
+        self.sink_outflows(name, list() if to_sink is None else to_sink)
+
+
+    def add_mapnode(self, interface, name, inflows, outflows, iterfield, to_sink=None):
         """ add a mapnode to the current workflow
         
         Parameters
@@ -89,7 +91,7 @@ class NipibipyWorkflow():
         """
         self.all_nodes[name] = NipibipyNode(MapNode(interface=interface, name=name, iterfield=iterfield), outflows)
         self.assign_node_inputs(name, inflows)
-        self.sink_outflows(name, to_sink)
+        self.sink_outflows(name, list() if to_sink is None else to_sink)
         
     def assign_node_inputs(self, node_name, inflows):
         """ assign the node inflows. Either find its connection to another node

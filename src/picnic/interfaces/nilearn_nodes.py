@@ -1,16 +1,5 @@
 # =======================================
 # Imports
-import os
-import math
-import tempfile
-import glob
-import numpy as np
-import pandas as pd
-import nibabel as nib
-import matplotlib.pyplot as plt
-
-from PIL import Image, ImageDraw
-from nilearn.plotting import plot_anat, plot_roi
 
 # =======================================
 # Constants
@@ -50,6 +39,9 @@ def _create_report(type_, in_files, additional_args=[]):
         basename - str
             name of the output filename
         """
+
+        import os
+        import nibabel as nib
 
         # load file
         image = nib.load(in_file)
@@ -118,6 +110,12 @@ def _create_report(type_, in_files, additional_args=[]):
         width - int
             number of pixels wide used in the report image
         """
+
+        import math
+        import numpy as np
+        import nibabel as nib
+
+        from PIL import Image
 
         # load the files
         base_image = nib.load(base_file)
@@ -239,6 +237,9 @@ def _create_report(type_, in_files, additional_args=[]):
             number of pixels wide used in the report image
         """
 
+        import numpy as np
+        import nibabel as nib
+
         # load file
         base_image = nib.load(base_file)
         over_image = nib.load(over_file)
@@ -297,6 +298,8 @@ def _create_report(type_, in_files, additional_args=[]):
             number of pixels wide used in the report image
         """
 
+        import pandas as pd
+
         # load tacs file as a pandas dataset
         data = pd.read_csv(tac_file, delimiter='\t', header=0, index_col=0)
         
@@ -351,6 +354,12 @@ def _create_report(type_, in_files, additional_args=[]):
         width - int
             width (in pixels) for the output image
         """
+
+        import os
+        import tempfile
+        import numpy as np
+        from PIL import Image
+        from nilearn.plotting import plot_anat, plot_roi
 
         # if the image is a 4d image, get the tmean
         image = force_3d_image(image)
@@ -444,6 +453,12 @@ def _create_report(type_, in_files, additional_args=[]):
             width (in pixels) for the output image
         """
 
+        import os
+        import tempfile
+        import numpy as np
+        from PIL import Image
+        from nilearn.plotting import plot_anat
+
         # if the image is a 4d image, get the tmean
         image = force_3d_image(image)
         
@@ -506,6 +521,13 @@ def _create_report(type_, in_files, additional_args=[]):
         width - int
             width (in pixels) for the output image
         """
+
+        import os
+        import tempfile
+        import numpy as np
+        import matplotlib.pyplot as plt
+
+        from PIL import Image
 
         # create a pyplot
         tmp_png = tempfile.TemporaryFile(suffix = '.png')
@@ -580,6 +602,11 @@ def _create_report(type_, in_files, additional_args=[]):
         width - int
             width (in pixels) for the output image
         """
+
+        import os
+        import tempfile
+        import matplotlib.pyplot as plt
+        from PIL import Image
 
         # if selected plots are given, reduce the dataset
         title = 'All TACs'
@@ -657,6 +684,7 @@ def _create_report(type_, in_files, additional_args=[]):
         fps - int
             frames per seconds
         """
+
         # if not provided, calculate the mosaic bounds
         if bounds is None:
             image3d = force_3d_image(image)
@@ -701,6 +729,9 @@ def _create_report(type_, in_files, additional_args=[]):
         fps - int
             frames per second
         """
+
+        import os
+        import glob
 
         # from each image in the list, save it as a temporary image
         for idx, image in enumerate(images):
@@ -752,6 +783,8 @@ def _create_report(type_, in_files, additional_args=[]):
             the nibabel image
         """
 
+        import numpy as np
+
         # isolate constants
         COORDS_IDX_KEY = {'x':0, 'y':1, 'z':2}
         COORDS_AXIS = {'x':(1, 2), 'y':(0, 2), 'z':(0, 1)}
@@ -799,6 +832,10 @@ def _create_report(type_, in_files, additional_args=[]):
         image - nibabel.Nifti1Image
             the nibabel image
         """
+
+        import numpy as np
+        import nibabel as nib
+
         # check the image dimensionality
         if len(image.shape) > 3:
             # average along the time axis and return a Nifti
@@ -822,6 +859,9 @@ def _create_report(type_, in_files, additional_args=[]):
             value between 0 and 100
         """
 
+        import math
+        import numpy as np
+
         image = force_3d_image(image)
         fdata = image.get_fdata()
         
@@ -835,6 +875,7 @@ def _create_report(type_, in_files, additional_args=[]):
             float_ - float (duh)
                 a value between 0. and 1.
             """
+
             return math.sin(float_ * math.pi / 2. + math.pi / 4.)
         
         # create a 3d array of 1s, multiply that by the x vector function above
@@ -865,6 +906,9 @@ def _create_report(type_, in_files, additional_args=[]):
         numy - int
             number of equally spaced horizontal lines
         """
+
+        import numpy as np
+        from PIL import ImageDraw
 
         # draw lines
         w, h = image.size

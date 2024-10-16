@@ -2,7 +2,9 @@
 
 # =======================================
 # Imports
-import sys, os, shutil
+import sys
+import os
+import shutil
 
 from picnic.input_deck_reader import read_input_deck
 
@@ -35,6 +37,7 @@ def initialize_instance_from_keyword(card):
     """
     return CARD_INSTANCE_KEY[card.cardname[1:]](card)
 
+
 # =======================================
 # Main
 def main(fn):
@@ -48,7 +51,12 @@ def main(fn):
         if card.cardname[1:] == 'sink':
             sink_directory = Sink(card).inflows['sink_directory']
             os.makedirs(sink_directory, exist_ok=True)
-            _ = shutil.copy(fn, os.path.join(sink_directory, fn))
+            try:
+                _ = shutil.copy(fn, os.path.join(sink_directory, fn))
+            except shutil.SameFileError:
+                # We are writing output to the pre-existing input deck's path.
+                # We don't overwrite anything, so this is fine.
+                pass
         else:
             # replace all @ argument calls with the instance outflow they
             #  connect to

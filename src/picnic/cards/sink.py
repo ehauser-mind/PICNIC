@@ -2,7 +2,7 @@
 # Imports
 import logging
 
-from .card_builder import CardBuilder
+from picnic.cards.card_builder import CardBuilder
 
 # =======================================
 # Constants

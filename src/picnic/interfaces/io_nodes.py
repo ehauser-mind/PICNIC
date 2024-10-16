@@ -1,7 +1,5 @@
 # =======================================
 # Imports
-import json, os, glob, shutil
-
 
 # =======================================
 # Constants
@@ -24,14 +22,18 @@ def _find_associated_sidecar(in_filepaths, workflow_sidecars=None, out_basename=
     out_basename - str
         the final basename of this sidecar (should be the same as the image)
     """
-    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
-    
+
+    import os
+    import json
+    import glob
+    from picnic.interfaces.utility import nibabel_image_types
+
     # look for the associated sidecar in the same dir as the file
     base_sidecars = []
     for in_filepath in in_filepaths:
         if os.path.isfile(in_filepath):
             dirname, filename = os.path.split(in_filepath)
-            for img_type in NIBABEL_IMAGE_TYPES:
+            for img_type in nibabel_image_types:
                 if filename.endswith(img_type):
                     basename = filename.replace(img_type, '')
                     break
@@ -82,12 +84,15 @@ def _rename_image(basename, in_file, sidecar=None):
     sidecar - file-like str or None
         the associated sidecar
     """
-    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
-    
+
+    import os
+    import shutil
+    from picnic.interfaces.utility import nibabel_image_types
+
     # get the extension type
     ext = ""
     dirname, filename = os.path.split(in_file)
-    for img_type in NIBABEL_IMAGE_TYPES:
+    for img_type in nibabel_image_types:
         if filename.endswith(img_type):
             ext = img_type
             break
@@ -115,6 +120,9 @@ def _rename_textfile(basename, in_file):
         the file being renamed
     """
 
+    import os
+    import shutil
+
     # get the extension type
     ext = os.path.splitext(in_file)[-1]
     
@@ -140,7 +148,9 @@ def _pop_list(in_list, index=None, filename_to_exclude=None):
         include to remove an item based on its name
     """
 
-    # loop over all the items in the in_list to see if the index or filename 
+    import os
+
+    # loop over all the items in the in_list to see if the index or filename
     #  should be popped
     out_list = []
     for idx, itm in enumerate(in_list):

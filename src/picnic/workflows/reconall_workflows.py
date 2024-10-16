@@ -5,8 +5,6 @@ import copy
 
 from nipype import Function
 from nipype.interfaces.utility import Select, Merge
-from nipype.interfaces.io import FreeSurferSource
-from nipype.interfaces.freesurfer import ReconAll
 
 from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
 from picnic.interfaces.nibabel_nodes import (
@@ -448,6 +446,8 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
         ----------
         """
 
+        from nipype.interfaces.freesurfer import ReconAll
+
         # use reconall
         if self.params['execution_type'] == 't1-only':
             self.wf.add_node(
@@ -505,6 +505,8 @@ class ReadReconallWorkflow(ReconallWorkflow):
         Parameters
         ----------
         """
+
+        from nipype.interfaces.io import FreeSurferSource
 
         # break up provided filepath into freesurfer subject id/dir
         p = os.path.split(self.inflows['filepath'])

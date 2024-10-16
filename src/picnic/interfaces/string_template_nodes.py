@@ -1,8 +1,5 @@
 # =======================================
 # Imports
-import os
-from string import Template
-
 
 # =======================================
 # Constants
@@ -22,6 +19,9 @@ def _fill_report_template(html_template, parameters, basename='report'):
     parameters - dict
         {picnic optional parameter : associated value to said param}
     """
+
+    import os
+    from string import Template
 
     # read in the template
     with open(html_template) as f:
