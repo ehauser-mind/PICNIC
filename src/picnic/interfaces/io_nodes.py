@@ -26,7 +26,6 @@ def _find_associated_sidecar(in_filepaths, workflow_sidecars=None, out_basename=
     import glob
     from picnic.interfaces.utility import nibabel_image_types
 
-
     # look for the associated sidecar in the same dir as the file
     base_sidecars = []
     for in_filepath in in_filepaths:
