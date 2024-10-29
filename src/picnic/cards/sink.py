@@ -33,14 +33,7 @@ class Sink(CardBuilder):
             expected_lines = '=1', 
             expected_in_lines = '=1'
         )
-        logging.info('  Checking parameter syntax')
-        self._check_parameter_syntax()
         
         # workflow standard attributes
         self.inflows = {'sink_directory' : self._datalines[0][0]}
     
-    def _check_parameter_syntax(self):
-        """ check all the parameters associated with the module
-        """
-        # check the parameters
-        pass

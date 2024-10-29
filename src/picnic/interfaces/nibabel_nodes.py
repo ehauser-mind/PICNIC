@@ -1,16 +1,8 @@
 # =======================================
 # Imports
-import os
-import json
-import numpy as np
-import pandas as pd
-import nibabel as nib
-from nilearn.image import resample_to_img
-from nibabel.processing import resample_from_to
 
 # =======================================
 # Constants
-NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
 
 # =======================================
 # Classes
@@ -30,7 +22,8 @@ def _reorient_image(in_file, gz=True):
     gz      - boolean
         save the file as a nifti_gz (True) or nifti (False)
     """
-
+    import os, nibabel
+    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
     
     # open the image with nibabel
     dirname, filename = os.path.split(in_file)
@@ -38,17 +31,17 @@ def _reorient_image(in_file, gz=True):
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break
-    image = nib.load(in_file)
+    image = nibabel.load(in_file)
     
     # grab the important image parameters
-    reornt_image = nib.funcs.as_closest_canonical(image, enforce_diag=True)
+    reornt_image = nibabel.funcs.as_closest_canonical(image, enforce_diag=True)
     
     # save out the new image
     if gz:
         new_image_path = os.path.join(os.getcwd(), basename+'_reoriented.nii.gz')
     else:
         new_image_path = os.path.join(os.getcwd(), basename+'_reoriented.nii')
-    nib.save(reornt_image, new_image_path)
+    nibabel.save(reornt_image, new_image_path)
     
     return new_image_path
 
@@ -66,14 +59,16 @@ def _reorient_image_deprecated(in_file, gz=True):
     gz - boolean
         save the file as a nifti_gz (True) or nifti (False)
     """
-
+    import os, nibabel
+    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
+    
     # open the image with nibabel
     dirname, filename = os.path.split(in_file)
     for img_type in NIBABEL_IMAGE_TYPES:
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break
-    image = nib.load(in_file)
+    image = nibabel.load(in_file)
     
     # grab the important image parameters
     affine = image.affine
@@ -91,7 +86,7 @@ def _reorient_image_deprecated(in_file, gz=True):
         new_image_path = os.path.join(os.getcwd(), basename+'_reoriented.nii.gz')
     else:
         new_image_path = os.path.join(os.getcwd(), basename+'_reoriented.nii')
-    nib.save(reornt_image, new_image_path)
+    nibabel.save(reornt_image, new_image_path)
     
     return new_image_path
 
@@ -105,7 +100,9 @@ def _merge_images(images, gz=True):
     gz - boolean
         save the file as a nifti_gz (True) or nifti (False)
     """
-
+    import os, nibabel
+    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
+    
     # open the image with nibabel
     dirname, filename = os.path.split(images[0])
     for img_type in NIBABEL_IMAGE_TYPES:
@@ -114,14 +111,14 @@ def _merge_images(images, gz=True):
             break
     
     # merge all the listed files
-    merged_image = nib.funcs.concat_images(images, axis=-1)
+    merged_image = nibabel.funcs.concat_images(images, axis=-1)
     
     # save out the new image
     if gz:
         new_image_path = os.path.join(os.getcwd(), basename+'_merged.nii.gz')
     else:
         new_image_path = os.path.join(os.getcwd(), basename+'_merged.nii')
-    nib.save(merged_image, new_image_path)
+    nibabel.save(merged_image, new_image_path)
     
     return new_image_path
 
@@ -136,14 +133,16 @@ def _create_bilateral_atlas(atlas, lookup_table, gz=True):
     lookup_table - file-like str
         a lookup table json file that associates index to label
     """
-
+    import nibabel, numpy, json, os
+    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
+    
     # use nibabel to load the 3d image
     dirname, filename = os.path.split(atlas)
     for img_type in NIBABEL_IMAGE_TYPES:
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break
-    atlas = nib.load(atlas)
+    atlas = nibabel.load(atlas)
         
     
     # use the json package to load the lookup table
@@ -153,7 +152,7 @@ def _create_bilateral_atlas(atlas, lookup_table, gz=True):
     
     # get the unilateral atlas's data as integers and initialize the bilateral
     unilateral_fdata = atlas.get_fdata().astype(int)
-    bilateral_fdata = np.zeros(unilateral_fdata.shape)
+    bilateral_fdata = numpy.zeros(unilateral_fdata.shape)
     bilateral_lookup = {}
     
     # (1) loop over all the unique integers in the atlas
@@ -162,7 +161,7 @@ def _create_bilateral_atlas(atlas, lookup_table, gz=True):
     # (4) assign both hemispheres to the first one's index in the new atlas
     # (5) if both hemispheres found, replace the label name with bilateral
     idx_added = []
-    for roi_idx in np.unique(unilateral_fdata):
+    for roi_idx in numpy.unique(unilateral_fdata):
         roi_idx = int(roi_idx)
         # because the opposite hemisphere gets assigned the first time its
         #  counterpart is found. It needs to be skipped
@@ -173,7 +172,7 @@ def _create_bilateral_atlas(atlas, lookup_table, gz=True):
         idx_label = label_lookup[roi_idx]
         
         # use numpy.where to find all the voxels with the index
-        bilateral_fdata += np.where(unilateral_fdata == roi_idx, roi_idx, 0.)
+        bilateral_fdata += numpy.where(unilateral_fdata == roi_idx, roi_idx, 0.)
         bilateral_lookup[roi_idx] = idx_label
         idx_added.append(roi_idx)
         
@@ -192,7 +191,7 @@ def _create_bilateral_atlas(atlas, lookup_table, gz=True):
                 # use numpy.where to find all the voxels with the other 
                 #  hemisphere's index and assign it as the original index's 
                 #  index in the bilateral data
-                bilateral_fdata += np.where(unilateral_fdata == opp_idx, roi_idx, 0.)
+                bilateral_fdata += numpy.where(unilateral_fdata == opp_idx, roi_idx, 0.)
                 bilateral_lookup[roi_idx] = idx_label.replace(to_check, 'bilateral') # overwrite bilateral label name to contain 'bilateral'
                 idx_added.append(opp_idx)
     
@@ -201,7 +200,7 @@ def _create_bilateral_atlas(atlas, lookup_table, gz=True):
         bilateral_out_file = os.path.join(os.getcwd(), 'bilateral_' + basename + '.nii.gz')
     else:
         bilateral_out_file = os.path.join(os.getcwd(), 'bilateral_' + basename + '.nii')
-    nib.save(nib.Nifti1Image(bilateral_fdata, atlas.affine), bilateral_out_file)
+    nibabel.save(nibabel.Nifti1Image(bilateral_fdata, atlas.affine), bilateral_out_file)
     
     # save out the associated json
     out_json = {'label_lookup' : bilateral_lookup}
@@ -225,7 +224,9 @@ def _binarize_images(images, thr=None, uthr=None, gz=True):
     gz - boolean
         save the file as a nifti_gz (True) or nifti (False)
     """
-
+    import nibabel, numpy, os
+    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
+    
     # error check if the images parameter is a string or list
     if isinstance(images, str):
         images = [images]
@@ -240,34 +241,34 @@ def _binarize_images(images, thr=None, uthr=None, gz=True):
     # loop over all the provided images, binarize each one and sum those
     for img in images:
         # load the image and get its fdata
-        image = nib.load(img)
+        image = nibabel.load(img)
         image_data = image.get_fdata()
         
         # test if a lower threshold was given
         if not thr is None:
-            image_data = np.where(image_data >= thr, image_data, 0.)
+            image_data = numpy.where(image_data >= thr, image_data, 0.)
         
         # test if an upper threshold was given
         if not uthr is None:
-            image_data = np.where(image_data <= uthr, image_data, 0.)
+            image_data = numpy.where(image_data <= uthr, image_data, 0.)
         
         # if the remaining thresheld data is not 0, set it to one
         try:
-            new_data += np.where(image_data != 0., 1., 0.)
+            new_data += numpy.where(image_data != 0., 1., 0.)
         except NameError: # a cheaters way to initialize an array without setting zeros
-            new_data = np.where(image_data != 0., 1., 0.)
+            new_data = numpy.where(image_data != 0., 1., 0.)
     
     # binarize the summed data (if two files overlap, it might end up with a 2. 
     #  We don't want that)
-    new_data = np.where(new_data > 0., 1., 0.)
-    binarized_image = nib.Nifti1Image(new_data, image.affine)
+    new_data = numpy.where(new_data > 0., 1., 0.)
+    binarized_image = nibabel.Nifti1Image(new_data, image.affine)
     
     # save out the new image
     if gz:
         new_image_path = os.path.join(os.getcwd(), basename+'_binarized.nii.gz')
     else:
         new_image_path = os.path.join(os.getcwd(), basename+'_binarized.nii')
-    nib.save(binarized_image, new_image_path)
+    nibabel.save(binarized_image, new_image_path)
     
     return new_image_path
     
@@ -285,14 +286,16 @@ def _crop_image(in_file, crop_start=0, crop_end=0, gz=True):
     gz - boolean
         save the file as a nifti_gz (True) or nifti (False)
     """
-
+    import os, nibabel
+    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
+    
     # open the image with nibabel
     dirname, filename = os.path.split(in_file)
     for img_type in NIBABEL_IMAGE_TYPES:
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break
-    image = nib.load(in_file)
+    image = nibabel.load(in_file)
     
     # use nibabel's slicer to change up the image
     if crop_end != 0:
@@ -305,7 +308,7 @@ def _crop_image(in_file, crop_start=0, crop_end=0, gz=True):
         new_image_path = os.path.join(os.getcwd(), basename+'_cropped.nii.gz')
     else:
         new_image_path = os.path.join(os.getcwd(), basename+'_cropped.nii')
-    nib.save(new_image, new_image_path)
+    nibabel.save(new_image, new_image_path)
     
     return new_image_path
 
@@ -322,7 +325,10 @@ def _resample_image(source, target, gz=True):
     gz - boolean
         save the file as a nifti_gz (True) or nifti (False)
     """
-
+    import os, nibabel
+    from nibabel.processing import resample_from_to
+    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
+    
     # open the image with nibabel
     dirname, filename = os.path.split(source)
     for img_type in NIBABEL_IMAGE_TYPES:
@@ -331,8 +337,8 @@ def _resample_image(source, target, gz=True):
             break
     
     # load the source and target images
-    s = nib.load(source)
-    t = nib.load(target)
+    s = nibabel.load(source)
+    t = nibabel.load(target)
     out_image = resample_from_to(s, t)
     
     # save out the new image
@@ -340,7 +346,7 @@ def _resample_image(source, target, gz=True):
         resampled_image = os.path.join(os.getcwd(), basename+'_resampled.nii.gz')
     else:
         resampled_image = os.path.join(os.getcwd(), basename+'_resampled.nii')
-    nib.save(out_image, resampled_image)
+    nibabel.save(out_image, resampled_image)
     
     return resampled_image
     
@@ -368,7 +374,10 @@ def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, un
     atlas_side_car  - file-like str
         the filepath to the atlas' side car json
     """
-
+    import nibabel, numpy, json, pandas, os
+    from nilearn.image import resample_to_img
+    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
+    
     # read the basename
     dirname, filename = os.path.split(source)
     for img_type in NIBABEL_IMAGE_TYPES:
@@ -377,13 +386,13 @@ def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, un
             break
     
     # load the 4d image
-    source_image = nib.load(source)
+    source_image = nibabel.load(source)
     
     # read the midtimes where available. If not, use the index
     if source_side_car:
         with open(source_side_car) as f:
             data = json.load(f)
-            midtimes = list(np.array(data["FrameTimesStart"]) + (np.array(data["FrameDuration"]) / 2.))
+            midtimes = list(numpy.array(data["FrameTimesStart"]) + (numpy.array(data["FrameDuration"]) / 2.))
     else:
         midtimes = list(range(source_image.shape[3]))
     
@@ -391,9 +400,9 @@ def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, un
     tacs, labels = [], []
     for idx, atlas in enumerate(atlases):
         # load the atlas image
-        atlas_image = nib.load(atlas)
+        atlas_image = nibabel.load(atlas)
         
-        # load the atlas sidecar
+        # load the atlas side car
         try:
             atlas_side_car = atlas_side_cars[idx]
             with open(atlas_side_car) as f:
@@ -412,16 +421,16 @@ def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, un
         atlas_fdata = atlas_image.get_fdata().astype(int)
         
         # loop over all the unique rois in the atlas
-        for roi_idx in np.unique(atlas_fdata):
+        for roi_idx in numpy.unique(atlas_fdata):
             # create a binary mask at the index
-            roi_mask = np.where(atlas_fdata==roi_idx, 1., 0.)
+            roi_mask = numpy.where(atlas_fdata==roi_idx, 1., 0.)
             
             roi_tacs = []
             for frame in range(source_fdata.shape[3]):
                 # apply the binary roi mask created above to the source image
                 source_frame_mask = source_fdata[:,:,:,frame] * roi_mask
                 
-                mx = np.sum(source_frame_mask) / np.sum(roi_mask)
+                mx = numpy.sum(source_frame_mask) / numpy.sum(roi_mask)
                 roi_tacs.append(mx)
             tacs.append(roi_tacs)
             
@@ -430,21 +439,275 @@ def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, un
                 label = label_lookup[str(roi_idx)]
             except KeyError:
                 label = str(roi_idx)
+            
+            # force each label name to be unique
+            if label in labels:
+                label_idx = 1
+                label_counter = label + str(label_idx)
+                while label_counter in labels:
+                    label_idx += 1
+                    label_counter = label + str(label_idx)
+                label = label_counter
             labels.append(label)
     
     # unit correct to uCi/mL
     if units == 'uci':
-        tac_matrix = np.transpose(np.array(tacs)) * (1 / 37000.)
+        tac_matrix = numpy.transpose(numpy.array(tacs)) * (1 / 37000.)
     else:
-        tac_matrix = np.transpose(np.array(tacs))
+        tac_matrix = numpy.transpose(numpy.array(tacs))
     
     # save the tacs as a tsv using pandas
     tac_file = os.path.join(os.getcwd(), basename+'_tacs.tsv')
-    df = pd.DataFrame(tac_matrix, columns=labels, index=midtimes)
+    df = pandas.DataFrame(tac_matrix, columns=labels, index=midtimes)
     df.to_csv(tac_file, sep='\t')
     
     return tac_file
+
+def _generate_wholebrain_mask(in_file, gz=True):
+    """ use nibabel to create a wholebrain mask starting from the aseg 
+    generated from freesurfer's reconall
+    """
+    import nibabel
+    import numpy
+    import os
     
+    # the exclusions used to translate aseg to wholebrain
+    WB_EXCLUSIONS = [
+        2,
+        4,
+        5,
+        14,
+        15,
+        24,
+        30,
+        31,
+        41,
+        43,
+        44,
+        62,
+        63,
+        77,
+        85,
+        251,
+        252,
+        253,
+        254,
+        255
+    ]
+    
+    # load the aseg atlas
+    aseg_atlas = nibabel.load(in_file)
+    aseg_fdata = aseg_atlas.get_fdata().astype(int)
+    
+    # create the wholebrain mask by exclusing certain rois
+    wholebrain_mask = numpy.zeros(aseg_atlas.shape)
+    wholebrain_mask += numpy.where(aseg_fdata > 0, 1., 0.)
+    for roi in WB_EXCLUSIONS:
+        wholebrain_mask -= numpy.where(aseg_fdata == roi, 1., 0.)
+    
+    # save out the new image
+    if gz:
+        mask_path = os.path.join(os.getcwd(), 'wholebrain_mask.nii.gz')
+    else:
+        mask_path = os.path.join(os.getcwd(), 'wholebrain_mask.nii')
+    nibabel.save(
+        nibabel.Nifti1Image(
+            wholebrain_mask,
+            aseg_atlas.affine
+        ),
+        mask_path
+    )
+    
+    return mask_path
+
+def _generate_gray_matter_mask(in_file, gz=True):
+    """ use nibabel to create a gray matter mask starting from the aseg 
+    generated from freesurfer's reconall
+    """
+    import nibabel
+    import numpy
+    import os
+    
+    # the inclusions used to translate aseg to gray matter
+    GM_INCLUSIONS = [
+        3,
+        8,
+        42,
+        47
+    ]
+    
+    # load the aseg atlas
+    aseg_atlas = nibabel.load(in_file)
+    aseg_fdata = aseg_atlas.get_fdata().astype(int)
+    
+    # create the gray matter mask by exclusing certain rois
+    gm_mask = numpy.zeros(aseg_atlas.shape)
+    for roi in GM_INCLUSIONS:
+        gm_mask += numpy.where(aseg_fdata == roi, 1., 0.)
+    
+    # save out the new image
+    if gz:
+        mask_path = os.path.join(os.getcwd(), 'gm_mask.nii.gz')
+    else:
+        mask_path = os.path.join(os.getcwd(), 'gm_mask.nii')
+    nibabel.save(
+        nibabel.Nifti1Image(
+            gm_mask,
+            aseg_atlas.affine
+        ),
+        mask_path
+    )
+    
+    return mask_path
+
+def _generate_white_matter_mask(in_file, gz=True):
+    """ use nibabel to create a gray matter mask starting from the aseg 
+    generated from freesurfer's reconall
+    """
+    import nibabel
+    import numpy
+    import os
+    
+    # the inclusions used to translate aseg to white matter
+    WM_INCLUSIONS = [
+        2,
+        7,
+        41,
+        46,
+        251,
+        252,
+        253,
+        254,
+        255
+    ]
+    
+    # load the aseg atlas
+    aseg_atlas = nibabel.load(in_file)
+    aseg_fdata = aseg_atlas.get_fdata().astype(int)
+    
+    # create the wholebrain mask by exclusing certain rois
+    wm_mask = numpy.zeros(aseg_atlas.shape)
+    for roi in WM_INCLUSIONS:
+        wm_mask += numpy.where(aseg_fdata == roi, 1., 0.)
+    
+    # save out the new image
+    if gz:
+        mask_path = os.path.join(os.getcwd(), 'wm_mask.nii.gz')
+    else:
+        mask_path = os.path.join(os.getcwd(), 'wm_mask.nii')
+    nibabel.save(
+        nibabel.Nifti1Image(
+            wm_mask,
+            aseg_atlas.affine
+        ),
+        mask_path
+    )
+    
+    return mask_path
+
+def _generate_subcortical_mask(in_file, gz=True):
+    """ use nibabel to create a subcortical mask starting from the aseg 
+    generated from freesurfer's reconall
+    """
+    import nibabel
+    import numpy
+    import os
+    
+    # the exclusions used to translate aseg to subcortical
+    SUBCORTICAL_EXCLUSIONS = [
+        2,
+        3,
+        4,
+        5,
+        14,
+        15,
+        24,
+        30,
+        31,
+        41,
+        42,
+        43,
+        44,
+        62,
+        63,
+        77,
+        85,
+        251,
+        252,
+        253,
+        254,
+        255
+    ]
+    
+    # load the aseg atlas
+    aseg_atlas = nibabel.load(in_file)
+    aseg_fdata = aseg_atlas.get_fdata().astype(int)
+    
+    # create the subcortical mask by exclusing certain rois
+    subcortical_mask = numpy.zeros(aseg_atlas.shape)
+    subcortical_mask += numpy.where(aseg_fdata > 0, 1., 0.)
+    for roi in SUBCORTICAL_EXCLUSIONS:
+        subcortical_mask -= numpy.where(aseg_fdata == roi, 1., 0.)
+    
+    # save out the new image
+    if gz:
+        mask_path = os.path.join(os.getcwd(), 'subcortical_mask.nii.gz')
+    else:
+        mask_path = os.path.join(os.getcwd(), 'subcortical_mask.nii')
+    nibabel.save(
+        nibabel.Nifti1Image(
+            subcortical_mask,
+            aseg_atlas.affine
+        ),
+        mask_path
+    )
+    
+    return mask_path
+
+def _generate_ventricle_mask(in_file, gz=True):
+    """ use nibabel to create a ventricle mask starting from the aseg 
+    generated from freesurfer's reconall
+    """
+    import nibabel
+    import numpy
+    import os
+    
+    # the inclusions used to translate aseg to venticle
+    VENTRICLE_INCLUSIONS = [
+        4,
+        5,
+        14,
+        15,
+        24,
+        43,
+        44
+    ]
+    
+    # load the aseg atlas
+    aseg_atlas = nibabel.load(in_file)
+    aseg_fdata = aseg_atlas.get_fdata().astype(int)
+    
+    # create the wholebrain mask by exclusing certain rois
+    ventricle_mask = numpy.zeros(aseg_atlas.shape)
+    for roi in VENTRICLE_INCLUSIONS:
+        ventricle_mask += numpy.where(aseg_fdata == roi, 1., 0.)
+    
+    # save out the new image
+    if gz:
+        mask_path = os.path.join(os.getcwd(), 'ventricle_mask.nii.gz')
+    else:
+        mask_path = os.path.join(os.getcwd(), 'ventricle_mask.nii')
+    nibabel.save(
+        nibabel.Nifti1Image(
+            ventricle_mask,
+            aseg_atlas.affine
+        ),
+        mask_path
+    )
+    
+    return mask_path
+
+
 '''
 def find_linear_tail_tac_aberrations(image_4d, json=None):
     """ use nibabel to calculate the whole brain TAC and find which, if any, 
@@ -457,6 +720,8 @@ def find_linear_tail_tac_aberrations(image_4d, json=None):
     json - file-like str or None
         can be included to use time to better predict slopes
     """
+    import nibabel, numpy, os
+    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
     
     # read the basename
     dirname, filename = os.path.split(image_4d)
@@ -466,6 +731,15 @@ def find_linear_tail_tac_aberrations(image_4d, json=None):
             break
     
     # load the 4d image
-    im = nib.load(image_4d)
-    tac = np.sum(im.get_fdata(), (0,1,2))
+    im = nibabel.load(image_4d)
+    tac = numpy.sum(im.get_fdata(), (0,1,2))
 '''
+# =======================================
+# Main
+def main():
+    pass
+
+if __name__ == '__main__':
+    main()
+
+

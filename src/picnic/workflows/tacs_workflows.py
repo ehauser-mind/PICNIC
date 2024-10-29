@@ -6,11 +6,16 @@ import os
 from nipype import Function
 from nipype.interfaces.utility import Merge
 
-from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
-from picnic.interfaces.nibabel_nodes import _reorient_image, _create_tacs
-from picnic.interfaces.io_nodes import _find_associated_sidecar, _rename_textfile
-from picnic.interfaces.nilearn_nodes import _create_report
-from picnic.interfaces.string_template_nodes import _fill_report_template
+# from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
+# from picnic.interfaces.nibabel_nodes import _reorient_image, _create_tacs
+# from picnic.interfaces.io_nodes import _find_associated_sidecar, _rename_textfile
+# from picnic.interfaces.nilearn_nodes import _create_report
+# from picnic.interfaces.string_template_nodes import _fill_report_template
+from workflows.custom_workflow_constructors import NipibipyWorkflow
+from interfaces.nibabel_nodes import _reorient_image, _create_tacs
+from interfaces.io_nodes import _find_associated_sidecar, _rename_textfile
+from interfaces.nilearn_nodes import _create_report
+from interfaces.string_template_nodes import _fill_report_template
 
 # =======================================
 # Constants

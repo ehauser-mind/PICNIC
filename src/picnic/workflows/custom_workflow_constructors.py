@@ -41,7 +41,7 @@ class NipibipyWorkflow():
             self.sink = Node(
                 DataSink(
                     parameterization = False, 
-                    base_directory = os.path.join(sink_directory)
+                    base_directory = sink_directory
                 ),
                 name=name+'_sink', 
             )

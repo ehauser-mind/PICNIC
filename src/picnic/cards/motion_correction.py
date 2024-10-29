@@ -2,8 +2,14 @@
 # Imports
 import logging
 
-from picnic.cards.card_builder import CardBuilder
-from picnic.workflows.motioncorrection_workflows import (
+# from picnic.cards.card_builder import CardBuilder
+# from picnic.workflows.motioncorrection_workflows import (
+    # FlirtMocoWorkflow,
+    # McflirtMocoWorkflow,
+    # TwoStepMocoWorkflow
+# )
+from cards.card_builder import CardBuilder
+from workflows.motioncorrection_workflows import (
     FlirtMocoWorkflow,
     McflirtMocoWorkflow,
     TwoStepMocoWorkflow
@@ -77,30 +83,12 @@ class MotionCorrection(CardBuilder):
             expected_lines = '>0', 
             expected_in_lines = '=1'
         )
-        logging.info('  Checking parameter syntax')
-        self._check_parameter_syntax()
         
         # workflow standard attributes
         self.inflows = {'in_files' : [self._datalines[0][0]]}
         if self._ct:
             self.inflows['in_files'].append(self._datalines[1][0])
     
-    def _check_parameter_syntax(self):
-        """ check all the parameters associated with the module
-        """
-        # check the parameters
-        assert self._type in AVAILABLE_TYPES.keys(), 'Error: Unexpected motion correction parameter: type='+self._type
-        self._ref_vol = self._force_parameter_to_integer(self._ref_vol, 'ref vol')
-        self._smooth = self._force_parameter_to_integer(self._smooth, 'smooth')
-        self._crop_start = self._force_parameter_to_integer(self._crop_start, 'crop start')
-        self._crop_end = self._force_parameter_to_integer(self._crop_end, 'crop end')
-        assert self._cost in AVAILABLE_COSTS[self._type], 'Error: Unexpected motion correction parameter for type='+self._type+': cost='+self._cost
-        assert isinstance(self._mean, bool), 'Error: Motion correction parameter: mean must be a boolean (True or False)' 
-        self._search_angle = self._force_parameter_to_integer(self._search_angle, 'search angle')
-        self._celtc = self._force_parameter_to_integer(self._celtc, 'CELTC')
-        assert isinstance(self._ct, bool), 'Error: Motion Correction parameter: ct must be a boolean (True or False)'
-        assert isinstance(self._report, bool), 'Error: Motion Correction parameter: report must be a boolean (True or False)'
-        
     def build_workflow(self, sink_directory='', **optional_parameters):
         """ build the nipype workflow, this is the core functionality of this class
         """

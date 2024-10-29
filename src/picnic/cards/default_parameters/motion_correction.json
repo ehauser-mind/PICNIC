@@ -1,16 +1,94 @@
-{
-    "motion correction": {
-        "name":"moco-1",
-        "type":"mcflirt",
-        "ref vol":"8",
-        "smooth":"4",
-        "crop start":"false",
-        "crop end":"false",
-        "cost":"corratio",
-        "mean":"false",
-        "search angle":"0",
-        "celtc":"0",
-        "ct":"false",
-        "report":"true"
+[
+    {
+        "name": "mocoflirt-1",
+        "desc": "",
+        "type": "flirt",
+        "ref vol": 8,
+        "smooth": 4,
+        "crop start": 0,
+        "crop end": 0,
+        "cost": [
+            "mutualinfo",
+            "corratio",
+            "normcorr",
+            "normmi",
+            "leastsq",
+            "labeldiff",
+            "bbr"
+        ],
+        "mean": false,
+        "search angle": 15,
+        "ct": false,
+        "report": true
+    },
+    {
+        "name": "mocomcflirt-1",
+        "desc": "",
+        "type": "mcflirt",
+        "ref vol": 8,
+        "smooth": 4,
+        "crop start": 0,
+        "crop end": 0,
+        "cost": [
+            "mutualinfo",
+            "woods",
+            "corratio",
+            "normcorr",
+            "normmi",
+            "leastsq"
+        ],
+        "mean": false,
+        "search angle": 15,
+        "ct": false,
+        "report": true
+    },
+    {
+        "name": "mocotwostep-1",
+        "desc": "",
+        "type": "twostep",
+        "ref vol": 8,
+        "smooth": 4,
+        "crop start": 0,
+        "crop end": 0,
+        "cost": [
+            "mutualinfo",
+            "corratio",
+            "normcorr",
+            "normmi",
+            "leastsq"
+        ],
+        "search angle": 15,
+        "ct": false,
+        "report": true
+    },
+    {
+        "name": "mocobsplit-1",
+        "desc": "",
+        "type": "bsplit",
+        "ref vol": 8,
+        "smooth": 4,
+        "crop start": 0,
+        "crop end": 0,
+        "cost": [
+            "mutualinfo",
+            "corratio",
+            "normcorr",
+            "normmi",
+            "leastsq"
+        ],
+        "search angle": 15,
+        "ct": false,
+        "report": true
+    },
+    {
+        "name": "mocorealign-1",
+        "desc": "",
+        "type": "realign",
+        "ref vol": 8,
+        "smooth": 4,
+        "crop start": 0,
+        "crop end": 0,
+        "ct": false,
+        "report": true
     }
-}
+]

@@ -7,12 +7,18 @@ from nipype import Function
 from nipype.interfaces.utility import Select, Rename, Merge
 from nipype.interfaces.dcm2nii import Dcm2niix, Dcm2nii
 
-from picnic.workflows.image_workflows import ImageWorkflow
-from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
-from picnic.interfaces.string_template_nodes import _fill_report_template
-from picnic.interfaces.nibabel_nodes import _reorient_image, _merge_images
-from picnic.interfaces.io_nodes import _find_associated_sidecar
-from picnic.interfaces.nilearn_nodes import _create_report
+# from picnic.workflows.image_workflows import ImageWorkflow
+# from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
+# from picnic.interfaces.string_template_nodes import _fill_report_template
+# from picnic.interfaces.nibabel_nodes import _reorient_image, _merge_images
+# from picnic.interfaces.io_nodes import _find_associated_sidecar
+# from picnic.interfaces.nilearn_nodes import _create_report
+from workflows.image_workflows import ImageWorkflow
+from workflows.custom_workflow_constructors import NipibipyWorkflow
+from interfaces.string_template_nodes import _fill_report_template
+from interfaces.nibabel_nodes import _reorient_image, _merge_images
+from interfaces.io_nodes import _find_associated_sidecar
+from interfaces.nilearn_nodes import _create_report
 
 
 # =======================================

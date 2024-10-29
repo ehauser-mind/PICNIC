@@ -5,16 +5,19 @@ import copy
 
 from nipype import Function
 from nipype.interfaces.utility import Select, Merge
-from nipype.interfaces.io import FreeSurferSource
-from nipype.interfaces.freesurfer import ReconAll
 
-from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
-from picnic.interfaces.nibabel_nodes import (
-    _reorient_image, _create_bilateral_atlas, _binarize_images
+from workflows.custom_workflow_constructors import NipibipyWorkflow
+from interfaces.nibabel_nodes import (
+    _reorient_image,
+    _create_bilateral_atlas,
+    _generate_wholebrain_mask,
+    _generate_gray_matter_mask,
+    _generate_white_matter_mask,
+    _generate_subcortical_mask,
+    _generate_ventricle_mask
 )
-from picnic.interfaces.io_nodes import _rename_image, _pop_list
-from picnic.interfaces.string_template_nodes import _fill_report_template
-
+from interfaces.io_nodes import _rename_image
+from interfaces.string_template_nodes import _fill_report_template
 
 # =======================================
 # Constants
@@ -54,12 +57,6 @@ class ReconallWorkflow():
     The public attributes that are important:
     wf - the nipype.Workflow
     """
-    DEFAULT_PARAMS = {
-        'name' : 'reconall',
-        'execution_type' : 't1-only',
-        'hippo_subfields' : True,
-        'report' : True
-    }
     DEFAULT_INFLOWS = {
         't1s' : [],
         't2' : None,
@@ -78,8 +75,7 @@ class ReconallWorkflow():
             the inflows to the workflow, {"inflow name" : file-like str}. See 
             the above DEFAULT_INFLOWS constant for a list of available keys
         """
-        self.params = copy.deepcopy(self.DEFAULT_PARAMS)
-        self.params.update(params)
+        self.params = params
         self.inflows = copy.deepcopy(self.DEFAULT_INFLOWS)
         self.inflows.update(inflows)
     
@@ -103,8 +99,11 @@ class ReconallWorkflow():
         self.execute_reconall()
         self.reorient_outflows()
         self.generate_bilateral_rois()
+        self.generate_wholebrain_mask()
         self.generate_gray_matter_mask()
         self.generate_white_matter_mask()
+        self.generate_subcortical_mask()
+        self.generate_ventricle_mask()
         if self.params['report']:
             self.create_report()
         
@@ -183,7 +182,7 @@ class ReconallWorkflow():
         ) 
     
     def generate_bilateral_rois(self):
-        """ using a lookup table (defined as a static file in the picnic's
+        """ using a lookup table (defined as a static file in the nipibipy's
         sub-package) create a bilateral atlas and associated json for the 
         pre-determined atlases
         """
@@ -229,163 +228,186 @@ class ReconallWorkflow():
                     'json_out_file'
                 ]
             )
-    def generate_gray_matter_mask(self):
-        """ create the gray matter mask using the ribbons generated from 
-        reconall
-        """
-        # by default the ribbon output includes [lh.ribbon.mgz, rh.ribbon.mgz 
-        #  and ribbon.mgz]. To create a mask only lh and rh is needed. Pop out 
-        #  ribbon.mgz
-        self.wf.add_node(
-            interface = Function(
-                input_names = [
-                    'in_list',
-                    'filename_to_exclude'
-                ],
-                output_names = [
-                    'out_list'
-                ],
-                function = _pop_list
-            ),
-            name = 'get_ribbon',
-            inflows = {
-                'in_list' : '@execute_reconall.ribbon',
-                'filename_to_exclude' : 'ribbon.mgz'
-            },
-            outflows = (
-                'out_list',
-            )
-        )
-        
-        # reorient all the ribbons
-        self.wf.add_mapnode(
-            interface = Function(
-                input_names = [
-                    'in_file'
-                ],
-                output_names = [
-                    'new_image_path'
-                ],
-                function = _reorient_image
-            ),
-            name = 'reorient_ribbons',
-            inflows = {
-                'in_file' : '@get_ribbon'
-            },
-            outflows = (
-                'new_image_path',
-            ),
-            iterfield = [
-                'in_file'
-            ]
-        )
-        
-        # take both ribbons (lh and rh), combine them and binarize them
-        self.wf.add_node(
-            interface = Function(
-                input_names = [
-                    'images'
-                ],
-                output_names = [
-                    'new_image_path'
-                ],
-                function = _binarize_images
-            ),
-            name = 'binarize_ribbons',
-            inflows = {
-                'images' : '@reorient_ribbons'
-            },
-            outflows = (
-                'new_image_path',
-            )
-        )
-        
-        # standardize the mask name
-        self.wf.add_node(
-            interface = Function(
-                input_names = [
-                    'basename',
-                    'in_file'
-                ],
-                output_names = [
-                    'new_image_path'
-                ],
-                function = _rename_image
-            ),
-            name = 'standarized_gm_names',
-            inflows = {
-                'basename' : 'gm_mask',
-                'in_file' : '@binarize_ribbons'
-            },
-            outflows = (
-                'new_image_path',
-            ),
-            to_sink = [
-                'new_image_path'
-            ]
-        ) 
     
-    def generate_white_matter_mask(self):
-        """ create the white matter mask using the filled file generated from 
-        reconall
+    def generate_wholebrain_mask(self):
+        """ create a whole brain mask from the aseg
         """
-        # select the filled.nii.gz from the renamed niftis
+        # select the atlas from the renamed niftis
         self.wf.add_node(
             interface = Select(),
-            name = 'select_filled',
+            name = 'select_aseg_for_wholebrain',
             inflows = {
                 'inlist' : '@standardized_filenames',
-                'index' : FREESURFER_OUTFLOWS_TO_EXPOSE.index('filled')
+                'index' : FREESURFER_OUTFLOWS_TO_EXPOSE.index('aseg')
             },
             outflows = (
                 'out',
             )
         )
         
-        # binarize the filled file
+        # create wholebrain mask
         self.wf.add_node(
             interface = Function(
                 input_names = [
-                    'images'
-                ],
-                output_names = [
-                    'new_image_path'
-                ],
-                function = _binarize_images
-            ),
-            name = 'binarize_filled',
-            inflows = {
-                'images' : '@select_filled'
-            },
-            outflows = (
-                'new_image_path',
-            )
-        )
-        
-        # standardize the mask name
-        self.wf.add_node(
-            interface = Function(
-                input_names = [
-                    'basename',
                     'in_file'
                 ],
                 output_names = [
-                    'new_image_path'
+                    'out_file'
                 ],
-                function = _rename_image
+                function = _generate_wholebrain_mask
             ),
-            name = 'standardized_wm_names',
+            name = 'create_wholebrain_mask',
             inflows = {
-                'basename' : 'wm_mask',
-                'in_file' : '@binarize_filled'
+                'in_file' : '@select_aseg_for_wholebrain'
             },
             outflows = (
-                'new_image_path',
+                'mask_path',
+            )
+        )
+    
+    def generate_gray_matter_mask(self):
+        """ create the gray matter mask by including some rois from the aseg
+        """
+        # select the atlas from the renamed niftis
+        self.wf.add_node(
+            interface = Select(),
+            name = 'select_aseg_for_gray_matter',
+            inflows = {
+                'inlist' : '@standardized_filenames',
+                'index' : FREESURFER_OUTFLOWS_TO_EXPOSE.index('aseg')
+            },
+            outflows = (
+                'out',
+            )
+        )
+        
+        # create gray matter mask
+        self.wf.add_node(
+            interface = Function(
+                input_names = [
+                    'in_file'
+                ],
+                output_names = [
+                    'out_file'
+                ],
+                function = _generate_gray_matter_mask
             ),
-            to_sink = [
-                'new_image_path'
-            ]
-        ) 
+            name = 'create_gray_matter_mask',
+            inflows = {
+                'in_file' : '@select_aseg_for_gray_matter'
+            },
+            outflows = (
+                'mask_path',
+            )
+        )
+    
+    def generate_white_matter_mask(self):
+        """ create the white matter mask by including some rois from the aseg
+        """
+        # select the atlas from the renamed niftis
+        self.wf.add_node(
+            interface = Select(),
+            name = 'select_aseg_for_white_matter',
+            inflows = {
+                'inlist' : '@standardized_filenames',
+                'index' : FREESURFER_OUTFLOWS_TO_EXPOSE.index('aseg')
+            },
+            outflows = (
+                'out',
+            )
+        )
+        
+        # create white matter mask
+        self.wf.add_node(
+            interface = Function(
+                input_names = [
+                    'in_file'
+                ],
+                output_names = [
+                    'out_file'
+                ],
+                function = _generate_white_matter_mask
+            ),
+            name = 'create_white_matter_mask',
+            inflows = {
+                'in_file' : '@select_aseg_for_white_matter'
+            },
+            outflows = (
+                'mask_path',
+            )
+        )
+    
+    def generate_subcortical_mask(self):
+        """ create the white matter mask by including some rois from the aseg
+        """
+        # select the atlas from the renamed niftis
+        self.wf.add_node(
+            interface = Select(),
+            name = 'select_aseg_for_subcortical',
+            inflows = {
+                'inlist' : '@standardized_filenames',
+                'index' : FREESURFER_OUTFLOWS_TO_EXPOSE.index('aseg')
+            },
+            outflows = (
+                'out',
+            )
+        )
+        
+        # create subcortical mask
+        self.wf.add_node(
+            interface = Function(
+                input_names = [
+                    'in_file'
+                ],
+                output_names = [
+                    'out_file'
+                ],
+                function = _generate_subcortical_mask
+            ),
+            name = 'create_subcortical_mask',
+            inflows = {
+                'in_file' : '@select_aseg_for_subcortical'
+            },
+            outflows = (
+                'mask_path',
+            )
+        )
+    
+    def generate_ventricle_mask(self):
+        """ create the white matter mask by including some rois from the aseg
+        """
+        # select the atlas from the renamed niftis
+        self.wf.add_node(
+            interface = Select(),
+            name = 'select_aseg_for_ventricle',
+            inflows = {
+                'inlist' : '@standardized_filenames',
+                'index' : FREESURFER_OUTFLOWS_TO_EXPOSE.index('aseg')
+            },
+            outflows = (
+                'out',
+            )
+        )
+        
+        # create ventricle mask
+        self.wf.add_node(
+            interface = Function(
+                input_names = [
+                    'in_file'
+                ],
+                output_names = [
+                    'out_file'
+                ],
+                function = _generate_ventricle_mask
+            ),
+            name = 'create_ventricle_mask',
+            inflows = {
+                'in_file' : '@select_aseg_for_ventricle'
+            },
+            outflows = (
+                'mask_path',
+            )
+        )
     
     def create_report(self):
         """ create a report
@@ -404,11 +426,7 @@ class ReconallWorkflow():
             name = 'report_template',
             inflows = {
                 'html_template' : REPORT_TEMPLATE_PATH,
-                'parameters' :{
-                    'status' : self.params['status'],
-                    'execution_type' : self.params['execution_type'],
-                    'hippo_subfields' : self.params['hippo_subfields']
-                }
+                'parameters' : self.params
             },
             outflows = (
                 'html',
@@ -439,7 +457,6 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
         elif self.params['execution_type'] == 'flair':
             self.inflows['t1s'] = inflows[:-1]
             self.inflows['flair'] = inflows[-1]
-        self.params['status'] = 'execute'
     
     def execute_reconall(self):
         """ use Freesurfer to run reconall using nipype's Freesurfer interface
@@ -447,17 +464,17 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
         Parameters
         ----------
         """
-
+        from nipype.interfaces.freesurfer import ReconAll
+        
         # use reconall
         if self.params['execution_type'] == 't1-only':
             self.wf.add_node(
                 interface = ReconAll(),
                 name = 'execute_reconall',
                 inflows = {
-                    'T1_files' : self.inflows['t1s'],
-                    'hippocampal_subfields_T1' : self.params['hippo_subfields']
+                    'T1_files' : self.inflows['t1s']
                 },
-                outflows = FREESURFER_OUTFLOWS_TO_EXPOSE + ('ribbon',)
+                outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
         elif self.params['execution_type'] == 't2':
             self.wf.add_node(
@@ -466,10 +483,9 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 inflows = {
                     'T1_files' : self.inflows['t1s'],
                     'T2_file' : self.inflows['t2'],
-                    'use_T2' : True,
-                    'hippocampal_subfields_T1' : self.params['hippo_subfields']
+                    'use_T2' : True
                 },
-                outflows = FREESURFER_OUTFLOWS_TO_EXPOSE + ('ribbon',)
+                outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
         elif self.params['execution_type'] == 'flair':
             self.wf.add_node(
@@ -478,10 +494,9 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 inflows = {
                     'T1_files' : self.inflows['t1s'],
                     'FLAIR_file' : self.inflows['flair'],
-                    'use_FLAIR' : True,
-                    'hippocampal_subfields_T1' : self.params['hippo_subfields']
+                    'use_FLAIR' : True
                 },
-                outflows = FREESURFER_OUTFLOWS_TO_EXPOSE + ('ribbon',)
+                outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
     
 class ReadReconallWorkflow(ReconallWorkflow):
@@ -497,7 +512,6 @@ class ReadReconallWorkflow(ReconallWorkflow):
             list of file-like strs
         """
         super().__init__(params, {'filepath' : inflows[0]})
-        self.params['status'] = 'read existing'
     
     def execute_reconall(self):
         """ use nipype's FreeSurferSource to read an existing reconall
@@ -505,7 +519,9 @@ class ReadReconallWorkflow(ReconallWorkflow):
         Parameters
         ----------
         """
-
+        import os
+        from nipype.interfaces.io import FreeSurferSource
+        
         # break up provided filepath into freesurfer subject id/dir
         p = os.path.split(self.inflows['filepath'])
         
@@ -517,5 +533,6 @@ class ReadReconallWorkflow(ReconallWorkflow):
                 'subject_id' : p[1],
                 'subjects_dir' : p[0]
             },
-            outflows = FREESURFER_OUTFLOWS_TO_EXPOSE + ('ribbon',)
+            outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
         )
+

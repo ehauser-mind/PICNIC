@@ -1,8 +1,5 @@
 # =======================================
 # Imports
-import os
-from string import Template
-
 
 # =======================================
 # Constants
@@ -20,15 +17,25 @@ def _fill_report_template(html_template, parameters, basename='report'):
     html_template - file-like str
         the path to the template to be used
     parameters - dict
-        {picnic optional parameter : associated value to said param}
+        {nipibipy optional parameter : associated value to said param}
     """
-
+    # imports
+    from string import Template
+    import os
+    
+    # loop over all the parameters and create bullet points
+    parameter_lines = ''
+    parameter_lines += '        <ul>\n'
+    for key in parameters.keys():
+        parameter_lines += '          <li>' + key + ' = ' + str(parameters[key]) + '</li>\n'
+    parameter_lines += '        </ul>\n'
+    
     # read in the template
     with open(html_template) as f:
         tmplate = Template(f.read())
         
     # substitute out the parameters with and fill out the template
-    subbed = tmplate.substitute(parameters)
+    subbed = tmplate.substitute({'parameters' : parameter_lines})
     
     # save the created html file
     filename = basename + '.html'
@@ -36,3 +43,13 @@ def _fill_report_template(html_template, parameters, basename='report'):
         _ = f.write(subbed)
     
     return os.path.abspath(filename)
+
+# =======================================
+# Main
+def main():
+    pass
+
+if __name__ == '__main__':
+    main()
+
+

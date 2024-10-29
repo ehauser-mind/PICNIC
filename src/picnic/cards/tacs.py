@@ -2,8 +2,10 @@
 # Imports
 import logging
 
-from picnic.cards.card_builder import CardBuilder
-from picnic.workflows.tacs_workflows import TacsWorkflow
+# from picnic.cards.card_builder import CardBuilder
+# from picnic.workflows.tacs_workflows import TacsWorkflow
+from cards.card_builder import CardBuilder
+from workflows.tacs_workflows import TacsWorkflow
 
 # =======================================
 # Constants
@@ -17,7 +19,7 @@ AVAILABLE_UNITS = (
 
 # =======================================
 # Classes
-class TimeActivityCurves(CardBuilder):
+class Tacs(CardBuilder):
     """ A class to create the TACs module. Stored here will be 
     the nodes and connections of the time activity curves type chosen.
     
@@ -41,8 +43,6 @@ class TimeActivityCurves(CardBuilder):
             expected_lines = '>1', 
             expected_in_lines = '=1'
         )
-        logging.info('  Checking parameter syntax')
-        self._check_parameter_syntax()
         
         # workflow standard attributes
         self.inflows = {
@@ -50,14 +50,6 @@ class TimeActivityCurves(CardBuilder):
             'atlas' : [d[0] for d in self._datalines[1:]]
         }
     
-    def _check_parameter_syntax(self):
-        """ check all the parameters associated with the module
-        """
-        # check the parameters
-        assert self._type in AVAILABLE_TYPES.keys(), 'Error: Unsupported type '+self._type+' in '+self._name+' keyword'
-        assert self._units in AVAILABLE_UNITS, 'Error: Unsupported units '+self._units+' in '+self._name+' keyword'
-        assert isinstance(self._report, bool), 'Error: TACs parameter: report must be a boolean (True or False)'
-        
     def build_workflow(self, sink_directory='', **optional_parameters):
         """ build the nipype workflow, this is the core functionality of this class
         """

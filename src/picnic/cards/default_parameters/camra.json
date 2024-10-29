@@ -1,15 +1,34 @@
-{
-    "camra": {
-        "name":"camra-01",
-        "type":"lcf",
-        "cost":"mutualinfo",
-        "dof":"6",
-        "crop start":"0",
-        "crop end":"0",
-        "smooth":"0",
-        "search angle":"35",
-        "ct":"true",
-        "rank":"1",
-        "report":"true"
+[
+    {
+        "name": "camralcf-1",
+        "desc": "",
+        "type": "lcf",
+        "cost": [
+            "mutualinfo"
+        ],
+        "dof": 6,
+        "crop start": 0,
+        "crop end": 0,
+        "smooth": 0,
+        "search angle": 35,
+        "ct": true,
+        "rank": 1,
+        "report": true
+    },
+    {
+        "name": "camraaverage-1",
+        "desc": "",
+        "type": "average",
+        "cost": [
+            "mutualinfo"
+        ],
+        "dof": 6,
+        "crop start": 0,
+        "crop end": 0,
+        "smooth": 0,
+        "search angle": 35,
+        "ct": true,
+        "rank": 1,
+        "report": true
     }
-}
+]
