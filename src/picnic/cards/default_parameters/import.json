@@ -1,7 +1,20 @@
-{
-    "import": {
-        "name":"image-1",
-        "method":"nibabel",
-        "report":"true"
+[
+    {
+        "name": "importnibabel-1",
+        "desc": "",
+        "type": "nibabel",
+        "report": true
+    },
+    {
+        "name": "importdcm2niix-1",
+        "desc": "",
+        "type": "dcm2niix",
+        "report": true
+    },
+    {
+        "name": "importdcm2nii-1",
+        "desc": "",
+        "type": "dcm2nii",
+        "report": true
     }
-}
+]

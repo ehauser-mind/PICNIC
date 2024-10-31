@@ -8,6 +8,7 @@ import json
 import pkgutil
 import copy
 import string
+from pathlib import Path
 
 import logging
 
@@ -16,7 +17,11 @@ import logging
 INPUT_DECK_EXTENSION = '.inp'
 commenter = '#'
 
-jsons_path = '/'.join(('cards', 'default_parameters')) # this HAS to be a literal, cannot use os.path
+DEFAULT_JSONS_PATH = os.path.join(
+    Path(__file__).parent.absolute(),
+    'cards',
+    'default_parameters'
+)
 
 # =======================================
 # Classes
@@ -39,10 +44,8 @@ class InputDeck():
     """
     def __init__(self, fn=None):
         """
-        Parameters
-        ----------
-        fn - str or File obj
-            The input deck file
+        :Parameters:
+          -. `fn` : a file-like str or File obj, the input deck file
         """
         self.fn = fn
         try: # test if we are getting a File or str
@@ -56,7 +59,8 @@ class InputDeck():
             self.read_inp()
         
     def check_inp(self):
-        """ check that the input deck is an inp file type and that it exists
+        """
+        check that the input deck is an inp file type and that it exists
         """
         logging.info('  Checking the file location')
         if not check_file_extension(self.filename, INPUT_DECK_EXTENSION):
@@ -67,7 +71,8 @@ class InputDeck():
             
             
     def read_inp(self):
-        """ read in the input deck and assign data for all the star keywords
+        """
+        read in the input deck and assign data for all the star keywords
         """
         logging.info('  Opening file '+self.filename)
         user_defined_parameters = {}
@@ -122,26 +127,21 @@ class InputDeck():
     def add_card(self, cardname, parameters, datalines):
         """ A public option for adding cards without a separate file
         
-        Parameters
-        ----------
-        cardname - str
-            The card's name as a string; *pet
-        parameters - a tuple of strings or a single dict
-            the optional parameters for the card; 
-            ('para_key=para_val', 'para_key=para_val', ...) or
-            {'para_key':'para_val', 'para_key':'para_val', ...}
-        line - a list split by ',' or a str
-            The data line is where the user provided information is dictated 
-            in the input deck.
+        :Parameters:
+          -. `cardname` : str, the card's name as a string; *pet
+          -. `parameters` : a tuple of strings or a single dict, the optional
+            parameters for the card; ('para_key=para_val', 'para_key=para_val')
+            or {'para_key':'para_val', 'para_key':'para_val', ...}
+          -. `line` : a list split by ',' or a str, the data line is where the 
+            user provided information is dictated in the input deck.
         """
         self.cards.append(Card(cardname, parameters))
         for dataline in datalines:
             self.cards[-1].add_dataline = dataline
     
-
-
 class Card():
-    """ An object storing all the relevant information for '*' cards
+    """ 
+    An object storing all the relevant information for '*' cards
     
     Card expects a name and a tuple of parameters. The tuple can be empty
     
@@ -151,10 +151,10 @@ class Card():
     default where applicable.
     
     The public attributes that are important:
-        cardname - the name of the card; '*image'
-        parameters - a dictionary of the parameters; {'para_key': 'para_val'}
-        datalines - a nested list of the data lines for each card; 
-        [['filepath'],['arg 1', 'arg 2']]
+        `cardname` - the name of the card; '*image'
+        `parameters` - a dictionary of the parameters; {'para_key': 'para_val'}
+        `datalines` - a nested list of the data lines for each card; 
+          [['filepath'],['arg 1', 'arg 2']]
     
     Examples
     --------
@@ -162,12 +162,10 @@ class Card():
     """
     def __init__(self, cardname, *parameters):
         """
-        Parameters
-        ----------
-        cardname : str
-            the name of the card; *pet
-        parameters : an unpacked tuple, packed tuple, list or single dictionary
-            the optional parameters for the card; 
+        :Parameters:
+          -. `cardname` : str, the name of the card; *pet
+          -. `parameters` : an unpacked tuple, packed tuple, list or single
+            dictionary the optional parameters for the card; 
             'para_key=para_val', 'para_key=para_val', ... or
             ('para_key=para_val', 'para_key=para_val', ...) or
             ['para_key=para_val', 'para_key=para_val', ...] or
@@ -182,7 +180,7 @@ class Card():
         # load in the default parameters, then overwrite the with the user 
         #  defined parameters
         default_parameters = self._load_defaults()
-        self.parameters = dict(default_parameters, **self.parameters)
+        self.parameters = self.check_parameter_syntax(default_parameters)
         assert len(self.parameters) == len(default_parameters), 'Error: The optional parameter '+tuple(set(self.parameters.keys()).difference(default_parameters.keys()))[0] + ' is not supported for the card "' + self.cardname + '"'
         
         # initialize the dataline list
@@ -211,24 +209,99 @@ class Card():
         else:
             raise TypeError('Error: Unexpected data type passed to Card.parameters must be a tuple or dict')
             
-    def _load_defaults(self, defaults_path=jsons_path):
-        """ Set aside in a method so we can change the json if necessary
+    def _load_defaults(self, defaults_path=DEFAULT_JSONS_PATH):
+        """ 
+        Set aside in a method so we can change the json if necessary
         
-        Parameters
-        ----------
-        defaults_path - file-like str
-            path to a json file where the default values are stored
+        :Parameters:
+          -. `defaults_path` : file-like str, path to a json file where the
+            default values are stored
         """
-        return load_default_parameter_json(self.cardname[1:], defaults_path)
+        # path of the json file
+        json_path = os.path.join(
+            defaults_path,
+            self.cardname[1:].replace(' ', '_')+'.json'
+        )
         
+        # load the json
+        with open(json_path, 'r') as f:
+            data = json.load(f)
+        
+        # if the card doesn't have a type or the user doesn't provide one, use
+        #  the first option in the json
+        try:
+            for d in data:
+                if d['type'] == self.parameters['type']:
+                    return d
+        except KeyError:
+            return data[0]
+        
+        # if for some reason we made it through that try statement, default to
+        #  empty parameters
+        return {}
+        
+    def check_parameter_syntax(self, default_parameters):
+        """
+        Check all the parameters associated with the module
+        
+        :Parameters:
+          -. `default_parameters` : dict, the default parameters associated to
+            the type defined by the user
+        """
+        new_parameters = {}
+        # loop over all the default parameters
+        for key in default_parameters.keys():
+            default_value = default_parameters[key]
+            # if the user does not give a parameter for the given card, set it
+            #  to the default
+            try:
+                actual_value = self.parameters[key]
+            except KeyError:
+                actual_value = default_value
+            
+            # if the default value is int, make sure the value given is int
+            if isinstance(default_value, int):
+                try:
+                    new_parameters[key] = int(actual_value)
+                # throw error if not an int
+                except ValueError:
+                    InputDeckSyntaxError('Error: Parameter `' + key + '` from `' + self.cardname + '` expects an integer')
+            
+            # if the default value is True/False, make the given value boolean
+            elif isinstance(default_value, bool):
+                try:
+                    if actual_value.lower() in ('true', 'yes', 'y', 'false', 'no', 'n', '.', '-'):
+                        new_parameters[key] = actual_value.lower() in ('true', 'yes', 'y')
+                    else:
+                        InputDeckSyntaxError('Error: Parameter `' + key + '` from `' + self.cardname + '` expects a boolean')
+                except AttributeError:
+                    new_parameters[key] = bool(actual_value)
+            
+            # if the default is a list of available options, make sure the
+            #  given is one of them
+            elif isinstance(default_value, list):
+                if isinstance(actual_value, list):
+                    new_parameters[key] = actual_value[0]
+                elif isinstance(actual_value, str):
+                    if actual_value in default_value:
+                        new_parameters[key] = actual_value
+                    else:
+                        InputDeckSyntaxError('Error: Parameter `' + key + '` from `' + self.cardname + '` must be one of the options: ' + str(default_value))
+                else:
+                    InputDeckSyntaxError('Error: Parameter `' + key + '` from `' + self.cardname + '` must be one of the options: ' + str(default_value))
+            
+            # this control is entered if it is a string (like name or desc)
+            else:
+                new_parameters[key] = actual_value
+        return new_parameters
+    
     def add_dataline(self, line):
-        """ Add to the datalines
+        """ 
+        Add to the datalines
         
-        Parameters
-        ----------
-        line - a list split by ',' or a str
-            The data line is where the user provided information is dictated 
-            in the input deck.
+        :Parameters:
+          -. `line` : a list split by ',' or a str, the data line is where the
+            user provided information is dictated in the input deck.
         """
         if isinstance(line, str):
             self.datalines.append([itm.strip() for itm in line.strip().split(',')])
@@ -260,41 +333,40 @@ class Card():
             raise InputDeckSyntaxError('Error: Unexpected data type when setting dataline for card ' + self.cardname)
         
 class InputDeckSyntaxError(Exception):
-    """ custom error to trap input deck specific errors
+    """ 
+    Custom error to trap input deck specific errors
     """
     pass
 
 # =======================================
 # Functions
 def check_file_extension(filename, extension):
-    ''' check that the file given is the correct extension
-        
-        Parameters
-        ----------
-        filename : str
-            The input deck file
-        extension : str
-            the file extension type (most likely '.inp')
-    '''
+    """
+    Check that the file given is the correct extension
+    
+    :Parameters:
+      -. `filename` : str, the input deck file
+      -. `extension` : str, the file extension type (most likely '.inp')
+    """
     return os.path.splitext(filename)[-1].lower() == extension
 
 def check_file_exists(filename):
-    ''' check that the file exists where the user thinks it does
-        
-        Parameters
-        ----------
-        filename : str
-            The input deck file
-    '''
+    """
+    Check that the file exists where the user thinks it does
+    
+    :Parameters:
+      -. `filename` : str, the input deck file
+    """
     return os.path.exists(filename)
 
 def read_parameter_card(all_the_parameter_lines):
-    ''' a function built to read and execute the *parameter keyword. This has 
-        to be in built in a local space outside the typical object structure to
-        try and mitigate some of the danger of using the exec command.
-        all_the_parameter_lines = lines of str; this CANNOT be used as a 
-        parameter name
-    '''
+    """
+    A function built to read and execute the *parameter keyword. This has to be
+    in built in a local space outside the typical object structure to try and
+    mitigate some of the danger of using the exec command. 
+    all_the_parameter_lines = lines of str; this CANNOT be used as a parameter
+    name
+    """
     # loop over all the parameter lines
     for _ in all_the_parameter_lines:
         exec(_)
@@ -305,37 +377,18 @@ def read_parameter_card(all_the_parameter_lines):
     return locals()
     
 def load_default_parameter_json(keyword, json_path):
-    ''' load in the default options provided by the json file
-        keyword = str; 'pet'
-        json_path = filepath; 'static/default_parameters'
-    '''
-    return json.loads(pkgutil.get_data(__name__, '/'.join((json_path, keyword.replace(' ', '_')+'.json'))).decode())[keyword]
-
-def make_card(cardname, parameters=None, datalines=None):
-    ''' create a Card class on the fly
-        cardname = str; '*pet'
-        parameters = list of str; ['filetype=dcm', 'dcm2nii=dcm2niix']
-        datalines = list of str; ['/data/export/sub-01', 'test, test']
-    '''
-    # make sure the keyword starts with a star indicator
-    if not cardname.startswith('*'):
-        cardname = '*' + cardname
+    """
+    Load in the default options provided by the json file keyword = str; 'pet'
+    json_path = filepath; 'static/default_parameters'
+    """
+    print(keyword + '\n\t' + json_path)
+    return json.loads(os.path.join(json_path, keyword.replace(' ', '_')+'.json'))[keyword]
     
-    # if there are user defined parameters, load those in
-    if parameters is not None:
-        card = Card(cardname, *parameters)
-    else:
-        card = Card(cardname)
-    
-    # add the datalines
-    if datalines is not None:
-        for line in datalines:
-            card.add_dataline(line)
-    return card
 
 def read_input_deck(input_deck):
-    ''' a function that will call the InputDeck class and fill it given a file
-    '''
+    """
+    A function that will call the InputDeck class and fill it given a file
+    """
     return InputDeck(input_deck)
 
 # =======================================

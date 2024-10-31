@@ -1,9 +1,19 @@
-{
-    "reconall": {
-        "name":"reconall",
-        "status":"execute",
-        "execution type":"t1-only",
-        "hippo subfields":"false",
-        "report":"true"
+[
+    {
+        "name": "reconall-1",
+        "desc": "",
+        "type": "execute",
+        "execution_type": [
+            "t1-only",
+            "t2",
+            "flair"
+        ],
+        "report": true
+    },
+    {
+        "name": "readreconall-1",
+        "desc": "",
+        "type": "read existing",
+        "report": true
     }
-}
+]

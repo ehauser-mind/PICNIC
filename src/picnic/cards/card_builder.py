@@ -3,7 +3,7 @@
 import copy
 import logging
 
-from picnic.input_deck_reader import make_card
+# from picnic.input_deck_reader import make_card
 
 
 # =======================================
@@ -31,9 +31,12 @@ class CardBuilder():
         for l in [[self._parameters], args, [kwargs]]:
             for d in l:
                 for key in d:
-                    # Make boolean parameters, actually python boolean data types
-                    if d[key].lower() in ('true', 'yes', 'y', 'false', 'no', 'n', '.', '-'):
-                        d[key] = d[key].lower() in ('true', 'yes', 'y')
+                    try:
+                        # Make boolean parameters, actually python boolean data types
+                        if d[key].lower() in ('true', 'yes', 'y', 'false', 'no', 'n', '.', '-'):
+                            d[key] = d[key].lower() in ('true', 'yes', 'y')
+                    except AttributeError:
+                        pass
                     
                     setattr(self, '_'+key.replace(' ', '_'), d[key])
     
@@ -174,3 +177,26 @@ def checker_parse(check_str):
         return check_str[0], int(check_str[1:])
     except TypeError:
         logging.error('Error: Need to pass a string into checker_parse function')
+
+def make_card(cardname, parameters=None, datalines=None):
+    ''' create a Card class on the fly
+        cardname = str; '*pet'
+        parameters = list of str; ['filetype=dcm', 'dcm2nii=dcm2niix']
+        datalines = list of str; ['/data/export/sub-01', 'test, test']
+    '''
+    # make sure the keyword starts with a star indicator
+    if not cardname.startswith('*'):
+        cardname = '*' + cardname
+    
+    # if there are user defined parameters, load those in
+    if parameters is not None:
+        card = Card(cardname, *parameters)
+    else:
+        card = Card(cardname)
+    
+    # add the datalines
+    if datalines is not None:
+        for line in datalines:
+            card.add_dataline(line)
+    return card
+

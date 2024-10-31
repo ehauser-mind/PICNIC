@@ -15,12 +15,18 @@ from nipype.interfaces.fsl.maths import ApplyMask, BinaryMaths, MathsCommand
 from nipype.interfaces.fsl import (
     IsotropicSmooth, MeanImage, FLIRT, ApplyXFM, BET
 )
-from picnic.interfaces.nibabel_nodes import _reorient_image, _crop_image, _binarize_images, _resample_image
-from picnic.interfaces.custom_fsl_interfaces import ApplyXfm4D
-from picnic.interfaces.io_nodes import _rename_image, _find_associated_sidecar, _rename_textfile
-from picnic.interfaces.nilearn_nodes import _create_report
-from picnic.interfaces.string_template_nodes import _fill_report_template
-from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
+# from picnic.interfaces.nibabel_nodes import _reorient_image, _crop_image, _binarize_images, _resample_image
+# from picnic.interfaces.custom_fsl_interfaces import ApplyXfm4D
+# from picnic.interfaces.io_nodes import _rename_image, _find_associated_sidecar, _rename_textfile
+# from picnic.interfaces.nilearn_nodes import _create_report
+# from picnic.interfaces.string_template_nodes import _fill_report_template
+# from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
+from interfaces.nibabel_nodes import _reorient_image, _crop_image, _binarize_images, _resample_image
+from interfaces.custom_fsl_interfaces import ApplyXfm4D
+from interfaces.io_nodes import _rename_image, _find_associated_sidecar, _rename_textfile
+from interfaces.nilearn_nodes import _create_report
+from interfaces.string_template_nodes import _fill_report_template
+from workflows.custom_workflow_constructors import NipibipyWorkflow
 
 
 # =======================================
