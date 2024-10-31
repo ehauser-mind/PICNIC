@@ -18,6 +18,12 @@ How To Use This Module
 import sys
 import os
 import shutil
+import glob
+import importlib
+import argparse
+import pandas
+import copy
+from pathlib import Path
 
 from picnic.input_deck_reader import read_input_deck
 
@@ -200,7 +206,7 @@ def insert_parameters(inps, dox_file):
                         all_lines.append(line)
 
                     # because *parameter is special and it is how we are
-                    #  createing new input decks we are going to isolate
+                    #  creating new input decks we are going to isolate
                     #  all these lines and set them aside
                     else:
                         if not line.lower().startswith('*parameter'):

@@ -3,8 +3,7 @@
 import copy
 import logging
 
-# from picnic.input_deck_reader import make_card
-from input_deck_reader import make_card
+from picnic.input_deck_reader import make_card
 
 
 # =======================================
@@ -29,6 +28,7 @@ class CardBuilder():
         :Parameters:
           -. `card` : a Card obj
         """
+
         self._parameters = card.parameters
         self._datalines = card.datalines
         
@@ -87,8 +87,9 @@ class CardBuilder():
             
     def _count_datalines(self, e_lines):
         """
-        test if the number of lines matches the expected number
+        Test if the number of lines matches the expected number
         """
+
         oper, e_num = checker_parse(e_lines)
         a_num = len(self._datalines)
         
@@ -102,8 +103,8 @@ class CardBuilder():
             raise UnexpectedCardSyntaxError('Error: Unexpected syntax for the dataline syntax checker')
 
     def _count_in_datalines(self, e_in_lines):
-        """ 
-        test if the number of arguments in each line matches the expected number
+        """
+        Test if the number of arguments in each line matches the expected number
         """
         oper, e_num = checker_parse(e_in_lines)
         
@@ -120,7 +121,7 @@ class CardBuilder():
         
     def _user_defined_parameters(self, **optional_parameters):
         """
-        if the user has passed some non-default parameters, check that they 
+        if the user has passed some non-default parameters, check that they
         are compatible and return the new user-defined parameters along with a 
         dict of the "non-overwritten" defaults.
         
@@ -129,7 +130,7 @@ class CardBuilder():
             parameter-like key/values (ex "type":"fsl")
         
         :Return:
-          -. dictionary of overwritten parameters
+          -. dict of overwritten parameters
         """
         default_parameters = copy.deepcopy(self.__dict__)
         for key, value in optional_parameters.items():
@@ -176,7 +177,7 @@ class UnexpectedCardSyntaxError(Exception):
 # =======================================
 # Functions
 def checker_parse(check_str):
-    """ 
+    """
     expects a string to look something like '=1' or '>12'
     """
     try:

@@ -9,7 +9,14 @@ from nipype.interfaces.utility import Select, Merge
 
 from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
 from picnic.interfaces.nibabel_nodes import (
-    _reorient_image, _create_bilateral_atlas, _binarize_images
+    _reorient_image,
+    _create_bilateral_atlas,
+    _binarize_images,
+    _generate_wholebrain_mask,
+    _generate_gray_matter_mask,
+    _generate_white_matter_mask,
+    _generate_subcortical_mask,
+    _generate_ventricle_mask
 )
 from picnic.interfaces.io_nodes import _rename_image, _pop_list
 from picnic.interfaces.string_template_nodes import _fill_report_template

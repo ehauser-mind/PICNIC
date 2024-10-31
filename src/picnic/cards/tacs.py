@@ -5,8 +5,8 @@ import os
 
 # from picnic.cards.card_builder import CardBuilder
 # from picnic.workflows.tacs_workflows import TacsWorkflow
-from cards.card_builder import CardBuilder
-from workflows.tacs_workflows import TacsWorkflow
+from picnic.cards.card_builder import CardBuilder
+from picnic.workflows.tacs_workflows import TacsWorkflow
 
 # =======================================
 # Constants
