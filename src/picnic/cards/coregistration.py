@@ -2,7 +2,6 @@
 # Imports
 import logging
 
-import UnexpectedSyntaxError
 from picnic.cards.card_builder import CardBuilder, make_card
 import flirt_coregistration
 import register_coregistration
@@ -67,7 +66,7 @@ class Coregistration(CardBuilder):
 
     @card.setter
     def card(self, value):
-        assert value is not None, UnexpectedSyntaxError('Error: Must pass either a picnic.Card obj or str to represent the dataline')
+        assert value is not None, 'Error: Must pass either a picnic.Card obj or str to represent the dataline'
         try:
             _ = value.datalines
             self._card = value
@@ -82,7 +81,7 @@ class Coregistration(CardBuilder):
             if isinstance(value, str):
                 self._card = make_card('*coregistration', datalines=[value.strip().split(',')])
             else:
-                raise UnexpectedSyntaxError('Error: Must pass either a picnic.Card obj or str to represent the dataline')
+                raise Exception('Error: Must pass either a picnic.Card obj or str to represent the dataline')
             
     def _check_parameter_syntax(self):
         """ check all the parameters associated with the module

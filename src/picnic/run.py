@@ -14,7 +14,6 @@ How To Use This Module
 """
 # =======================================
 # Imports
-import sys
 import os
 import shutil
 import glob
@@ -22,11 +21,16 @@ import importlib
 import argparse
 import pandas
 import copy
-import tempfile
 from pathlib import Path
 
-# from picnic.input_deck_reader import read_input_deck
 from input_deck_reader import read_input_deck
+
+from picnic.cards.reconall import Reconall
+from picnic.cards.motion_correction import MotionCorrection
+from picnic.cards.camra import Camra
+from picnic.cards.tacs import Tacs
+from picnic.cards.sink import Sink
+
 
 # =======================================
 # Constants
@@ -191,11 +195,20 @@ def infer_class_name_from_card_name(card_name):
     """
     return ''.join([s.capitalize() for s in card_name.split(' ')])
 
+
 def initialize_instance_from_keyword(card):
     """ use the key to initialize the keyword class associated to the 
     provided card
     """
-    return CARD_INSTANCE_KEY[card.cardname[1:]](card)
+
+    return {
+        'reconall': Reconall,
+        'motion correction': MotionCorrection,
+        'camra': Camra,
+        'tacs': Tacs,
+        'sink': Sink
+    }[card.cardname[1:]](card)
+
 
 def insert_parameters(inps, dox_file):
     """
@@ -249,10 +262,10 @@ def insert_parameters(inps, dox_file):
                 new_parameters[parameter_name] = df.loc[parameter_name][run]
             
             # write out the new input deck with the additional parameters
-            new_inp = '_'.join(
+            new_inp = '_'.join([
                 os.path.splitext(os.path.basename(inp))[0],
                 'run' + str(idx).zfill(len(str(number_of_runs))) + '.inp'
-            )
+            ])
             with open(new_inp, 'w') as g:
                 for line in all_lines:
                     _ = g.write(line + '\n')
