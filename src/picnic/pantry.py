@@ -77,7 +77,7 @@ class Deck():
         """
         self.cards = []
         self.variables = {}
-    
+
     def add_card(self, card):
         """
         add a new card to the input deck
@@ -92,7 +92,7 @@ class Deck():
         a boolean on whether a card CAN be removed
         """
         return (len(self.cards) > 0)
-    
+
     def remove_card(self, idx):
         """
         :Parameters:
@@ -426,7 +426,7 @@ def add_card_manually():
 def save_input_deck(deck, filename):
     """
     save of the created pipeline/workflow
-    
+
     :Parameters:
       -. `deck` : input_deck_reader.InputDeck obj, a picnic input deck
       -. `filename` : file-like str, the filename/path to to save
@@ -448,7 +448,7 @@ def show_parameters(card):
     """
     create a window to display the parameters and datalines for the selected
     card
-    
+
     :Parameters:
       -. `card` : input_deck_reader.Card, an input deck card
     """
@@ -533,7 +533,7 @@ def show_parameters(card):
             window.Close()
             
             return (parameters, [[d] for d in datalines])
-        
+
         # add a dataline
         elif event == '-ADDDL-':
             idx += 1
@@ -560,7 +560,7 @@ def show_parameters(card):
 def create_variable_window(variables):
     """
     create a window to display the variable keys and the associated values
-    
+
     :Parameters:
       -. `variables` : dict, variable keys
     """
@@ -611,18 +611,18 @@ def get_card_list(folder_path=DEFAULT_JSONS_PATH, extension='.json'):
     return a list of cards found in the `cards.default_parameters`
     sub-directory. We use this to determine which instances steps will be
     loaded.
-    
+
     :Parameters:
       -. `folder_path` : a file-like string, the path to find the json files
       -. `extension` : a string, the file type to search for the cards
-    
+
     :Return:
       -. a dictionary, cards and their associated picnic classes
     """
     # {key = 'card name' : val = CardName obj}
     # example {'camra' : picnic.cards.camra.Camra}
     card_instance_legend = {}
-    
+
     # get all the jsons in the default parameters folder
     all_jsons = glob.glob(os.path.join(folder_path, '*' + extension))
     for json_ in all_jsons:
@@ -635,7 +635,7 @@ def get_card_list(folder_path=DEFAULT_JSONS_PATH, extension='.json'):
             module_,
             ''.join([s.capitalize() for s in card_name.split(' ')])
         )
-    
+
     return card_instance_legend
 
 # =======================================
