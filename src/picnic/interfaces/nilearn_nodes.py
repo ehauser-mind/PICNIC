@@ -44,7 +44,7 @@ def _create_report(type_, in_files, additional_args=[]):
         import nibabel as nib
 
         # load file
-        image = nibabel.load(in_file)
+        image = nib.load(in_file)
         
         # if the image is a 4d image, assume it is a pet image and create a mp4
         if len(image.shape) > 3:
@@ -118,27 +118,27 @@ def _create_report(type_, in_files, additional_args=[]):
         from PIL import Image
 
         # load the files
-        base_image = nibabel.load(base_file)
-        moco_image = nibabel.load(moco_file)
+        base_image = nib.load(base_file)
+        moco_image = nib.load(moco_file)
         
         # create an optimized colormap for pet brains
         cmap_lims = calculate_colormap_limits(base_image, UPPER_COLORMAP_LIMIT)
         
         # calculate the bounds early so the mp4 and png have the same bound
         bounds = calculate_bounds(moco_image)
-        ortho_cuts = [numpy.mean(bounds[direction]) for direction in 'xyz']
+        ortho_cuts = [np.mean(bounds[direction]) for direction in 'xyz']
         
         # loop through all the transformation matrices and derive all 6 dofs
         if mats is not None:
             dofs = []
             for mat in mats:
-                m = numpy.loadtxt(mat)
+                m = np.loadtxt(mat)
                 x, y, z = m[0,3], m[1, 3], m[2, 3]
-                rx = atan2(-m[1, 2], m[2, 2])
-                ry = asin(m[0, 2])
-                rz = atan2(-m[0, 1], m[0, 0])
-                dofs.append(numpy.array([x, y, z, rx, ry, rz]))
-            dofs = numpy.array(dofs)
+                rx = math.atan2(-m[1, 2], m[2, 2])
+                ry = math.asin(m[0, 2])
+                rz = math.atan2(-m[0, 1], m[0, 0])
+                dofs.append(np.array([x, y, z, rx, ry, rz]))
+            dofs = np.array(dofs)
         
         # loop over each frame and create a comparison orthogonal image for 
         #   pre and post correction
@@ -165,11 +165,11 @@ def _create_report(type_, in_files, additional_args=[]):
             # if a list of mat files were provided, create tracer plots
             if mats is not None:
                 # create a motion plot for the x, y and z dofs
-                # print(numpy.arange(moco_image.shape[3]))
+                # print(np.arange(moco_image.shape[3]))
                 # print(dofs[:, :3])
                 panels.append(
                     create_moco_plot(
-                        numpy.arange(moco_image.shape[3]),
+                        np.arange(moco_image.shape[3]),
                         dofs[:, :3],
                         frame,
                         basename = None,
@@ -182,7 +182,7 @@ def _create_report(type_, in_files, additional_args=[]):
                 # create a motion plot for the rx, ry and rz dofs
                 panels.append(
                     create_moco_plot(
-                        numpy.arange(moco_image.shape[3]),
+                        np.arange(moco_image.shape[3]),
                         dofs[:, 3:],
                         frame,
                         basename = None,
@@ -241,8 +241,8 @@ def _create_report(type_, in_files, additional_args=[]):
         import nibabel as nib
 
         # load file
-        base_image = nibabel.load(base_file)
-        over_image = nibabel.load(over_file)
+        base_image = nib.load(base_file)
+        over_image = nib.load(over_file)
         
         # create an optimized colormap for pet brains
         cmap_limits = calculate_colormap_limits(
@@ -255,7 +255,7 @@ def _create_report(type_, in_files, additional_args=[]):
         
         # create different pngs ramping up the opacity
         stills = []
-        for opacity in linspace(0., 0.7, 6):
+        for opacity in np.linspace(0., 0.7, 6):
             stills.append(
                 create_png_mosaic(
                     base_image,
@@ -301,7 +301,7 @@ def _create_report(type_, in_files, additional_args=[]):
         import pandas as pd
 
         # load tacs file as a pandas dataset
-        data = pandas.read_csv(tac_file, delimiter='\t', header=0, index_col=0)
+        data = pd.read_csv(tac_file, delimiter='\t', header=0, index_col=0)
         
         # create a plot
         tac_plot = create_tacs_plot(
@@ -336,7 +336,7 @@ def _create_report(type_, in_files, additional_args=[]):
         
         Parameters
         ----------
-        image - nibabel.Nifti1Image
+        image - nib.Nifti1Image
             the nibabel image
         basename - str or None
             the base for the png filename. If None do not create png, return
@@ -378,7 +378,7 @@ def _create_report(type_, in_files, additional_args=[]):
                 _ = plot_anat(
                     image,
                     display_mode = direction,
-                    cut_coords = linspace(*bounds[direction], n_cuts),
+                    cut_coords = np.linspace(*bounds[direction], n_cuts),
                     output_file = panels[direction],
                     black_bg = True,
                     dim = 0.,
@@ -391,7 +391,7 @@ def _create_report(type_, in_files, additional_args=[]):
                     overlay_image,
                     image,
                     display_mode = direction,
-                    cut_coords = linspace(*bounds[direction], n_cuts),
+                    cut_coords = np.linspace(*bounds[direction], n_cuts),
                     output_file = panels[direction],
                     black_bg = True,
                     dim = 0.,
@@ -437,7 +437,7 @@ def _create_report(type_, in_files, additional_args=[]):
     ):
         """ use nilearn create ortho images
         
-        image - nibabel.Nifti1Image
+        image - nib.Nifti1Image
             the nibabel image
         ortho_cuts - list
             a list of the cuts [x, y, z]
@@ -465,8 +465,7 @@ def _create_report(type_, in_files, additional_args=[]):
         # if not provided, calculate the mosaic bounds
         if ortho_cuts is None:
             bounds = calculate_bounds(image)
-            ortho_cuts = [mean(bounds[direction]) for direction in ['xyz']]
-        
+            ortho_cuts = [np.mean(bounds[direction]) for direction in ['xyz']]
         
         # use nilearn's plot_anat to create each panel
         temp_panel = tempfile.TemporaryFile(suffix='.png')
@@ -665,7 +664,7 @@ def _create_report(type_, in_files, additional_args=[]):
         
         Parameters
         ----------
-        image - nibabel.Nifti1Image
+        image - nib.Nifti1Image
             the nibabel image
         basename - str
             the base for the mp4 filename
@@ -779,7 +778,7 @@ def _create_report(type_, in_files, additional_args=[]):
         
         Parameters
         ----------
-        image - nibabel.Nifti1Image
+        image - nib.Nifti1Image
             the nibabel image
         """
 
@@ -799,18 +798,18 @@ def _create_report(type_, in_files, additional_args=[]):
         # loop over each direction
         bounds = {}
         for direction in 'xyz':
-            distribution = numpy.mean(fdata, axis=COORDS_AXIS[direction])
+            distribution = np.mean(fdata, axis=COORDS_AXIS[direction])
             
             # loop over low and high threshold
             bounds[direction] = []
             for thr in COORDS_THRESHOLD[direction]:
                 # bounce back and forth to locate the bounds
                 l_idx, u_idx = (0, len(distribution))
-                total_area = numpy.trapz(distribution)
+                total_area = np.trapz(distribution)
                 
                 while u_idx - l_idx > 1.:
                     idx = (l_idx + u_idx) // 2
-                    area = numpy.trapz(distribution[:idx])
+                    area = np.trapz(distribution[:idx])
                     if area/total_area > (thr/100.)+0.005:
                         u_idx = idx
                     elif area/total_area < (thr/100.)-0.005:
@@ -829,7 +828,7 @@ def _create_report(type_, in_files, additional_args=[]):
         
         Parameters
         ----------
-        image - nibabel.Nifti1Image
+        image - nib.Nifti1Image
             the nibabel image
         """
 
@@ -856,7 +855,7 @@ def _create_report(type_, in_files, additional_args=[]):
         
         Parameters
         ----------
-        image - nibabel.Nifti1Image
+        image - nib.Nifti1Image
             the nibabel image
         upper_limit - float
             value between 0 and 100
@@ -871,7 +870,7 @@ def _create_report(type_, in_files, additional_args=[]):
         # let's create a vectorizing function as a nested function. This will 
         #   make 0 -> root(2)/2  |  0.5 -> 1.0  |  1.0 -> root(2)/2
         def vector_function(float_):
-            """ used for numpy.vectorize
+            """ used for np.vectorize
             
             Parameters
             ----------
@@ -884,17 +883,17 @@ def _create_report(type_, in_files, additional_args=[]):
         # create a 3d array of 1s, multiply that by the x vector function above
         #   then the y and z. This gives a 3d array where the innermost voxels 
         #   will have a value of 1 and the outermost will be (root(2)/2.)**3.
-        wa = numpy.ones(image.shape)
-        vec = numpy.vectorize(vector_function)
-        wa *= vec(numpy.linspace(0., 1., fdata.shape[0]))[:, None, None]
-        wa *= vec(numpy.linspace(0., 1., fdata.shape[1]))[None, :, None]
-        wa *= vec(numpy.linspace(0., 1., fdata.shape[2]))[None, None, :]
+        wa = np.ones(image.shape)
+        vec = np.vectorize(vector_function)
+        wa *= vec(np.linspace(0., 1., fdata.shape[0]))[:, None, None]
+        wa *= vec(np.linspace(0., 1., fdata.shape[1]))[None, :, None]
+        wa *= vec(np.linspace(0., 1., fdata.shape[2]))[None, None, :]
         
         wght_fdata = wa * fdata
         
         # set lower bound to 0. and upper bound to the xth percentile (ignoring
         #  all values less than 0.)
-        return (0., numpy.percentile(wght_fdata[wght_fdata > 0.], upper_limit))
+        return (0., np.percentile(wght_fdata[wght_fdata > 0.], upper_limit))
     
     def draw_lines_on_image(image, numx, numy):
         """ draw orthogonal lines over top an Image obj. I don't really see a 
@@ -916,9 +915,9 @@ def _create_report(type_, in_files, additional_args=[]):
         # draw lines
         w, h = image.size
         draw = ImageDraw.Draw(image)
-        for line_height in linspace(0, h, numy)[1:-1]:
+        for line_height in np.linspace(0, h, numy)[1:-1]:
             draw.line((0, line_height, w, line_height), width=1)
-        for line_width in linspace(0, w, numx)[1:-1]:
+        for line_width in np.linspace(0, w, numx)[1:-1]:
             draw.line((line_width, 0, line_width, h), width=1)
         
         return image
