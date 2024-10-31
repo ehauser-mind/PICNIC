@@ -464,8 +464,9 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
         Parameters
         ----------
         """
+
         from nipype.interfaces.freesurfer import ReconAll
-        
+
         # use reconall
         if self.params['execution_type'] == 't1-only':
             self.wf.add_node(
@@ -519,9 +520,9 @@ class ReadReconallWorkflow(ReconallWorkflow):
         Parameters
         ----------
         """
-        import os
+
         from nipype.interfaces.io import FreeSurferSource
-        
+
         # break up provided filepath into freesurfer subject id/dir
         p = os.path.split(self.inflows['filepath'])
         

@@ -19,10 +19,10 @@ def _fill_report_template(html_template, parameters, basename='report'):
     parameters - dict
         {nipibipy optional parameter : associated value to said param}
     """
-    # imports
-    from string import Template
+
     import os
-    
+    from string import Template
+
     # loop over all the parameters and create bullet points
     parameter_lines = ''
     parameter_lines += '        <ul>\n'

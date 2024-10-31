@@ -22,12 +22,14 @@ def _reorient_image(in_file, gz=True):
     gz      - boolean
         save the file as a nifti_gz (True) or nifti (False)
     """
-    import os, nibabel
-    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
-    
+
+    import os
+    import nibabel as nib
+    from picnic.interfaces.utility import nibabel_image_types
+
     # open the image with nibabel
     dirname, filename = os.path.split(in_file)
-    for img_type in NIBABEL_IMAGE_TYPES:
+    for img_type in nibabel_image_types:
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break
@@ -45,6 +47,7 @@ def _reorient_image(in_file, gz=True):
     
     return new_image_path
 
+
 ''' while this function DOES work, it is suggested the user utilize the nibabel 
     function nibabel.func.as_closest_canonical(). They give the same results, 
     but nibabel's is faster and better tested
@@ -59,12 +62,14 @@ def _reorient_image_deprecated(in_file, gz=True):
     gz - boolean
         save the file as a nifti_gz (True) or nifti (False)
     """
-    import os, nibabel
-    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
-    
+
+    import os
+    import nibabel as nib
+    from picnic.interfaces.utility import nibabel_image_types
+
     # open the image with nibabel
     dirname, filename = os.path.split(in_file)
-    for img_type in NIBABEL_IMAGE_TYPES:
+    for img_type in nibabel_image_types:
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break
@@ -90,6 +95,7 @@ def _reorient_image_deprecated(in_file, gz=True):
     
     return new_image_path
 
+
 def _merge_images(images, gz=True):
     """ use nibabel to merge a group of images over the last axis (usually time)
     
@@ -100,12 +106,14 @@ def _merge_images(images, gz=True):
     gz - boolean
         save the file as a nifti_gz (True) or nifti (False)
     """
-    import os, nibabel
-    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
-    
+
+    import os
+    import nibabel as nib
+    from picnic.interfaces.utility import nibabel_image_types
+
     # open the image with nibabel
     dirname, filename = os.path.split(images[0])
-    for img_type in NIBABEL_IMAGE_TYPES:
+    for img_type in nibabel_image_types:
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break
@@ -122,6 +130,7 @@ def _merge_images(images, gz=True):
     
     return new_image_path
 
+
 def _create_bilateral_atlas(atlas, lookup_table, gz=True):
     """ a nipype function used to create a bilateral atlas for deterministic 
     atlases.
@@ -133,12 +142,16 @@ def _create_bilateral_atlas(atlas, lookup_table, gz=True):
     lookup_table - file-like str
         a lookup table json file that associates index to label
     """
-    import nibabel, numpy, json, os
-    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
-    
+
+    import os
+    import json
+    import numpy as np
+    import nibabel as nib
+    from picnic.interfaces.utility import nibabel_image_types
+
     # use nibabel to load the 3d image
     dirname, filename = os.path.split(atlas)
-    for img_type in NIBABEL_IMAGE_TYPES:
+    for img_type in nibabel_image_types:
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break
@@ -224,16 +237,19 @@ def _binarize_images(images, thr=None, uthr=None, gz=True):
     gz - boolean
         save the file as a nifti_gz (True) or nifti (False)
     """
-    import nibabel, numpy, os
-    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
-    
+
+    import os
+    import numpy as np
+    import nibabel as nib
+    from picnic.interfaces.utility import nibabel_image_types
+
     # error check if the images parameter is a string or list
     if isinstance(images, str):
         images = [images]
     
     # get the first file's name
     dirname, filename = os.path.split(images[0])
-    for img_type in NIBABEL_IMAGE_TYPES:
+    for img_type in nibabel_image_types:
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break
@@ -286,12 +302,14 @@ def _crop_image(in_file, crop_start=0, crop_end=0, gz=True):
     gz - boolean
         save the file as a nifti_gz (True) or nifti (False)
     """
-    import os, nibabel
-    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
-    
+
+    import os
+    import nibabel as nib
+    from picnic.interfaces.utility import nibabel_image_types
+
     # open the image with nibabel
     dirname, filename = os.path.split(in_file)
-    for img_type in NIBABEL_IMAGE_TYPES:
+    for img_type in nibabel_image_types:
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break
@@ -325,13 +343,15 @@ def _resample_image(source, target, gz=True):
     gz - boolean
         save the file as a nifti_gz (True) or nifti (False)
     """
-    import os, nibabel
+
+    import os
+    import nibabel as nib
     from nibabel.processing import resample_from_to
-    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
-    
+    from picnic.interfaces.utility import nibabel_image_types
+
     # open the image with nibabel
     dirname, filename = os.path.split(source)
-    for img_type in NIBABEL_IMAGE_TYPES:
+    for img_type in nibabel_image_types:
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break
@@ -349,7 +369,8 @@ def _resample_image(source, target, gz=True):
     nibabel.save(out_image, resampled_image)
     
     return resampled_image
-    
+
+
 def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, units='uci'):
     """ a nipype function used to create a tacs file based on an atlas and 4d
     image. 
@@ -374,13 +395,18 @@ def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, un
     atlas_side_car  - file-like str
         the filepath to the atlas' side car json
     """
-    import nibabel, numpy, json, pandas, os
+
+    import os
+    import json
+    import numpy as np
+    import pandas as pd
+    import nibabel as nib
     from nilearn.image import resample_to_img
-    NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
-    
+    from picnic.interfaces.utility import nibabel_image_types
+
     # read the basename
     dirname, filename = os.path.split(source)
-    for img_type in NIBABEL_IMAGE_TYPES:
+    for img_type in nibabel_image_types:
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break
@@ -723,9 +749,14 @@ def find_linear_tail_tac_aberrations(image_4d, json=None):
     import nibabel, numpy, os
     NIBABEL_IMAGE_TYPES = ('.nii', '.nii.gz', '.mgz', '.img', '.hdr')
     
+    import os
+    import numpy as np
+    import nibabel as nib
+    from picnic.interfaces.utility import nibabel_image_types
+    
     # read the basename
     dirname, filename = os.path.split(image_4d)
-    for img_type in NIBABEL_IMAGE_TYPES:
+    for img_type in nibabel_image_types:
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break

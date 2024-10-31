@@ -39,10 +39,10 @@ def _create_report(type_, in_files, additional_args=[]):
         basename - str
             name of the output filename
         """
-        # imports
-        import nibabel
+
         import os
-        
+        import nibabel as nib
+
         # load file
         image = nibabel.load(in_file)
         
@@ -110,13 +110,13 @@ def _create_report(type_, in_files, additional_args=[]):
         width - int
             number of pixels wide used in the report image
         """
-        # imports
-        import nibabel
-        import os
-        import numpy
-        from math import atan2, asin
+
+        import math
+        import numpy as np
+        import nibabel as nib
+
         from PIL import Image
-        
+
         # load the files
         base_image = nibabel.load(base_file)
         moco_image = nibabel.load(moco_file)
@@ -236,11 +236,10 @@ def _create_report(type_, in_files, additional_args=[]):
         width - int
             number of pixels wide used in the report image
         """
-        # imports
-        import nibabel
-        import os
-        from numpy import linspace
-        
+
+        import numpy as np
+        import nibabel as nib
+
         # load file
         base_image = nibabel.load(base_file)
         over_image = nibabel.load(over_file)
@@ -298,10 +297,9 @@ def _create_report(type_, in_files, additional_args=[]):
         width - int
             number of pixels wide used in the report image
         """
-        # imports
-        import os
-        import pandas
-        
+
+        import pandas as pd
+
         # load tacs file as a pandas dataset
         data = pandas.read_csv(tac_file, delimiter='\t', header=0, index_col=0)
         
@@ -356,12 +354,13 @@ def _create_report(type_, in_files, additional_args=[]):
         width - int
             width (in pixels) for the output image
         """
-        import tempfile
+
         import os
-        from numpy import linspace
-        from nilearn.plotting import plot_anat, plot_roi
+        import tempfile
+        import numpy as np
         from PIL import Image
-        
+        from nilearn.plotting import plot_anat, plot_roi
+
         # if the image is a 4d image, get the tmean
         image = force_3d_image(image)
         if overlay_image is not None:
@@ -453,12 +452,13 @@ def _create_report(type_, in_files, additional_args=[]):
         width - int
             width (in pixels) for the output image
         """
-        import tempfile
+
         import os
-        from numpy import mean
-        from nilearn.plotting import plot_anat
+        import tempfile
+        import numpy as np
         from PIL import Image
-        
+        from nilearn.plotting import plot_anat
+
         # if the image is a 4d image, get the tmean
         image = force_3d_image(image)
         
@@ -521,12 +521,14 @@ def _create_report(type_, in_files, additional_args=[]):
         width - int
             width (in pixels) for the output image
         """
-        # imports;
+
+        import os
         import tempfile
-        from numpy import min, max
+        import numpy as np
         import matplotlib.pyplot as plt
+
         from PIL import Image
-        
+
         # create a pyplot
         tmp_png = tempfile.TemporaryFile(suffix = '.png')
         fig, ax = plt.subplots(figsize = (9, 3))
@@ -600,12 +602,12 @@ def _create_report(type_, in_files, additional_args=[]):
         width - int
             width (in pixels) for the output image
         """
-        # imports
-        import tempfile
+
         import os
+        import tempfile
         import matplotlib.pyplot as plt
         from PIL import Image
-        
+
         # if selected plots are given, reduce the dataset
         title = 'All TACs'
         if len(selected_rois) > 0:
@@ -682,6 +684,7 @@ def _create_report(type_, in_files, additional_args=[]):
         fps - int
             frames per seconds
         """
+
         # if not provided, calculate the mosaic bounds
         if bounds is None:
             image3d = force_3d_image(image)
@@ -726,10 +729,10 @@ def _create_report(type_, in_files, additional_args=[]):
         fps - int
             frames per second
         """
-        # imports
+
         import os
         import glob
-        
+
         # from each image in the list, save it as a temporary image
         for idx, image in enumerate(images):
             image.save('_image_' + str(idx).zfill(4) + '.png')
@@ -779,9 +782,9 @@ def _create_report(type_, in_files, additional_args=[]):
         image - nibabel.Nifti1Image
             the nibabel image
         """
-        # imports
-        import numpy
-        
+
+        import numpy as np
+
         # isolate constants
         COORDS_IDX_KEY = {'x':0, 'y':1, 'z':2}
         COORDS_AXIS = {'x':(1, 2), 'y':(0, 2), 'z':(0, 1)}
@@ -829,6 +832,10 @@ def _create_report(type_, in_files, additional_args=[]):
         image - nibabel.Nifti1Image
             the nibabel image
         """
+
+        import numpy as np
+        import nibabel as nib
+
         # check the image dimensionality
         if len(image.shape) > 3:
             from numpy import mean
@@ -854,10 +861,10 @@ def _create_report(type_, in_files, additional_args=[]):
         upper_limit - float
             value between 0 and 100
         """
-        
+
         import math
-        import numpy
-        
+        import numpy as np
+
         image = force_3d_image(image)
         fdata = image.get_fdata()
         
@@ -871,7 +878,8 @@ def _create_report(type_, in_files, additional_args=[]):
             float_ - float (duh)
                 a value between 0. and 1.
             """
-            return math.sin(float_*math.pi/2.+math.pi/4.)
+
+            return math.sin(float_ * math.pi / 2. + math.pi / 4.)
         
         # create a 3d array of 1s, multiply that by the x vector function above
         #   then the y and z. This gives a 3d array where the innermost voxels 
@@ -901,10 +909,10 @@ def _create_report(type_, in_files, additional_args=[]):
         numy - int
             number of equally spaced horizontal lines
         """
-        # imports
+
+        import numpy as np
         from PIL import ImageDraw
-        from numpy import linspace
-        
+
         # draw lines
         w, h = image.size
         draw = ImageDraw.Draw(image)
