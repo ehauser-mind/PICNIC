@@ -249,10 +249,10 @@ def insert_parameters(inps, dox_file):
                 new_parameters[parameter_name] = df.loc[parameter_name][run]
             
             # write out the new input deck with the additional parameters
-            new_inp = '_'.join(
+            new_inp = '_'.join([
                 os.path.splitext(os.path.basename(inp))[0],
                 'run' + str(idx).zfill(len(str(number_of_runs))) + '.inp'
-            )
+            ])
             with open(new_inp, 'w') as g:
                 for line in all_lines:
                     _ = g.write(line + '\n')
