@@ -12,7 +12,9 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 
-from picnic.input_deck_reader import read_input_deck, make_card
+from picnic.input_deck_reader import read_input_deck
+from picnic.cards.card_builder import make_card
+
 
 # =======================================
 # Constants
