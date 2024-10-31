@@ -8,8 +8,8 @@ import logging
     # McflirtMocoWorkflow,
     # TwoStepMocoWorkflow
 # )
-from cards.card_builder import CardBuilder
-from workflows.motioncorrection_workflows import (
+from picnic.cards.card_builder import CardBuilder
+from picnic.workflows.motioncorrection_workflows import (
     FlirtMocoWorkflow,
     McflirtMocoWorkflow,
     TwoStepMocoWorkflow

@@ -3,7 +3,7 @@
 import copy
 import logging
 
-# from picnic.input_deck_reader import make_card
+from picnic.input_deck_reader import Card
 
 
 # =======================================

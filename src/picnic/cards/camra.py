@@ -4,8 +4,9 @@ import logging
 
 # from picnic.cards.card_builder import CardBuilder
 # from picnic.workflows.camra_workflows import LcfCamraWorkflow
-from cards.card_builder import CardBuilder
-from workflows.camra_workflows import LcfCamraWorkflow
+from picnic.cards.card_builder import CardBuilder
+from picnic.workflows.camra_workflows import LcfCamraWorkflow
+
 
 # =======================================
 # Constants

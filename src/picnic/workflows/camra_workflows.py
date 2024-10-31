@@ -12,9 +12,6 @@ from picnic.interfaces.io_nodes import _rename_image, _find_associated_sidecar, 
 from picnic.interfaces.nilearn_nodes import _create_report
 from picnic.interfaces.string_template_nodes import _fill_report_template
 from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
-from nipype.interfaces.fsl import (
-    IsotropicSmooth, MeanImage, FLIRT, ApplyXFM, BET
-)
 
 
 # =======================================

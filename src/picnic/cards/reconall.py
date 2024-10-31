@@ -5,8 +5,8 @@ import os
 
 # from picnic.cards.card_builder import CardBuilder
 # from picnic.workflows.reconall_workflows import (
-from cards.card_builder import CardBuilder
-from workflows.reconall_workflows import (
+from picnic.cards.card_builder import CardBuilder
+from picnic.workflows.reconall_workflows import (
     ExecuteReconallWorkflow,
     ReadReconallWorkflow
 )
