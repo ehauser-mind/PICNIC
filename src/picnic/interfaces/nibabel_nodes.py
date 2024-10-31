@@ -33,10 +33,12 @@ def _reorient_image(in_file, gz=True):
         if filename.endswith(img_type):
             basename = filename.replace(img_type, '')
             break
-    image = nib.load(in_file)
-    
+    orig_image = nib.load(in_file)
+    if orig_image is not None:
+        print(f"Loaded image for reorientation, shaped {orig_image.shape}")
+
     # grab the important image parameters
-    reornt_image = nib.funcs.as_closest_canonical(image, enforce_diag=True)
+    reornt_image = nib.funcs.as_closest_canonical(orig_image, enforce_diag=True)
     
     # save out the new image
     if gz:
