@@ -29,7 +29,7 @@ def _create_report(type_, in_files, additional_args=[]):
     def image_report(in_file, basename='image'):
         """
         wrap the necessary steps to create a report of *image
-        
+
         :Parameters:
           -. `in_file` : file-like str, the nibabel readable image file
           -. `basename` : str, name of the output filename
@@ -86,7 +86,7 @@ def _create_report(type_, in_files, additional_args=[]):
         width = 600
     ):
         """
-        wrap the necessary steps to create a report of *motion correction
+        Wrap the necessary steps to create a report of *motion correction
         
         :Parameters:
           -. `base_file` : file-like str, the nibabel readable image file
@@ -305,7 +305,7 @@ def _create_report(type_, in_files, additional_args=[]):
         width = STANDARD_WIDTH
     ):
         """
-        create a still picture of a brain image in a mosaic format
+        Create a still picture of a brain image in a mosaic format
         
         |----------------------|
         | [] [] [] [] [] [] [] | y
@@ -432,8 +432,7 @@ def _create_report(type_, in_files, additional_args=[]):
         if ortho_cuts is None:
             bounds = calculate_bounds(image)
             ortho_cuts = [np.mean(bounds[direction]) for direction in ['xyz']]
-        
-        
+
         # use nilearn's plot_anat to create each panel
         temp_panel = tempfile.TemporaryFile(suffix='.png')
         _ = plot_anat(
@@ -473,7 +472,7 @@ def _create_report(type_, in_files, additional_args=[]):
         width = STANDARD_WIDTH
     ):
         """
-        create pyplots for motion correction
+        Create pyplots for motion correction
         
         :Parameters:
           -. `t` : numpy array, x axis
@@ -487,6 +486,7 @@ def _create_report(type_, in_files, additional_args=[]):
         import tempfile
         import numpy as np
         import matplotlib.pyplot as plt
+
         from PIL import Image
 
         # create a pyplot
@@ -611,7 +611,7 @@ def _create_report(type_, in_files, additional_args=[]):
         fps = FRAMES_PER_SECOND
     ):
         """
-        create a movie based on stills from the create_png_mosaic function
+        Create a movie based on stills from the create_png_mosaic function
         
         |----------------------|
         | [] [] [] [] [] [] [] | y
@@ -631,6 +631,7 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `width` : int, width (in pixels) for the output image
           -. `fps` : int, frames per seconds
         """
+
         # if not provided, calculate the mosaic bounds
         if bounds is None:
             image3d = force_3d_image(image)
@@ -702,7 +703,7 @@ def _create_report(type_, in_files, additional_args=[]):
     # ============================================================ Calculations
     def calculate_bounds(image):
         """
-        use nibabel to calculate the cut coords bounds. Calculations are
+        Use nibabel to calculate the cut coords bounds. Calculations are
         done by:
         (a) finding the distribution over a single axis
         |   __
@@ -719,7 +720,7 @@ def _create_report(type_, in_files, additional_args=[]):
         | /|    \
         |/ |    |\
         ---*---*---
-            see the astriks
+            see the asterisks
         
         :Parameters:
           -. image : nibabel.Nifti1Image, the nibabel image
@@ -808,7 +809,7 @@ def _create_report(type_, in_files, additional_args=[]):
         def vector_function(float_):
             """
             used for numpy.vectorize
-            
+
             :Parameters:
               -. `float_` : float (duh), a value between 0. and 1.
             """
