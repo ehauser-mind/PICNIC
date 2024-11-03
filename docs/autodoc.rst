@@ -5,6 +5,6 @@
 Hello from PICNIC
 =================
 
-.. automodule:: hello_world
+.. automodule:: picnic
     :members:
     :undoc-members:
