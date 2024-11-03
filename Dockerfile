@@ -146,6 +146,7 @@ RUN apt-get update -qq \
            tcsh \
            xfonts-base \
            xvfb \
+           ffmpeg \
     && curl -sSL --retry 5 -o /tmp/multiarch.deb http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/multiarch-support_2.27-3ubuntu1.5_amd64.deb \
     && dpkg -i /tmp/multiarch.deb \
     && rm /tmp/multiarch.deb \
