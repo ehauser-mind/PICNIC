@@ -1,17 +1,17 @@
-.. PICNIC documentation main file, created by
-   sphinx-quickstart on Mon Oct 21 16:16:03 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
 PICNIC __VERSION__
 =======================================
 
+.. automodule:: picnic.run
+  :members:
+
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+  :maxdepth: 2
+  :caption: Contents:
 
-  autodoc
-
+  cards
+  workflows
+  reporting
 
 Indices and tables
 ==================
