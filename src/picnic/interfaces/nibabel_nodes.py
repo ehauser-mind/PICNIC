@@ -37,7 +37,9 @@ def _reorient_image(in_file, gz=True):
         print(f"Loaded image for reorientation, shaped {orig_image.shape}")
 
     # grab the important image parameters
-    reornt_image = nib.funcs.as_closest_canonical(orig_image, enforce_diag=True)
+    # TODO: Eric reports that having a non-diagonal affine breaks FLIRT.
+    #       I'm sure he's right, but I can't find any information, so I'll see what happens.
+    reornt_image = nib.funcs.as_closest_canonical(orig_image, enforce_diag=False)
     
     # save out the new image
     if gz:
