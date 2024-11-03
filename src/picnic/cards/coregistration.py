@@ -2,17 +2,16 @@
 # Imports
 import logging
 
-import UnexpectedSyntaxError
 from picnic.cards.card_builder import CardBuilder, make_card
-import flirt_coregistration
-import register_coregistration
+# import flirt_coregistration
+# import register_coregistration
 
 
 # =======================================
 # Constants
 AVAILABLE_TYPES = {
-    'flirt' : flirt_coregistration,
-    'register' : register_coregistration
+    'flirt' : None,  # flirt_coregistration,
+    'register' : None,  # register_coregistration
 }
 AVAILABLE_COSTS = {
     'flirt' : (
@@ -36,6 +35,13 @@ AVAILABLE_COSTS = {
 
 # =======================================
 # Classes
+
+class UnexpectedSyntaxError(Exception):
+    """ One more exception type """
+
+    pass
+
+
 class Coregistration(CardBuilder):
     """ A class to create the Coregistration module. Stored here will be 
     the nodes and connections of the coregistration type chosen.

@@ -141,7 +141,7 @@ class InputDeck():
 
 
 class Card():
-    """ An object storing all the relevant information for '*' cards
+    """ An object storing all the relevant information for '\*' cards
     
     Card expects a name and a tuple of parameters. The tuple can be empty
     
@@ -151,15 +151,16 @@ class Card():
     default where applicable.
     
     The public attributes that are important:
-        cardname - the name of the card; '*image'
+        cardname - the name of the card; '\*image'
         parameters - a dictionary of the parameters; {'para_key': 'para_val'}
         datalines - a nested list of the data lines for each card; 
         [['filepath'],['arg 1', 'arg 2']]
     
     Examples
     --------
-    >>> card = Card(*line.lower().split(','))  
+    >>> card = Card(*line.lower().split(','))
     """
+
     def __init__(self, cardname, *parameters):
         """
         Parameters
@@ -183,7 +184,8 @@ class Card():
         #  defined parameters
         default_parameters = self._load_defaults()
         self.parameters = dict(default_parameters, **self.parameters)
-        assert len(self.parameters) == len(default_parameters), 'Error: The optional parameter '+tuple(set(self.parameters.keys()).difference(default_parameters.keys()))[0] + ' is not supported for the card "' + self.cardname + '"'
+        assert len(self.parameters) == len(default_parameters),\
+            'Error: The optional parameter '+tuple(set(self.parameters.keys()).difference(default_parameters.keys()))[0] + ' is not supported for the card "' + self.cardname + '"'
         
         # initialize the dataline list
         self.datalines = []
