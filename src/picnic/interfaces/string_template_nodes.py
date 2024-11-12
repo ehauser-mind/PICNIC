@@ -12,12 +12,10 @@
 def _fill_report_template(html_template, parameters, basename='report'):
     """ fill out a standard template per keyword to create an easy to read html
     
-    Parameters
-    ----------
-    html_template - file-like str
-        the path to the template to be used
-    parameters - dict
-        {nipibipy optional parameter : associated value to said param}
+    :Parameters:
+      -. `html_template` : file-like str, the path to the template to be used
+      -. `parameters` : dict, {nipibipy optional parameter : associated value
+        to said param}
     """
     # imports
     from string import Template

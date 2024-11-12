@@ -13,16 +13,13 @@
 # =======================================
 # Nipype Specific Functions
 def _create_report(type_, in_files, additional_args=[]):
-    """ a function to hold all the reports
+    """
+    a function to hold all the reports
     
-    Parameters
-    ----------
-    type_ - str
-        the star keyword
-    in_files - list
-        a list of image files
-    additional_args - list
-        a list of additional_args
+    :Parameters:
+      -. `type_` : str, the star keyword
+      -. `in_files` : list, a list of image files
+      -. `additional_args` : list, a list of additional_args
     """
     # ============================================================== High Level
     STANDARD_WIDTH = 1120
@@ -30,14 +27,12 @@ def _create_report(type_, in_files, additional_args=[]):
     FRAMES_PER_SECOND = 4
     
     def image_report(in_file, basename='image'):
-        """ wrap the necessary steps to create a report of *image
+        """
+        wrap the necessary steps to create a report of *image
         
-        Parameters
-        ----------
-        in_file - file-like str
-            the nibabel readable image file
-        basename - str
-            name of the output filename
+        :Parameters:
+          -. `in_file` : file-like str, the nibabel readable image file
+          -. `basename` : str, name of the output filename
         """
         # imports
         import nibabel
@@ -93,22 +88,17 @@ def _create_report(type_, in_files, additional_args=[]):
         basename = 'motion_correction',
         width = 600
     ):
-        """ wrap the necessary steps to create a report of *motion correction
+        """
+        wrap the necessary steps to create a report of *motion correction
         
-        Parameters
-        ----------
-        base_file - file-like str
-            the nibabel readable image file
-        moco_file - file-like str
-            the nibabel readable image file
-        mats - None or list of file-like str
-            the list of transformation files
-        ref_frame - None or int
-            the reference frame
-        basename - str
-            name of the output filename
-        width - int
-            number of pixels wide used in the report image
+        :Parameters:
+          -. `base_file` : file-like str, the nibabel readable image file
+          -. `moco_file` : file-like str, the nibabel readable image file
+          -. `mats` : None or list of file-like str, the list of transformation
+            files
+          -. `ref_frame` : None or int, the reference frame
+          -. `basename` : str, name of the output filename
+          -. `width` : int,number of pixels wide used in the report image
         """
         # imports
         import nibabel
@@ -222,19 +212,14 @@ def _create_report(type_, in_files, additional_args=[]):
         basename = 'coregistration',
         width = STANDARD_WIDTH
     ):
-        """ wrap the necessary steps to create a report of *coregistration and 
-        camra
+        """
+        wrap the necessary steps to create a report of *coregistration and camra
         
-        Parameters
-        ----------
-        base_file - file-like str
-            the nibabel readable image file
-        over_file - file-like str
-            the nibabel readable image file
-        basename - str
-            name of the output filename
-        width - int
-            number of pixels wide used in the report image
+        :Parameters:
+          -. `base_file` : file-like str, the nibabel readable image file
+          -. `over_file` : file-like str, the nibabel readable image file
+          -. `basename` : str, name of the output filename
+          -. `width` : int, number of pixels wide used in the report image
         """
         # imports
         import nibabel
@@ -285,18 +270,14 @@ def _create_report(type_, in_files, additional_args=[]):
         basename = 'tacs',
         width = STANDARD_WIDTH
     ):
-        """ wrap the necessary steps to create a report of *tacs
+        """
+        wrap the necessary steps to create a report of *tacs
         
-        Parameters
-        ----------
-        tac_file - file-like str
-            the nibabel readable image file
-        units - str
-            'uci' or 'Bq'
-        basename - str
-            name of the output filename
-        width - int
-            number of pixels wide used in the report image
+        :Parameters:
+          -. `tac_file` : file-like str, the nibabel readable image file
+          -. `units` : str, 'uci' or 'Bq'
+          -. `basename` : str, name of the output filename
+          -. `width` : int, number of pixels wide used in the report image
         """
         # imports
         import os
@@ -328,7 +309,8 @@ def _create_report(type_, in_files, additional_args=[]):
         opacity = 0.7,
         width = STANDARD_WIDTH
     ):
-        """ create a still picture of a brain image in a mosaic format
+        """
+        create a still picture of a brain image in a mosaic format
         
         |----------------------|
         | [] [] [] [] [] [] [] | y
@@ -336,25 +318,17 @@ def _create_report(type_, in_files, additional_args=[]):
         | [] [] [] [] [] [] [] | z
         |----------------------|
         
-        Parameters
-        ----------
-        image - nibabel.Nifti1Image
-            the nibabel image
-        basename - str or None
-            the base for the png filename. If None do not create png, return
-            the Image obj
-        bounds - dict or None
-            {'x' : [float(lower bound), float(upper bound), 'y' :...}
-        cmap - str
-            the colormap. Only tested with 'gray' and 'jet'
-        vmin - float
-            the min value for the colormap
-        vmax - float
-            the max value for the colormap
-        n_cuts - int
-            the number of stills in a panel
-        width - int
-            width (in pixels) for the output image
+        :Parameters:
+          -. `image` : nibabel.Nifti1Image, the nibabel image
+          -. `basename` : str or None, the base for the png filename. If None
+            do not create png, return the Image obj
+          -. `bounds` : dict or None, {'x' : [float(lower bound), float(upper
+            bound), 'y' :...}
+          -. `cmap` : str, the colormap. Only tested with 'gray' and 'jet'
+          -. `vmin` : float, the min value for the colormap
+          -. `vmax` : float, the max value for the colormap
+          -. `n_cuts` : int, the number of stills in a panel
+          -. `width` : int, width (in pixels) for the output image
         """
         import tempfile
         import os
@@ -436,22 +410,17 @@ def _create_report(type_, in_files, additional_args=[]):
         vmax = None,
         width = STANDARD_WIDTH,
     ):
-        """ use nilearn create ortho images
+        """
+        use nilearn create ortho images
         
-        image - nibabel.Nifti1Image
-            the nibabel image
-        ortho_cuts - list
-            a list of the cuts [x, y, z]
-        basename - str
-            the base for the png filename
-        cmap - str
-            the colormap. Only tested with 'gray' and 'jet'
-        vmin - float
-            the min value for the colormap
-        vmax - float
-            the max value for the colormap
-        width - int
-            width (in pixels) for the output image
+        :Parameters:
+          -. `image` : nibabel.Nifti1Image, the nibabel image
+          -. `ortho_cuts` : list, a list of the cuts [x, y, z]
+          -. `basename` : str, the base for the png filename
+          -. `cmap` : str, the colormap. Only tested with 'gray' and 'jet'
+          -. `vmin` : float, the min value for the colormap
+          -. `vmax` : float, the max value for the colormap
+          -. `width` : int, width (in pixels) for the output image
         """
         import tempfile
         import os
@@ -506,20 +475,15 @@ def _create_report(type_, in_files, additional_args=[]):
         labels = ['x', 'y', 'z'],
         width = STANDARD_WIDTH
     ):
-        """ create pyplots for motion correction
+        """
+        create pyplots for motion correction
         
-        Parameters
-        ----------
-        t - numpy array
-            x axis
-        dofs - numpy array
-            an array of dofs (x, y, z or rx, ry, rz)
-        frame - int
-            denote which frame we are looking at
-        ref_frame -int or None
-            denote the reference frame
-        width - int
-            width (in pixels) for the output image
+        :Parameters:
+          -. `t` : numpy array, x axis
+          -. `dofs` : numpy array, an array of dofs (x, y, z or rx, ry, rz)
+          -. `frame` : int, denote which frame we are looking at
+          -. `ref_frame` :int or None, denote the reference frame
+          -. `width` : int, width (in pixels) for the output image
         """
         # imports;
         import tempfile
@@ -585,20 +549,15 @@ def _create_report(type_, in_files, additional_args=[]):
         selected_rois = [],
         width = STANDARD_WIDTH
     ):
-        """ use matplotlib to plot all the tacs
+        """
+        use matplotlib to plot all the tacs
         
-        Parameters
-        ----------
-        dataframe - pandas.DataFrame
-            the table for tacs
-        basename - str
-            the base for the mp4 filename
-        units - str
-            'uci' or 'Bq'
-        selected_rois - list
-            a list of roi strings to plot
-        width - int
-            width (in pixels) for the output image
+        :Parameters:
+          -. `dataframe` : pandas.DataFrame, the table for tacs
+          -. `basename` : str, the base for the mp4 filename
+          -. `units` : str, 'uci' or 'Bq'
+          -. `selected_rois` : list, a list of roi strings to plot
+          -. `width` : int, width (in pixels) for the output image
         """
         # imports
         import tempfile
@@ -653,7 +612,8 @@ def _create_report(type_, in_files, additional_args=[]):
         width = STANDARD_WIDTH,
         fps = FRAMES_PER_SECOND
     ):
-        """ create a movie based on stills from the create_png_mosaic function
+        """
+        create a movie based on stills from the create_png_mosaic function
         
         |----------------------|
         | [] [] [] [] [] [] [] | y
@@ -661,26 +621,17 @@ def _create_report(type_, in_files, additional_args=[]):
         | [] [] [] [] [] [] [] | z
         |----------------------|
         
-        Parameters
-        ----------
-        image - nibabel.Nifti1Image
-            the nibabel image
-        basename - str
-            the base for the mp4 filename
-        bounds - dict or None
-            {'x' : [float(lower bound), float(upper bound), 'y' :...}
-        cmap - str
-            the colormap. Only tested with 'gray' and 'jet'
-        vmin - float
-            the min value for the colormap
-        vmax - float
-            the max value for the colormap
-        n_cuts - int
-            the number of stills in a panel
-        width - int
-            width (in pixels) for the output image
-        fps - int
-            frames per seconds
+        :Parameters:
+          -. `image` : nibabel.Nifti1Image, the nibabel image
+          -. `basename` : str, the base for the mp4 filename
+          -. `bounds` : dict or None, {'x' : [float(lower bound), float(upper
+            bound), 'y' :...}
+          -. `cmap` : str, the colormap. Only tested with 'gray' and 'jet'
+          -. `vmin` : float, the min value for the colormap
+          -. `vmax` : float, the max value for the colormap
+          -. `n_cuts` : int, the number of stills in a panel
+          -. `width` : int, width (in pixels) for the output image
+          -. `fps` : int, frames per seconds
         """
         # if not provided, calculate the mosaic bounds
         if bounds is None:
@@ -715,16 +666,13 @@ def _create_report(type_, in_files, additional_args=[]):
         output_filename,
         fps=FRAMES_PER_SECOND
     ):
-        """ create a movie from a list of Image objects
+        """
+        create a movie from a list of Image objects
         
-        Parameters
-        ----------
-        image_list - list of Images
-            list of mosaic images
-        output_filename - string
-            must be a movie file type (.mp4)
-        fps - int
-            frames per second
+        :Parameters:
+          -. `image_list` : list of Images, list of mosaic images
+          -. `output_filename` : str, must be a movie file type (.mp4)
+          -. `fps` : int, frames per second
         """
         # imports
         import os
@@ -755,7 +703,8 @@ def _create_report(type_, in_files, additional_args=[]):
     
     # ============================================================ Calculations
     def calculate_bounds(image):
-        """ use nibabel to calculate the cut coords bounds. Calculations are 
+        """
+        use nibabel to calculate the cut coords bounds. Calculations are 
         done by:
         (a) finding the distribution over a single axis
         |   __
@@ -774,10 +723,8 @@ def _create_report(type_, in_files, additional_args=[]):
         ---*---*---
             see the astriks
         
-        Parameters
-        ----------
-        image - nibabel.Nifti1Image
-            the nibabel image
+        :Parameters:
+          -. image : nibabel.Nifti1Image, the nibabel image
         """
         # imports
         import numpy
@@ -822,12 +769,11 @@ def _create_report(type_, in_files, additional_args=[]):
         return bounds
     
     def force_3d_image(image):
-        """ check if the image is a 4d image. If it is, time average the data
+        """
+        check if the image is a 4d image. If it is, time average the data
         
-        Parameters
-        ----------
-        image - nibabel.Nifti1Image
-            the nibabel image
+        :Parameters:
+          -. `image` : nibabel.Nifti1Image, the nibabel image
         """
         # check the image dimensionality
         if len(image.shape) > 3:
@@ -842,19 +788,16 @@ def _create_report(type_, in_files, additional_args=[]):
         return image
     
     def calculate_colormap_limits(image, upper_limit=UPPER_COLORMAP_LIMIT):
-        """ calculate the colormap's limits by:
+        """ 
+        calculate the colormap's limits by:
         (a) weighting the voxels closest to the center
         (b) set the lower bound to 0. and the upper bound to a value in the 
         upper_limit-th percentile
         
-        Parameters
-        ----------
-        image - nibabel.Nifti1Image
-            the nibabel image
-        upper_limit - float
-            value between 0 and 100
+        :Parameters:
+          -. `image` : nibabel.Nifti1Image, the nibabel image
+          -. `upper_limit` : float, value between 0 and 100
         """
-        
         import math
         import numpy
         
@@ -864,12 +807,11 @@ def _create_report(type_, in_files, additional_args=[]):
         # let's create a vectorizing function as a nested function. This will 
         #   make 0 -> root(2)/2  |  0.5 -> 1.0  |  1.0 -> root(2)/2
         def vector_function(float_):
-            """ used for numpy.vectorize
+            """
+            used for numpy.vectorize
             
-            Parameters
-            ----------
-            float_ - float (duh)
-                a value between 0. and 1.
+            :Parameters:
+              -. `float_` : float (duh), a value between 0. and 1.
             """
             return math.sin(float_*math.pi/2.+math.pi/4.)
         
@@ -889,17 +831,14 @@ def _create_report(type_, in_files, additional_args=[]):
         return (0., numpy.percentile(wght_fdata[wght_fdata > 0.], upper_limit))
     
     def draw_lines_on_image(image, numx, numy):
-        """ draw orthogonal lines over top an Image obj. I don't really see a 
-        use case outside of motion correction.
+        """
+        draw orthogonal lines over top an Image obj. I don't really see a use
+        case outside of motion correction.
         
-        Parameters
-        ----------
-        image - Image obj
-            the image
-        numx - int
-            number of equally spaced vertical lines
-        numy - int
-            number of equally spaced horizontal lines
+        :Parameters:
+          -. `image` : Image obj, the image
+          -. `numx` : int, number of equally spaced vertical lines
+          -. `numy` : int, number of equally spaced horizontal lines
         """
         # imports
         from PIL import ImageDraw

@@ -6,13 +6,22 @@ import os
 import PySimpleGUI as sg
 import base64
 import tempfile
+import glob
+import importlib
 from io import BytesIO
+from pathlib import Path
 
-from PIL import Image
-from PIL import ImageDraw
-from PIL import ImageFont
+from PIL import (
+    Image,
+    ImageDraw,
+    ImageFont
+)
 
-from picnic.input_deck_reader import read_input_deck, make_card
+# from picnic.input_deck_reader import read_input_deck, make_card
+from input_deck_reader import (
+    read_input_deck,
+    make_card
+)
 
 # =======================================
 # Constants
@@ -50,13 +59,10 @@ THEME_IDX = 0
 PADDING = 4
 CARD_SIZE = (780, 116)
 
-CARD_INSTANCES = (
-    'import',
-    'reconall',
-    'motion correction',
-    'camra',
-    'tacs',
-    'sink'
+DEFAULT_JSONS_PATH = os.path.join(
+    Path(__file__).parent.absolute(),
+    'cards',
+    'default_parameters'
 )
 
 FOOTER_BUTTON_SIZE = (17, 2)
@@ -65,58 +71,50 @@ FOOTER_BUTTON_SIZE = (17, 2)
 # Classes
 class Deck():
     def __init__(self):
-        '''
-        Parameters
-        ----------
+        """
+        :Parameters:
             (none)
-        '''
+        """
         self.cards = []
         self.variables = {}
     
-    def can_remove_card(self):
-        '''
-        Parameters
-        ----------
-            (none)
-        '''
-        return (len(self.cards) > 0)
-    
     def add_card(self, card):
-        '''
-        Parameters
-        ----------
-        card - input_deck_reader.Card obj
-            the card that should be added to the deck
-        '''
+        """
+        add a new card to the input deck
+
+        :Parameters:
+          -. `card` : input_deck_reader.Card obj, a picnic-like card
+        """
         self.cards.append(card)
     
+    def can_remove_card(self):
+        """
+        a boolean on whether a card CAN be removed
+        """
+        return (len(self.cards) > 0)
+    
     def remove_card(self, idx):
-        '''
-        Parameters
-        ----------
-        idx - int
-            the index of the card to be removed
-        '''
+        """
+        :Parameters:
+          -. `idx` : int, the integer of card to be removed
+        """
         if self.can_remove_card:
             del self.cards[idx]
     
     def clear_cards(self):
-        '''
-        Parameters
-        ----------
-            (none)
-        '''
+        """
+        delete all the cards
+        """
         self.cards = []
     
     def build_graph_element(self, graph, depressed=-1):
-        '''
-        Parameters
-        ----------
-        graph - PySimpleGUI.Graph element
-            the graph that should be drawn on
-        depressed - int
-            if the user is clicking on a button, change its colors
-        '''
+        """
+        build the canvas for which to draw
+
+        :Parameters:
+          -. `graph` : PySimpleGUI.Graph element, the graph to be drawn on
+          -. `depressed` : int, clicking on a button changes the color
+        """
         # clear the graph
         graph.erase()
         
@@ -145,16 +143,31 @@ class Deck():
             draw = ImageDraw.Draw(img)
             
             # create font for the card name/instance name
-            boldfont = ImageFont.truetype('arialbd.ttf', size=36)
+            try:
+                font = ImageFont.truetype('Arial.ttf', size=36)
+            except OSError:
+                font = ImageFont.truetype('arial.ttf', size=36)
+
+            try:
+                card_text = card.cardname + ' - ' + card.parameters['name']
+            except KeyError:
+                card_text = card.cardname
+
             draw.text(
                 (0, 24),
-                text = card.cardname + ' - ' + card.parameters['name'],
-                font = boldfont,
-                fill = text_color
+                text = card_text,
+                font = font,
+                fill = text_color,
+                stroke_width = 1,
+                stroke_fill = text_color
             )
             
             # create text for the dataline font
-            font = ImageFont.truetype('arial.ttf', size=24)
+            try:
+                font = ImageFont.truetype('Arial.ttf', size=24)
+            except OSError:
+                font = ImageFont.truetype('arial.ttf', size=24)
+
             if not card.datalines:
                 txt = 'Select file'
             else:
@@ -168,8 +181,8 @@ class Deck():
                 txt = ', '.join(dl)
             draw.text(
                 (24, 72),
-                text=txt,
-                font=font,
+                text = txt,
+                font = font,
                 fill = text_color
             )
             
@@ -194,7 +207,8 @@ class Deck():
         return graph
     
     def check_for_variables(self):
-        """ check if there are any variables in the parameters or datalines
+        """
+        check if there are any variables in the parameters or datalines
         """
         for card in self.cards:
             # loop over all the datalines to look for variables
@@ -223,9 +237,10 @@ class Deck():
                     
             
     def satisy_variables(self):
-        ''' check all the cards for variables and create a window to prompt the
+        """
+        check all the cards for variables and create a window to prompt the
         user to satisy those unfilled variables
-        '''
+        """
         self.check_for_variables()
         new_variables = create_variable_window(self.variables)
         if not new_variables is None:
@@ -234,12 +249,18 @@ class Deck():
 # =======================================
 # Functions
 def create_main_window(deck, theme, window=None):
-    ''' create the main window
-    '''
+    """
+    create the main window
+
+    :Parameters:
+      -. `deck` : input_deck_reader.InputDeck obj, a picnic input deck
+      -. `theme` : str, a PySimpleGUI default color
+      -. `window` : PySimpleGUI.Window, if one already exists, overwrite it
+    """
     # set the theme, this can be changed from the menubar
     sg.theme(theme)
     
-    '''
+    """
     create a layout that looks like:
     +---------------------------------------------+
     | Settings                                    |
@@ -258,7 +279,7 @@ def create_main_window(deck, theme, window=None):
     |                                             |
     |   [load ] [ add ] [clear] [save ] [ run ]   |
     +---------------------------------------------+
-    '''
+    """
     # this graph element is where all the cards show up
     h = 20 + (len(deck.cards) * (CARD_SIZE[1] + PADDING))
     graph = sg.Graph(
@@ -351,9 +372,10 @@ def create_main_window(deck, theme, window=None):
     return (window_, graph)
     
 def load_cards_from_input_deck():
-    ''' create a new window to ask the user to pick an input deck, read that 
-    input deck and export the cards to assembled deck
-    '''
+    """
+    create a new window to ask the user to pick an input deck, read that input
+    deck and export the cards to assembled deck
+    """
     # create a gui window to load an input deck based on a file
     layout = [
         [
@@ -375,14 +397,15 @@ def load_cards_from_input_deck():
         return inp.cards
     
 def add_card_manually():
-    ''' add cards manually
-    '''
+    """
+    add cards manually
+    """
     # create a gui window to add a card to the existing workflow
     layout = [
         [
             sg.T('Add Preprocessing Step'),
             sg.Combo(
-                CARD_INSTANCES,
+                list(get_card_list(DEFAULT_JSONS_PATH).keys()),
                 key = '-COMBO-'
             )
         ],
@@ -401,8 +424,13 @@ def add_card_manually():
         return card
     
 def save_input_deck(deck, filename):
-    ''' save of the created pipeline/workflow
-    '''
+    """
+    save of the created pipeline/workflow
+    
+    :Parameters:
+      -. `deck` : input_deck_reader.InputDeck obj, a picnic input deck
+      -. `filename` : file-like str, the filename/path to to save
+    """
     with open(filename, 'w') as f:
         _ = f.write('*start\n')
         _ = f.write('  *sink\n')
@@ -417,9 +445,13 @@ def save_input_deck(deck, filename):
         _ = f.write('*end')
         
 def show_parameters(card):
-    ''' create a window to display the parameters and datalines for the 
-    selected card
-    '''
+    """
+    create a window to display the parameters and datalines for the selected
+    card
+    
+    :Parameters:
+      -. `card` : input_deck_reader.Card, an input deck card
+    """
     # create the parameters column
     parameter_column = []
     for parameter in card.parameters.keys():
@@ -482,10 +514,12 @@ def show_parameters(card):
         ]
     ]
     
+    # create a window based on the layout just created
     window = sg.Window('Preprocessing Step Details').Layout(layout)
     while True:
         event, values = window.read()
         
+        # when pressing OK, save the parameters and datalines
         if event == 'OK':
             parameters = {}
             datalines = []
@@ -499,7 +533,8 @@ def show_parameters(card):
             window.Close()
             
             return (parameters, [[d] for d in datalines])
-            
+        
+        # add a dataline
         elif event == '-ADDDL-':
             idx += 1
             window.extend_layout(
@@ -512,17 +547,23 @@ def show_parameters(card):
                 ]
             )
         
+        # cancel creating this card
         elif event == 'Cancel':
             window.Close()
             return (None, None)
         
+        # delete the card
         elif event == '-DELETE-':
             window.Close()
             return ('DELETE', None)
     
 def create_variable_window(variables):
-    ''' create a window to display the variable keys and the associated values
-    '''
+    """
+    create a window to display the variable keys and the associated values
+    
+    :Parameters:
+      -. `variables` : dict, variable keys
+    """
     # build the layout
     layout = []
     for key in variables.keys():
@@ -544,10 +585,12 @@ def create_variable_window(variables):
         ]
     )
     
+    # create a window based on the layout just created
     window = sg.Window('Variable Associations').Layout(layout)
     while True:
         event, values = window.read()
         
+        # when pressing OK, save the variables
         if event == 'OK':
             new_variables = {}
             for key in values.keys():
@@ -563,7 +606,38 @@ def create_variable_window(variables):
             window.Close()
             return None
     
+def get_card_list(folder_path=DEFAULT_JSONS_PATH, extension='.json'):
+    """
+    return a list of cards found in the `cards.default_parameters`
+    sub-directory. We use this to determine which instances steps will be
+    loaded.
     
+    :Parameters:
+      -. `folder_path` : a file-like string, the path to find the json files
+      -. `extension` : a string, the file type to search for the cards
+    
+    :Return:
+      -. a dictionary, cards and their associated picnic classes
+    """
+    # {key = 'card name' : val = CardName obj}
+    # example {'camra' : picnic.cards.camra.Camra}
+    card_instance_legend = {}
+    
+    # get all the jsons in the default parameters folder
+    all_jsons = glob.glob(os.path.join(folder_path, '*' + extension))
+    for json_ in all_jsons:
+        card_name = os.path.basename(json_).replace(extension, '').replace('_', ' ')
+        module_ = importlib.import_module(
+            # '.'.join(('picnic', 'cards', card_name.replace(' ', '_')))
+            '.'.join(('cards', card_name.replace(' ', '_')))
+        )
+        card_instance_legend[card_name] = getattr(
+            module_,
+            ''.join([s.capitalize() for s in card_name.split(' ')])
+        )
+    
+    return card_instance_legend
+
 # =======================================
 # Main
 if __name__ == '__main__':

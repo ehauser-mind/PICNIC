@@ -2553,26 +2553,27 @@
         anat_params["radiological"] = true;
         anat_params["images"] = [
             "./T1.nii.gz",
-            "./brainmask.nii.gz",
             "./bilateral_wmparc.nii.gz",
+            "./wholebrain_mask.nii.gz",
+            "./gm_mask.nii.gz",
             "./wm_mask.nii.gz",
-            "./gm_mask.nii.gz"
+            "./wm_mask.nii.gz",
+            "./subcortical_mask.nii.gz",
+            "./ventricle_mask.nii.gz",
         ];
-        anat_params["brainmask.nii.gz"] = {"lut": "Red Overlay", "alpha": 0.50};
         anat_params["bilateral_wmparc.nii.gz"] = {"min": 0, "max": 3000, "alpha": 0.50, lut: new FreesurferLUT()}
-        anat_params["wm_mask.nii.gz"] = {"lut": "Blue Overlay", "alpha": 0.50};
+        anat_params["brainmask.nii.gz"] = {"lut": "Red Overlay", "alpha": 0.50};
         anat_params["gm_mask.nii.gz"] = {"lut": "Green Overlay", "alpha": 0.50};
+        anat_params["wm_mask.nii.gz"] = {"lut": "Blue Overlay", "alpha": 0.50};
+        anat_params["subcortical_mask.nii.gz"] = {"lut": "Yellow Overlay", "alpha": 0.50};
+        anat_params["ventricle_mask.nii.gz"] = {"lut": "Pink Overlay", "alpha": 0.50};
     </script>
 <title>Reconall Report</title>
   </head>
   <body>
     <H1>Reconall Report</H1>
       <H2>Parameters</H2>
-        <ul>
-          <li>status = ${status}</li>
-          <li>execution type = ${execution_type}</li>
-          <li>hippocampal subfields = ${hippo_subfields}</li>
-        </ul>
+${parameters}
       <H2>T1 Overlays</H2>
         <div style="width:800px; height: 600px;">
           <div class="papaya" data-params="anat_params"></div>

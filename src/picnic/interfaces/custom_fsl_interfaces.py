@@ -18,28 +18,23 @@ from nipype.interfaces.fsl.base import FSLCommand, FSLCommandInputSpec
 # =======================================
 # Classes
 class ApplyXfm4DInputSpec(FSLCommandInputSpec):
-    """ Inputs for the applyxfm4d API
+    """
+    inputs for the applyxfm4d API
     
-    Parameters
-    ----------
-    in_file - file-like str
-        the file to apply the transform to
-    ref_vol - file-like str
-        a reference file to determine the FOV and resolution
-    out_file - str
-        name the output file
-    xfm_file - file-like str
-        the name of the single transformation file to apply
-    xfm_dir - file-like str
-        the directory name of where the transformation matrices are located
-    single_matrix - boolean
-        describe whether to use the singlematrix option, mutually exclusive 
-        with four_digit
-    four_digit - boolean
-        describe whether to use the fourdigit option, mutually exclusive with 
-        single_matrix
-    user_prefix - str
-        define a prefix if mats don't start with MAT
+    :Parameters:
+      -. `in_file` : file-like str, the file to apply the transform to
+      -. `ref_vol` : file-like str, a reference file to determine the FOV and
+        resolution
+      -. `out_file` : str, name the output file
+      -. `xfm_file` : file-like str, the name of the single transformation file
+        to apply
+      -. `xfm_dir` : file-like str, the directory name of where the
+        transformation matrices are located
+      -. `single_matrix` - boolean, describe whether to use the singlematrix
+        option, mutually exclusive with four_digit
+      -. `four_digit` : boolean, describe whether to use the fourdigit option,
+        mutually exclusive with single_matrix
+      -. `user_prefix` : str, define a prefix if mats don't start with MAT
     """
     # define the file inputs
     in_file = File(
@@ -99,17 +94,18 @@ class ApplyXfm4DInputSpec(FSLCommandInputSpec):
 
 
 class ApplyXfm4DOutputSpec(TraitedSpec):
-    """ Outputs for the applyxfm4d API
+    """
+    outputs for the applyxfm4d API
     
-    out_file - file-like str
-        path/name of the transformed file
+    :Attributes:
+      -. `out_file` : file-like str, path/name of the transformed file
     """
     out_file = File(desc='path/name of transformed file')
 
 
 class ApplyXfm4D(FSLCommand):
     """
-    Wraps the applyxfm4D command line tool for applying fsl transformation 
+    wraps the applyxfm4D command line tool for applying fsl transformation 
     matrices to 4D images. This command allows the application of a single 3D 
     matrix to all volumes in the 4D image OR a directory of 3D transforms to a 
     4D image of the same length.
@@ -120,7 +116,7 @@ class ApplyXfm4D(FSLCommand):
     >>>
     >>> applyxfm = ApplyXfm4D()
     >>> applyxfm.inputs.in_file = 'pet.nii'
-    >>> applyxfm.inputs.ref_vol = 'pet.nii'
+    >>> applyxfm.inputs.ref_vol = 'ref.nii'
     >>> applyxfm.inputs.four_digit = True
     >>> applyxfm.inputs.xfm_dir = 'test/'
     >>> result = applyxfm.run() # doctest: +SKIP
@@ -131,7 +127,8 @@ class ApplyXfm4D(FSLCommand):
     output_spec = ApplyXfm4DOutputSpec
     
     def _gen_outfilename(self):
-        """ create the out file name
+        """
+        create the out file name
         """
         out_file = self.inputs.out_file
         if not isdefined(out_file) and isdefined(self.inputs.in_file):
@@ -139,16 +136,16 @@ class ApplyXfm4D(FSLCommand):
         return os.path.abspath(out_file)
     
     def _list_outputs(self):
-        """ list all the outputs
-        
-        out_file - the output filename
+        """
+        list all the outputs
         """
         outputs = self.output_spec().get()
         outputs['out_file'] = self._gen_outfilename()
         return outputs
 
     def _gen_filename(self, name):
-        """ generate a filename
+        """
+        generate a filename
         """
         if name == 'out_file':
             return self._gen_outfilename()

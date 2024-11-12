@@ -1,6 +1,8 @@
 # =======================================
 # Imports
 import logging
+import glob
+import os
 
 # from picnic.cards.card_builder import CardBuilder
 # from picnic.workflows.motioncorrection_workflows import (
@@ -68,10 +70,8 @@ class MotionCorrection(CardBuilder):
     """
     def __init__(self, card=None, **kwargs):
         """
-        Parameters
-        ----------
-        card   : a Card obj, iterable or str
-            The motion correction card
+        :Parameters:
+          -. `card` : a Card obj, must contain Tacs parameters
         """
         self.cardname = 'motion correction'
         self.card = card
@@ -85,34 +85,49 @@ class MotionCorrection(CardBuilder):
         )
         
         # workflow standard attributes
-        self.inflows = {'in_files' : [self._datalines[0][0]]}
+        self.inflows = {'in_file' : self._datalines[0][0]}
         if self._ct:
-            self.inflows['in_files'].append(self._datalines[1][0])
+            self.inflows['ct'] = self._datalines[1][0]
+        self.outflows = {}
+        self.set_outflows()
+    
+    def set_outflows(self, sink_directory=''):
+        """
+        change the outflows to include the sink directory and change instance
+        calls, to file-like strings
+        """
+        self.outflows = {
+            'out_file' : os.path.join(
+                sink_directory,
+                self._name,
+                self._name + '.nii.gz'
+            ),
+            'mats' : glob.glob(
+                os.path.join(
+                    sink_directory,
+                    self._name,
+                    'MAT*'
+                )
+            )
+        }
     
     def build_workflow(self, sink_directory='', **optional_parameters):
-        """ build the nipype workflow, this is the core functionality of this class
+        """
+        build the nipype workflow, this is the core functionality of this class
         """
         # if the user has given some custom parameters, use those instead
         params = self._user_defined_parameters(**optional_parameters)
+        params['name'] = self._name
+        
+        # set the outflows
+        if not sink_directory:
+            sink_directory = os.getcwd()
         
         # Standard reconall workflow goes:
-        #   1) either
-        #       a) read in an existing freesurfer file
-        #       b) run recon-all on a set of images
-        #   2) create a report
+        #   1) reorient the 4d image
+        #   2) do frame base registration
+        #   3) create a report
         return AVAILABLE_TYPES[params['_type']](
-            {
-                'name' : self._name,
-                'ref_vol' : params['_ref_vol'],
-                'smooth' : params['_smooth'],
-                'crop_start' : params['_crop_start'],
-                'crop_end' :params['_crop_end'],
-                'cost' : params['_cost'],
-                'mean' : params['_mean'],
-                'search_angle' : params['_search_angle'],
-                'celtc' : params['_celtc'],
-                'ct' : params['_ct'],
-                'report' : params['_report']
-            },
-            self.inflows['in_files']
+            params,
+            self.inflows
         ).build_workflow(sink_directory)

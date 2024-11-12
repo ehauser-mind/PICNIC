@@ -7,7 +7,6 @@ import glob
 import nibabel as nib
 import numpy as np
 
-from scipy import stats
 from nipype import Function
 from nipype.interfaces.utility import Merge, Select
 from nipype.interfaces.spm import Coregister, Segment
@@ -1005,7 +1004,10 @@ def _move_source(source, target):
     target - file-like str
         filepath of the target
     """
-
+    import nibabel as nib
+    import os
+    import numpy as np
+    
     # load target
     target_image = nib.load(target)
     target_center = (
@@ -1048,7 +1050,8 @@ def _create_schedules(in_file, filename='lcf_schedule.txt'):
     filename - str
         the name of the schedule file
     """
-
+    import os
+    
     # get the names
     dirname, filename = os.path.split(in_file)
     basename = filename.split('.')[0]
@@ -1078,7 +1081,9 @@ def _read_lowest_cost(cost_files, coregistered_files=None, rank=1):
     rank - int
         the rank of the cost files to use (default is 1)
     """
-
+    import os
+    from scipy import stats
+    
     # loop over all the cost files from flirt schedule
     all_costs = []
     for c in cost_files:
@@ -1106,7 +1111,11 @@ def _grab_flirt_transforms(in_mat_files, crop_start, original_image):
         the original, un-motion corrected image. This determines how many frames
         we need
     """
-
+    import os
+    import nibabel as nib
+    import shutil
+    import glob
+    
     # if tuple, force to be list
     if not isinstance(in_mat_files, list):
         in_mat_files = [in_mat_files]

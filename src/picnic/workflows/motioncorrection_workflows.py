@@ -5,6 +5,7 @@ import os
 import shutil
 import glob
 import nibabel as nib
+from pathlib import Path
 
 from nipype import Function
 from nipype.interfaces.utility import Merge
@@ -26,7 +27,7 @@ from interfaces.string_template_nodes import _fill_report_template
 # =======================================
 # Constants
 REPORT_TEMPLATE_PATH = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), 
+    Path(__file__).parent.absolute(),
     'report_templates',
     'motion_correction_template.html'
 )
@@ -303,8 +304,8 @@ class FlirtMocoWorkflow(MotionCorrectionWorkflow):
         inflows - list
             list of file-like strs
         """
-        super().__init__(params, {'in_file' : inflows[0]})
-        self.params['type'] = 'flirt'
+        params['type'] = 'flirt'
+        super().__init__(params, inflows)
     
     def motion_correct(self):
         """ use FLIRT to motion correct each frame to a reference, either 
@@ -456,8 +457,8 @@ class McflirtMocoWorkflow(MotionCorrectionWorkflow):
         inflows - list
             list of file-like strs
         """
-        super().__init__(params, {'in_file' : inflows[0]})
-        self.params['type'] = 'mcflirt'
+        params['type'] = 'mcflirt'
+        super().__init__(params, inflows)
     
     def motion_correct(self):
         """ use FLIRT to motion correct each frame to a reference, either 
@@ -544,8 +545,8 @@ class TwoStepMocoWorkflow(MotionCorrectionWorkflow):
         inflows - list
             list of file-like strs
         """
-        super().__init__(params, {'in_file' : inflows[0]})
-        self.params['type'] = 'twostep'
+        params['type'] = 'twostep'
+        super().__init__(params, inflows)
     
     def motion_correct(self):
         """ use FLIRT to motion correct each frame to a reference, either 
@@ -784,7 +785,11 @@ def _grab_flirt_transforms(in_mat_files, crop_start, original_image):
         the original, un-motion corrected image. This determines how many frames
         we need
     """
-
+    import os
+    import nibabel as nib
+    import shutil
+    import glob
+    
     # if tuple, force to be list
     if not isinstance(in_mat_files, list):
         in_mat_files = [in_mat_files]
