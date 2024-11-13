@@ -180,7 +180,7 @@ def checker_parse(check_str):
 
 def make_card(cardname, parameters=None, datalines=None):
     ''' create a Card class on the fly
-        cardname = str; '*pet'
+        cardname = str; '\*pet'
         parameters = list of str; ['filetype=dcm', 'dcm2nii=dcm2niix']
         datalines = list of str; ['/data/export/sub-01', 'test, test']
     '''
