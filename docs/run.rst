@@ -2,10 +2,9 @@
 
 .. contents::
 
-Reporting
-=========
+The run module
+===================
 
-.. automodule:: picnic.workflows.reports
+.. automodule:: picnic.run
     :members:
     :undoc-members:
-

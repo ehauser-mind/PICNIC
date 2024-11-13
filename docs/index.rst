@@ -1,14 +1,12 @@
 
-PICNIC __VERSION__
+PICNIC (early draft v0.0.5)
 =======================================
-
-.. automodule:: picnic.run
-  :members:
 
 .. toctree::
   :maxdepth: 2
   :caption: Contents:
 
+  run
   cards
   workflows
   reporting

@@ -2,8 +2,8 @@
 
 .. contents::
 
-PICNIC Card and CardBuilder
-===========================
+Base Card and CardBuilder
+=========================
 
 .. autoclass:: picnic.input_deck_reader::Card
     :members:
@@ -13,12 +13,8 @@ PICNIC Card and CardBuilder
     :members:
     :undoc-members:
 
-PICNIC Functional Cards
-=======================
-
-.. autoclass:: picnic.cards.image::Image
-    :members:
-    :undoc-members:
+Functional Cards
+================
 
 .. autoclass:: picnic.cards.coregistration::Coregistration
     :members:
@@ -36,7 +32,7 @@ PICNIC Functional Cards
     :members:
     :undoc-members:
 
-.. autoclass:: picnic.cards.tacs::TimeActivityCurves
+.. autoclass:: picnic.cards.tacs::Tacs
     :members:
     :undoc-members:
 
