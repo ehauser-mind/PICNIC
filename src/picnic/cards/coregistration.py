@@ -3,15 +3,15 @@
 import logging
 
 from picnic.cards.card_builder import CardBuilder, make_card
-import flirt_coregistration
-import register_coregistration
+# import flirt_coregistration
+# import register_coregistration
 
 
 # =======================================
 # Constants
 AVAILABLE_TYPES = {
-    'flirt' : flirt_coregistration,
-    'register' : register_coregistration
+    'flirt' : None, # flirt_coregistration,
+    'register' : None, # register_coregistration
 }
 AVAILABLE_COSTS = {
     'flirt' : (
