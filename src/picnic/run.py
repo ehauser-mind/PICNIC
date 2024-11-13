@@ -5,12 +5,13 @@ Run PICNIC by providing an input deck or a group of input decks.
 
 How To Use This Module
 ======================
-1. Call the `main` function with a provided input deck or list of input decks.
+1. call the `run.py` script directly
+    >>> python run.py path/to/input_deck.inp
 
-2. By default the workflow/pipeline will be built and run, but the advanced
-   user can set the flag `initialize_only` to True and the workflow will be 
-   built, but will wait to be executed.
+2. adding the -d argument will require a csv to create a dox
 
+3. PICNIC will sequentially loop over the input decks to create and run the
+    pipelines.
 """
 # =======================================
 # Imports
@@ -118,7 +119,7 @@ class Pipeline():
                     new_dataline = []
                     for data in dataline:
                         if data.startswith('@'):
-                            outflow_instance, outflow = data[1:].lower().split('.')
+                            outflow_instance, outflow = data[1:].split('.')
                             print('\t'.join([outflow_instance, outflow]))
                             # should include error catch about not able to find instance
                             data = self.pipeline_instances[outflow_instance].outflows[outflow]
@@ -128,9 +129,11 @@ class Pipeline():
                 card.datalines = new_datalines
                 
                 # initialize, build the workflow and run it
-                self.pipeline_instances[card.parameters['name']] = instance(card)
-                self.pipeline_workflows[card.parameters['name']] = instance(card).build_workflow(self.sink_directory)
-                self.pipeline_workflows[card.parameters['name']].workflow.run()
+                name = card.parameters['name']
+                self.pipeline_instances[name] = instance(card)
+                self.pipeline_instances[name].set_outflows(self.sink_directory)
+                self.pipeline_workflows[name] = instance(card).build_workflow(self.sink_directory)
+                self.pipeline_workflows[name].workflow.run()
 
 # =======================================
 # Functions
@@ -150,37 +153,6 @@ def create_parser():
     )
     return parser
 
-def get_card_list(folder_path=DEFAULT_JSONS_PATH, extension='.json'):
-    """
-    return a list of cards found in the `cards.default_parameters`
-    sub-directory. We use this to determine which instances steps will be
-    loaded.
-    
-    :Parameters:
-      -. `folder_path` : a file-like string, the path to find the json files
-      -. `extension` : a string, the file type to search for the cards
-    
-    :Return:
-      -. a dictionary, cards and their associated picnic classes
-    """
-    # {key = 'card name' : val = CardName obj}
-    # example {'camra' : picnic.cards.camra.Camra}
-    card_instance_legend = {}
-    
-    # get all the jsons in the default parameters folder
-    all_jsons = glob.glob(os.path.join(folder_path, '*' + extension))
-    for json_ in all_jsons:
-        card_name = os.path.basename(json_).replace(extension, '').replace('_', ' ')
-        module_ = importlib.import_module(
-            '.'.join(('picnic', 'cards', card_name.replace(' ', '_')))
-        )
-        card_instance_legend[card_name] = getattr(
-            module_,
-            infer_class_name_from_card_name(card_name)
-        )
-    
-    return card_instance_legend
-
 def infer_class_name_from_card_name(card_name):
     """
     returns a string of the suspected class name by giving a card name. This
@@ -197,8 +169,8 @@ def infer_class_name_from_card_name(card_name):
 
 
 def initialize_instance_from_keyword(card):
-    """ use the key to initialize the keyword class associated to the 
-    provided card
+    """
+    Use the key to initialize the keyword class associated to the provided card.
     """
 
     return {
@@ -279,43 +251,6 @@ def insert_parameters(inps, dox_file):
 
 # =======================================
 # Main
-def main(fn):
-    # read the input deck
-    inp = read_input_deck(fn)
-    
-    # build each workflow
-    pipeline_workflows = {}
-    sink_directory = ''
-    for card in inp.cards:
-        if card.cardname[1:] == 'sink':
-            sink_directory = Sink(card).inflows['sink_directory']
-            os.makedirs(sink_directory, exist_ok=True)
-            try:
-                _ = shutil.copy(fn, os.path.join(sink_directory, fn))
-            except shutil.SameFileError:
-                # We are writing output to the pre-existing input deck's path.
-                # We don't overwrite anything, so this is fine.
-                pass
-        else:
-            # replace all @ argument calls with the instance outflow they
-            #  connect to
-            new_datalines = []
-            for dataline in card.datalines:
-                new_dataline = []
-                for data in dataline:
-                    if data.startswith('@'):
-                        instance_name, outflow = data[1:].split('.')
-                        data = os.path.join(sink_directory, instance_name, outflow + '.nii.gz')
-                    new_dataline.append(data)
-                new_datalines.append(new_dataline)
-            card.datalines = new_datalines
-            
-            # build the workflow
-            instance = initialize_instance_from_keyword(card)
-            pipeline_workflows[instance._name] = instance.build_workflow(sink_directory)
-            pipeline_workflows[instance._name].workflow.run()
-
-
 if __name__ == '__main__':
     # parse the arguments
     parser = create_parser()
@@ -324,4 +259,7 @@ if __name__ == '__main__':
     
     pipelines = []
     for inp in arginputs.inps:
-        pipelines.append(Pipeline(inp))
+        pipeline = Pipeline(inp)
+        pipeline.build_workflow()
+        pipelines.append(pipeline)
+        

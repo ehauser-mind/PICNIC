@@ -10,17 +10,15 @@
 # =======================================
 # Functions
 def _find_associated_sidecar(in_filepaths, workflow_sidecars=[], out_basename=''):
-    """ take all the side cars and combine them to one file
-        
-    Parameters
-    ----------
-    in_filepath - list
-        a list of the side cars defined by the user
-    workflow_sidecars   - str or list
-        some workflows (like dcm2niix) will create side cars based on the 
-        dicom stack
-    out_basename - str
-        the final basename of this sidecar (should be the same as the image)
+    """
+    take all the side cars and combine them to one file
+    
+    :Parameters:
+      -. `in_filepath` : list, a list of the side cars defined by the user
+      -. `workflow_sidecars` : str or list, some workflows (like dcm2niix) will
+        create side cars based on the dicom stack
+      -. `out_basename` : str, the final basename of this sidecar (should be
+        the same as the image)
     """
 
     import os
@@ -71,16 +69,13 @@ def _find_associated_sidecar(in_filepaths, workflow_sidecars=[], out_basename=''
     return sidecar
 
 def _rename_image(basename, in_file, sidecar=None):
-    """ a custom rename module to bypass nipype's Rename module
+    """
+    a custom rename module to bypass nipype's Rename module
     
-    Parameter
-    ---------
-    basename - str
-        basename of the renamed file
-    in_file - file-like str
-        the file being renamed
-    sidecar - file-like str or None
-        the associated sidecar
+    :Parameter:
+      -. `basename` : str, basename of the renamed file
+      -. `in_file` : file-like str, the file being renamed
+      -. `sidecar` : file-like str or None, the associated sidecar
     """
 
     import os
@@ -106,14 +101,12 @@ def _rename_image(basename, in_file, sidecar=None):
     return new_image_path
 
 def _rename_textfile(basename, in_file):
-    """ a custom rename module to bypass nipype's Rename module
+    """
+    a custom rename module to bypass nipype's Rename module
     
-    Parameter
-    ---------
-    basename - str
-        basename of the renamed file
-    in_file - file-like str
-        the file being renamed
+    :Parameter:
+      -. `basename` : str, basename of the renamed file
+      -. `in_file` : file-like str, the file being renamed
     """
 
     import os
@@ -129,18 +122,16 @@ def _rename_textfile(basename, in_file):
     return new_path
 
 def _pop_list(in_list, index=None, filename_to_exclude=None):
-    """ nipype doesn't give too many options to manipulate lists that act as 
+    """
+    nipype doesn't give too many options to manipulate lists that act as 
     connections. (Limited to merge and select as of v1.8.5) This function was 
     added specifically to remove items from a list
     
-    Parameter
-    ---------
-    in_list - list of file-like paths
-        the list of files
-    index - int or None
-        include to remove an item based on index
-    filename_to_exclude - file-like str or None
-        include to remove an item based on its name
+    :Parameter:
+      -. `in_list` : list of file-like paths, the list of files
+      -. `index` : int or None, include to remove an item based on index
+      -. `filename_to_exclude` : file-like str or None, include to remove an
+        item based on its name
     """
 
     import os

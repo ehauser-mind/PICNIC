@@ -13,14 +13,12 @@
 # =======================================
 # Nipype Specific Functions
 def _reorient_image(in_file, gz=True):
-    """ use nibabel to load an imaging file type and save it as a nifti1
+    """
+    use nibabel to load an imaging file type and save it as a nifti1
     
-    Parameters
-    ----------
-    in_file - file-like str
-        the file name
-    gz      - boolean
-        save the file as a nifti_gz (True) or nifti (False)
+    :Parameters:
+      -. `in_file` : file-like str, the file name
+      -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
     """
 
     import os
@@ -57,14 +55,12 @@ def _reorient_image(in_file, gz=True):
     but nibabel's is faster and better tested
 '''
 def _reorient_image_deprecated(in_file, gz=True):
-    """ use nibabel to load an imaging file type and save it as a nifti1
+    """
+    use nibabel to load an imaging file type and save it as a nifti1
     
-    Parameters
-    ----------
-    in_file - file-like str
-        the file name
-    gz - boolean
-        save the file as a nifti_gz (True) or nifti (False)
+    :Parameters:
+      -. `in_file` : file-like str, the file name
+      -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
     """
 
     import os
@@ -101,14 +97,13 @@ def _reorient_image_deprecated(in_file, gz=True):
 
 
 def _merge_images(images, gz=True):
-    """ use nibabel to merge a group of images over the last axis (usually time)
+    """
+    use nibabel to merge a group of images over the last axis (usually time)
     
-    Parameter
-    ---------
-    images - list of file-like str
-        all the images that will be merged along the last axis
-    gz - boolean
-        save the file as a nifti_gz (True) or nifti (False)
+    :Parameter:
+      -. `images` : list of file-like str, all the images that will be merged
+        along the last axis
+      -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
     """
 
     import os
@@ -136,15 +131,14 @@ def _merge_images(images, gz=True):
 
 
 def _create_bilateral_atlas(atlas, lookup_table, gz=True):
-    """ a nipype function used to create a bilateral atlas for deterministic 
+    """
+    a nipype function used to create a bilateral atlas for deterministic
     atlases.
     
-    Parameters
-    ----------
-    atlas - file-like str
-        a 3d deterministic atlas
-    lookup_table - file-like str
-        a lookup table json file that associates index to label
+    :Parameters:
+      -. `atlas` : file-like str, a 3d deterministic atlas
+      -. `lookup_table` : file-like str, a lookup table json file that
+        associates index to label
     """
 
     import os
@@ -228,18 +222,15 @@ def _create_bilateral_atlas(atlas, lookup_table, gz=True):
     return (bilateral_out_file, json_out_file)
 
 def _binarize_images(images, thr=None, uthr=None, gz=True):
-    """ Force all non-zeros to 1. All images must be the same shape
+    """
+    force all non-zeros to 1. All images must be the same shape
     
-    Parameters
-    ----------
-    images - list of file-like paths or single file-like str
-        all the images to binarize
-    thr - None or float
-        zero everything below the value
-    uthr - None or float
-        zero everything above the value
-    gz - boolean
-        save the file as a nifti_gz (True) or nifti (False)
+    :Parameters:
+      -. `images` : list of file-like paths or single file-like str, all the
+        images to binarize
+      -. `thr` : None or float, zero everything below the value
+      -. `uthr` : None or float, zero everything above the value
+      -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
     """
 
     import os
@@ -293,18 +284,14 @@ def _binarize_images(images, thr=None, uthr=None, gz=True):
     return new_image_path
     
 def _crop_image(in_file, crop_start=0, crop_end=0, gz=True):
-    """ use nibabel to crop the start and/or end of an image
+    """
+    use nibabel to crop the start and/or end of an image
     
-    Parameters
-    ----------
-    in_file - file-like str
-        the 4d image
-    crop_start - int
-        how many frames to crop out from the start
-    crop_end - int
-        how many frames to crop out from the end
-    gz - boolean
-        save the file as a nifti_gz (True) or nifti (False)
+    :Parameters:
+      -. `in_file` : file-like str, the 4d image
+      -. `crop_start` : int, how many frames to crop out from the start
+      -. `crop_end` : int, how many frames to crop out from the end
+      -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
     """
 
     import os
@@ -335,17 +322,14 @@ def _crop_image(in_file, crop_start=0, crop_end=0, gz=True):
     return new_image_path
 
 def _resample_image(source, target, gz=True):
-    """ use nib.processing.resmple_from_to to resample the source image to
+    """
+    use nibabel.processing.resmple_from_to to resample the source image to
     target image space
     
-    Parameters
-    ----------
-    source - file-like str
-        the image to be resampled
-    target - file-like str
-        the target image
-    gz - boolean
-        save the file as a nifti_gz (True) or nifti (False)
+    :Parameters:
+      -. `source` : file-like str, the image to be resampled
+      -. `target` : file-like str, the target image
+      -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
     """
 
     import os
@@ -376,7 +360,8 @@ def _resample_image(source, target, gz=True):
 
 
 def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, units='uci'):
-    """ a nipype function used to create a tacs file based on an atlas and 4d
+    """
+    a nipype function used to create a tacs file based on an atlas and 4d
     image. 
     (1) Load the source and atlas image
     (2) Force atlas to be 3d (it already should be)
@@ -388,16 +373,14 @@ def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, un
     (7) Load the source side car to determine the mid-times
     (8) Assemble the data in a 2d array and save as a tsv
     
-    Parameters
-    ----------
-    source          - file-like str
-        the filename of the 4d source image
-    target          - file-like str
-        the filename of the target image
-    source_side_car - file-like str
-        the filepath to the source's side car json
-    atlas_side_car  - file-like str
-        the filepath to the atlas' side car json
+    :Parameters:
+      -. `source` : file-like str, the filename of the 4d source image
+      -. `target` : file-like str, the filename of the target image
+      -. `source_side_car` : file-like str, the filepath to the source's side
+        car json
+      -. `atlas_side_car` : file-like str, the filepath to the atlas' side car
+        json
+      -. `units` : str, available options are uci or bq
     """
 
     import os
@@ -494,8 +477,13 @@ def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, un
     return tac_file
 
 def _generate_wholebrain_mask(in_file, gz=True):
-    """ use nibabel to create a wholebrain mask starting from the aseg 
+    """
+    use nibabel to create a wholebrain mask starting from the aseg 
     generated from freesurfer's reconall
+    
+    :Parameters:
+      -. `in_file` : file-like str, the aseg file
+      -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
     """
     import nibabel as nib
     import numpy as np
@@ -551,8 +539,13 @@ def _generate_wholebrain_mask(in_file, gz=True):
     return mask_path
 
 def _generate_gray_matter_mask(in_file, gz=True):
-    """ use nibabel to create a gray matter mask starting from the aseg 
+    """
+    use nibabel to create a gray matter mask starting from the aseg 
     generated from freesurfer's reconall
+    
+    :Parameters:
+      -. `in_file` : file-like str, the aseg file
+      -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
     """
     import nibabel as nib
     import numpy as np
@@ -591,8 +584,13 @@ def _generate_gray_matter_mask(in_file, gz=True):
     return mask_path
 
 def _generate_white_matter_mask(in_file, gz=True):
-    """ use nibabel to create a gray matter mask starting from the aseg 
+    """
+    use nibabel to create a gray matter mask starting from the aseg 
     generated from freesurfer's reconall
+    
+    :Parameters:
+      -. `in_file` : file-like str, the aseg file
+      -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
     """
     import nibabel as nib
     import numpy as np
@@ -636,8 +634,13 @@ def _generate_white_matter_mask(in_file, gz=True):
     return mask_path
 
 def _generate_subcortical_mask(in_file, gz=True):
-    """ use nibabel to create a subcortical mask starting from the aseg 
+    """
+    use nibabel to create a subcortical mask starting from the aseg 
     generated from freesurfer's reconall
+    
+    :Parameters:
+      -. `in_file` : file-like str, the aseg file
+      -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
     """
     import nibabel as nib
     import numpy as np
@@ -695,8 +698,13 @@ def _generate_subcortical_mask(in_file, gz=True):
     return mask_path
 
 def _generate_ventricle_mask(in_file, gz=True):
-    """ use nibabel to create a ventricle mask starting from the aseg 
+    """
+    use nibabel to create a ventricle mask starting from the aseg 
     generated from freesurfer's reconall
+    
+    :Parameters:
+      -. `in_file` : file-like str, the aseg file
+      -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
     """
     import nibabel as nib
     import numpy as np

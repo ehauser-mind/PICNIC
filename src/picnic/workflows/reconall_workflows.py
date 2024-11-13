@@ -2,6 +2,7 @@
 # Imports
 import os
 import copy
+from pathlib import Path
 
 from nipype import Function
 from nipype.interfaces.utility import Select, Merge
@@ -26,22 +27,18 @@ FREESURFER_OUTFLOWS_TO_EXPOSE = (
     'T1',
     'aseg',
     'brainmask',
-    'filled',
-    'norm',
-    'nu',
-    'wm',
     'wmparc'
 )
 DETERMINISTIC_ATLASES = (
     'wmparc',
 )
 LOOKUPTABLE_PATH = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), 
+    Path(__file__).parent.absolute(),
     'default_jsons',
     'freesurfer_lookuptable.json'
 )
 REPORT_TEMPLATE_PATH = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), 
+    Path(__file__).parent.absolute(),
     'report_templates',
     'reconall_template.html'
 )
@@ -79,6 +76,21 @@ class ReconallWorkflow():
         self.params = params
         self.inflows = copy.deepcopy(self.DEFAULT_INFLOWS)
         self.inflows.update(inflows)
+    
+    @property
+    def params(self):
+        return self._params
+    
+    @params.setter
+    def params(self, all_paras):
+        # remove the leading underscore for all parameters that have them
+        parameters = {}
+        for parameter_name, parameter_value in all_paras.items():
+            if parameter_name.startswith('_'):
+                parameter_name = parameter_name[1:]
+            parameters[parameter_name] = parameter_value
+        
+        self._params = parameters
     
     def build_workflow(self, sink_directory):
         """ create a nipype workflow to run freesurfer's reconall
@@ -263,7 +275,10 @@ class ReconallWorkflow():
             },
             outflows = (
                 'mask_path',
-            )
+            ),
+            to_sink = [
+                'out_file'
+            ]
         )
     
     def generate_gray_matter_mask(self):
@@ -299,7 +314,10 @@ class ReconallWorkflow():
             },
             outflows = (
                 'mask_path',
-            )
+            ),
+            to_sink = [
+                'out_file'
+            ]
         )
     
     def generate_white_matter_mask(self):
@@ -335,7 +353,10 @@ class ReconallWorkflow():
             },
             outflows = (
                 'mask_path',
-            )
+            ),
+            to_sink = [
+                'out_file'
+            ]
         )
     
     def generate_subcortical_mask(self):
@@ -371,7 +392,10 @@ class ReconallWorkflow():
             },
             outflows = (
                 'mask_path',
-            )
+            ),
+            to_sink = [
+                'out_file'
+            ]
         )
     
     def generate_ventricle_mask(self):
@@ -407,7 +431,10 @@ class ReconallWorkflow():
             },
             outflows = (
                 'mask_path',
-            )
+            ),
+            to_sink = [
+                'out_file'
+            ]
         )
     
     def create_report(self):
@@ -449,15 +476,16 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
         inflows - list
             list of file-like strs
         """
+        params['type'] = 'execute'
         super().__init__(params, {})
         if self.params['execution_type'] == 't1-only':
-            self.inflows['t1s'] = inflows
+            self.inflows['t1s'] = inflows['in_files']
         elif self.params['execution_type'] == 't2':
-            self.inflows['t1s'] = inflows[:-1]
-            self.inflows['t2'] = inflows[-1]
+            self.inflows['t1s'] = inflows['in_files'][:-1]
+            self.inflows['t2'] = inflows['in_files'][-1]
         elif self.params['execution_type'] == 'flair':
-            self.inflows['t1s'] = inflows[:-1]
-            self.inflows['flair'] = inflows[-1]
+            self.inflows['t1s'] = inflows['in_files'][:-1]
+            self.inflows['flair'] = inflows['in_files'][-1]
     
     def execute_reconall(self):
         """ use Freesurfer to run reconall using nipype's Freesurfer interface
@@ -513,6 +541,7 @@ class ReadReconallWorkflow(ReconallWorkflow):
         inflows - list
             list of file-like strs
         """
+        params['type'] = 'read existing'
         super().__init__(params, {'filepath' : inflows[0]})
     
     def execute_reconall(self):

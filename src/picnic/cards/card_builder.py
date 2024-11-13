@@ -3,7 +3,8 @@
 import copy
 import logging
 
-from picnic.input_deck_reader import Card
+# from picnic.input_deck_reader import make_card
+from input_deck_reader import make_card
 
 
 # =======================================
@@ -24,6 +25,10 @@ class CardBuilder():
     for the new card. It will create attributes for all the parameters.
     """
     def __init__(self, card, *args, **kwargs):
+        """
+        :Parameters:
+          -. `card` : a Card obj
+        """
         self._parameters = card.parameters
         self._datalines = card.datalines
         
@@ -64,16 +69,16 @@ class CardBuilder():
                 raise UnexpectedCardSyntaxError('Error: Must pass either a picnic.Card obj or str to represent the dataline')
             
     def _check_dataline_syntax(self, expected_lines=None, expected_in_lines=None):
-        """ Check the syntax for the card's datalines
+        """
+        check the syntax for the card's datalines
         
-        Parameters
-        ----------
-        expected_lines : a custom string describer or None
-            A string describing the expected datalines; '>0'. It will always 
-            start with an operator (=, <, >) and end in an integer
-        expected_in_lines : a custom string describer or None
-            A string describing the expected number of arguments for a 
-            dataline. This will have the same requirements as before.
+        :Parameters:
+          -. `expected_lines` : a custom string describer or None, a string
+            describing the expected datalines; '>0'. It will always start with
+            an operator (=, <, >) and end in an integer
+          -. `expected_in_lines` : a custom string describer or None, a string
+            describing the expected number of arguments for a dataline. This
+            will have the same requirements as before.
         """
         if expected_lines:
             assert self._count_datalines(expected_lines), 'Error: Unexpected number of datalines'
@@ -81,7 +86,8 @@ class CardBuilder():
             self._count_in_datalines(expected_in_lines)
             
     def _count_datalines(self, e_lines):
-        """ Test if the number of lines matches the expected number
+        """
+        test if the number of lines matches the expected number
         """
         oper, e_num = checker_parse(e_lines)
         a_num = len(self._datalines)
@@ -96,7 +102,8 @@ class CardBuilder():
             raise UnexpectedCardSyntaxError('Error: Unexpected syntax for the dataline syntax checker')
 
     def _count_in_datalines(self, e_in_lines):
-        """ Test if the number of arguments in each line matches the expected number
+        """ 
+        test if the number of arguments in each line matches the expected number
         """
         oper, e_num = checker_parse(e_in_lines)
         
@@ -112,16 +119,17 @@ class CardBuilder():
                 raise UnexpectedCardSyntaxError('Error: Unexpected syntax for the dataline syntax checker')
         
     def _user_defined_parameters(self, **optional_parameters):
-        """ if the user has passed some non-default parameters, check that they 
+        """
+        if the user has passed some non-default parameters, check that they 
         are compatible and return the new user-defined parameters along with a 
         dict of the "non-overwritten" defaults.
         
-        Parameters
-        ----------
-        optional_parameters : dict
-            this should be a dictionary of parameter-like key/values (ex "type":"fsl")
+        :Parameters:
+          -. `optional_parameters` : dict, this should be a dictionary of
+            parameter-like key/values (ex "type":"fsl")
         
-        returns dict
+        :Return:
+          -. dictionary of overwritten parameters
         """
         default_parameters = copy.deepcopy(self.__dict__)
         for key, value in optional_parameters.items():
@@ -131,14 +139,12 @@ class CardBuilder():
         return default_parameters
     
     def _force_parameter_to_integer(self, val, parameter_name):
-        """ force a motion correction parameter to be an integer (ex: crop start, crop end, ref vol, etc.)
+        """
+        force a parameter to be an integer (ex: crop start, ref vol, etc.)
         
-        Parameters
-        ----------
-        val : bool, str or number-like
-            value of the parameter
-        parameter_name : str
-            the name of the parameter
+        :Parameters:
+          -. `val` : bool, str or number-like, value of the parameter
+          -. `parameter_name` : str, the name of the parameter
         """
         if val is not False and val != '0':
             try:
@@ -157,46 +163,24 @@ class CardBuilder():
 # =======================================
 # Exceptions
 class UnexpectedCardSyntaxError(Exception):
-    """ a custom exception used to trap syntax errors in the preprocessor
+    """
+    a custom exception used to trap syntax errors in the preprocessor
     """
     def __init__(self, err_desc):
         """
-        Parameters
-        ----------
-        err_desc - str
-            a brief description of the error
+        :Parameters:
+          -. `err_desc` : str, a brief description of the error
         """
         self.err_desc = err_desc
 
 # =======================================
 # Functions
 def checker_parse(check_str):
-    ''' expects a string to look something like '=1' or '>12'
-    '''
+    """ 
+    expects a string to look something like '=1' or '>12'
+    """
     try:
         return check_str[0], int(check_str[1:])
     except TypeError:
         logging.error('Error: Need to pass a string into checker_parse function')
-
-def make_card(cardname, parameters=None, datalines=None):
-    ''' create a Card class on the fly
-        cardname = str; '\*pet'
-        parameters = list of str; ['filetype=dcm', 'dcm2nii=dcm2niix']
-        datalines = list of str; ['/data/export/sub-01', 'test, test']
-    '''
-    # make sure the keyword starts with a star indicator
-    if not cardname.startswith('*'):
-        cardname = '*' + cardname
-    
-    # if there are user defined parameters, load those in
-    if parameters is not None:
-        card = Card(cardname, *parameters)
-    else:
-        card = Card(cardname)
-    
-    # add the datalines
-    if datalines is not None:
-        for line in datalines:
-            card.add_dataline(line)
-    return card
 

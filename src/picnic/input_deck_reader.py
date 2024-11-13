@@ -390,6 +390,31 @@ def read_input_deck(input_deck):
     """
     return InputDeck(input_deck)
 
+def make_card(cardname, parameters=None, datalines=None):
+    """
+    create a Card class on the fly
+
+    :Parameters:
+      -. `cardname` : str, the card used, ex: *import, *reconall
+      -. `parameters` : list, dict or tuple, the card parameters
+      -. `datalines` : list of str, the instance or file-like str
+    """
+    # make sure the keyword starts with a star indicator
+    if not cardname.startswith('*'):
+        cardname = '*' + cardname
+    
+    # if there are user defined parameters, load those in
+    if parameters is not None:
+        card = Card(cardname, *parameters)
+    else:
+        card = Card(cardname)
+    
+    # add the datalines
+    if datalines is not None:
+        for line in datalines:
+            card.add_dataline(line)
+    return card
+
 # =======================================
 # Main
 def main():
