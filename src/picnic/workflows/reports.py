@@ -64,7 +64,7 @@ def create_report(report_type, files, basename='', extras=[]):
 
 
 def image_summary(in_file, basename='image'):
-    """ wrap the necessary steps to create a summary report of *image
+    """ wrap the necessary steps to create a summary report of \*image
 
     Parameters
     ----------
@@ -122,7 +122,7 @@ def image_summary(in_file, basename='image'):
 
 
 def motion_correction_summary(base_file, moco_file, mats=None, ref_frame=None, basename='motion_correction'):
-    """ wrap the necessary steps to create a desired subsidiary of the *image summary
+    """ wrap the necessary steps to create a desired subsidiary of the \*image summary
 
     Parameters
     ----------
@@ -239,7 +239,7 @@ def coregistration_summary(base_file, overlay_file, basename='coregistration'):
 
 
 def camra_summary(base_file, overlay_files, rank_list, mats=None, rank=1, basename='motion_correction'):
-    """ wrap the necessary steps to create a desired subsidiary of the *image summary
+    """ wrap the necessary steps to create a desired subsidiary of the \*image summary
 
     Parameters
     ----------

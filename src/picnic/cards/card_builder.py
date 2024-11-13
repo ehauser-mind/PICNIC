@@ -106,6 +106,7 @@ class CardBuilder():
         """
         Test if the number of arguments in each line matches the expected number
         """
+
         oper, e_num = checker_parse(e_in_lines)
         
         for dataline in self._datalines:
