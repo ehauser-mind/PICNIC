@@ -160,6 +160,20 @@ def infer_class_name_from_card_name(card_name):
     return ''.join([s.capitalize() for s in card_name.split(' ')])
 
 
+def initialize_instance_from_keyword(card):
+    """
+    Use the key to initialize the keyword class associated to the provided card.
+    """
+
+    return {
+        'reconall': Reconall,
+        'motion correction': MotionCorrection,
+        'camra': Camra,
+        'tacs': Tacs,
+        'sink': Sink
+    }[card.cardname[1:]](card)
+
+
 def insert_parameters(inps, dox_file):
     """
     creates new input decks from a list of template inps and a test readable

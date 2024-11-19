@@ -1,16 +1,5 @@
 # =======================================
 # Imports
-import os
-import tempfile
-import numpy as np
-import pandas as pd
-import nibabel as nib
-import matplotlib.pyplot as plt
-from math import atan2, asin, degrees, ceil, sin, pi
-
-from PIL import Image, ImageDraw
-from nilearn.plotting import plot_anat, plot_roi
-
 
 # =======================================
 # Constants
@@ -75,7 +64,7 @@ def create_report(report_type, files, basename='', extras=[]):
 
 
 def image_summary(in_file, basename='image'):
-    """ wrap the necessary steps to create a summary report of *image
+    """ wrap the necessary steps to create a summary report of \*image
 
     Parameters
     ----------
@@ -84,6 +73,13 @@ def image_summary(in_file, basename='image'):
     basename - string
         the basename for the output filename
     """
+
+    import os
+    import numpy as np
+    import nibabel as nib
+    from PIL import Image
+    from nilearn.plotting import plot_anat
+
     # load file and calculate coords bounds
     image = nib.load(in_file)
     cut_coords_bounds = calculate_cut_coords_bounds(image)
@@ -124,8 +120,9 @@ def image_summary(in_file, basename='image'):
 
         return (filename, movie_filename)
 
+
 def motion_correction_summary(base_file, moco_file, mats=None, ref_frame=None, basename='motion_correction'):
-    """ wrap the necessary steps to create a desired subsidiary of the *image summary
+    """ wrap the necessary steps to create a desired subsidiary of the \*image summary
 
     Parameters
     ----------
@@ -140,6 +137,13 @@ def motion_correction_summary(base_file, moco_file, mats=None, ref_frame=None, b
     basename - string
         the basename for the output filename
     """
+
+    import os
+    import numpy as np
+    import nibabel as nib
+    from math import atan2, asin, degrees
+    from PIL import Image, ImageDraw
+
     # load files and calculate coords bounds
     base_image = nib.load(base_file)
     moco_image = nib.load(moco_file)
@@ -192,6 +196,7 @@ def motion_correction_summary(base_file, moco_file, mats=None, ref_frame=None, b
 
     return filename
 
+
 def coregistration_summary(base_file, overlay_file, basename='coregistration'):
     """ use nilearn create a movie for coregistration
 
@@ -204,6 +209,12 @@ def coregistration_summary(base_file, overlay_file, basename='coregistration'):
     basename - string
         the basename for the output filename
     """
+
+    import os
+    import numpy as np
+    import nibabel as nib
+    from PIL import Image
+
     # load all the files with nibabel and tmean all the 4d images
     imgs = []
     for fn in (base_file, overlay_file):
@@ -226,8 +237,9 @@ def coregistration_summary(base_file, overlay_file, basename='coregistration'):
 
     return filename
 
+
 def camra_summary(base_file, overlay_files, rank_list, mats=None, rank=1, basename='motion_correction'):
-    """ wrap the necessary steps to create a desired subsidiary of the *image summary
+    """ wrap the necessary steps to create a desired subsidiary of the \*image summary
 
     Parameters
     ----------
@@ -242,6 +254,13 @@ def camra_summary(base_file, overlay_files, rank_list, mats=None, rank=1, basena
     basename - string
         the basename for the output filename
     """
+
+    import os
+    import numpy as np
+    import nibabel as nib
+    from math import atan2, asin, degrees, ceil
+    from PIL import Image
+
     # load files and calculate coords bounds
     base_image = nib.load(base_file)
     overlay_images = []
@@ -317,6 +336,7 @@ def camra_summary(base_file, overlay_files, rank_list, mats=None, rank=1, basena
 
     return (filename, toggle_filename)
 
+
 def tacs_summary(tacs_file, units, basename='tacs'):
     """ use matplotlib to plot all the tacs
 
@@ -329,6 +349,11 @@ def tacs_summary(tacs_file, units, basename='tacs'):
     basename - string
         the basename for the output filename
     """
+
+    import os
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
     # load tacs files
     data = pd.read_csv(tacs_file, delimiter='\t', header=0, index_col=0)
 
@@ -350,6 +375,7 @@ def tacs_summary(tacs_file, units, basename='tacs'):
 
     return filename
 
+
 def calculate_cut_coords_bounds(nifti):
     """ use nibabel to calculate the cut coords bounds
 
@@ -358,6 +384,9 @@ def calculate_cut_coords_bounds(nifti):
     nifti - nibabel.Nifti1Image
         the nibabel image
     """
+
+    import numpy as np
+
     # isolate constants
     COORDS_IDX_KEY = {'x':0, 'y':1, 'z':2}
     COORDS_AXIS = {'x':(1, 2), 'y':(0, 2), 'z':(0, 1)}
@@ -394,6 +423,7 @@ def calculate_cut_coords_bounds(nifti):
 
     return cut_coords_bounds
 
+
 def plot_anat(image, cut_coords_bounds, cmap='gray', vmin=None, vmax=None, n_cuts=7):
     """ use nilearn.plotting to plot the anatomy
 
@@ -410,6 +440,11 @@ def plot_anat(image, cut_coords_bounds, cmap='gray', vmin=None, vmax=None, n_cut
     vmax - float
         the min value for the color map
     """
+
+    import tempfile
+    import numpy as np
+    from nilearn.plotting import plot_anat
+
     # create the temporary images for each direction (x, y and z)
     coords = dict()
     for direction in 'xyz':
@@ -425,6 +460,7 @@ def plot_anat(image, cut_coords_bounds, cmap='gray', vmin=None, vmax=None, n_cut
             vmax=vmax
         )
     return coords
+
 
 def plot_image_overlay(overlay_image, base_image, cut_coords_bounds, direction='y', cmap='gray', n_cuts=5, alpha=0.7, vmin=None, vmax=None):
     """ use nilearn.plotting to plot the anatomy
@@ -448,6 +484,11 @@ def plot_image_overlay(overlay_image, base_image, cut_coords_bounds, direction='
     vmax - float
         the min value for the color map
     """
+
+    import tempfile
+    import numpy as np
+    from nilearn.plotting import plot_roi
+
     # create the temporary images for each direction (x, y and z)
     all_coords = np.linspace(*cut_coords_bounds[direction], 3*n_cuts+1)
     coords = []
@@ -466,6 +507,7 @@ def plot_image_overlay(overlay_image, base_image, cut_coords_bounds, direction='
         )
     return coords
 
+
 def plot_motion_correction_image(image, cut_coords_bounds, cmap='jet', vmin=None, vmax=None):
     """ use nilearn.plotting to plot the ortho for motion correction
 
@@ -482,6 +524,11 @@ def plot_motion_correction_image(image, cut_coords_bounds, cmap='jet', vmin=None
     vmax - float
         the min value for the color map
     """
+
+    import tempfile
+    import numpy as np
+    from nilearn.plotting import plot_anat
+
     # create the temporary images for each direction (x, y and z)
     ortho_cut_coords = [np.mean(cut_coords_bounds[direction]) for direction in 'xyz']
     temp_png = tempfile.NamedTemporaryFile(suffix='.png')
@@ -497,6 +544,7 @@ def plot_motion_correction_image(image, cut_coords_bounds, cmap='jet', vmin=None
     )
     return temp_png
 
+
 def plot_motion_correction_graph(t, all_dof, frame, ref_frame=None):
     """ create pyplots for motion correction
 
@@ -511,6 +559,11 @@ def plot_motion_correction_graph(t, all_dof, frame, ref_frame=None):
     ref_frame -int
         denote the reference frame
     """
+
+    import tempfile
+    import numpy as np
+    import matplotlib.pyplot as plt
+
     # create a pyplot
     temp_png = tempfile.TemporaryFile(suffix='.png')
     fig, ax = plt.subplots(figsize=(9, 3))
@@ -541,6 +594,7 @@ def plot_motion_correction_graph(t, all_dof, frame, ref_frame=None):
 
     return temp_png
 
+
 def plot_coregistration(overlay_image, base_image, cut_coords_bounds, cmap='jet', n_cuts=7, alpha=0.7, vmin=None, vmax=None):
     """ use nilearn.plotting to plot the anatomy
 
@@ -561,6 +615,11 @@ def plot_coregistration(overlay_image, base_image, cut_coords_bounds, cmap='jet'
     vmax - float
         the min value for the color map
     """
+
+    import tempfile
+    import numpy as np
+    from nilearn.plotting import plot_roi
+
     # create the temporary images for each direction (x, y and z)
     coords = dict()
     for direction in 'xyz':
@@ -577,6 +636,7 @@ def plot_coregistration(overlay_image, base_image, cut_coords_bounds, cmap='jet'
             vmax=vmax
         )
     return coords
+
 
 def plot_camra_image(base_image, overlay_image, cut_coords_bounds, cmap='jet', alpha=0.5, vmin=None, vmax=None, title=None):
     """ use nilearn.plotting to plot the ortho for motion correction
@@ -598,6 +658,11 @@ def plot_camra_image(base_image, overlay_image, cut_coords_bounds, cmap='jet', a
     vmax - float
         the min value for the color map
     """
+
+    import tempfile
+    import numpy as np
+    from nilearn.plotting import plot_roi
+
     # create the temporary images for each direction (x, y and z)
     ortho_cut_coords = [np.mean(cut_coords_bounds[direction]) for direction in 'xyz']
     temp_png = tempfile.NamedTemporaryFile(suffix='.png')
@@ -616,6 +681,7 @@ def plot_camra_image(base_image, overlay_image, cut_coords_bounds, cmap='jet', a
     )
     return temp_png
 
+
 def plot_camra_graph(t, all_dof, idx, autoselect=None):
     """ create pyplots for motion correction
 
@@ -630,6 +696,11 @@ def plot_camra_graph(t, all_dof, idx, autoselect=None):
     autoselect -int
         denote the reference frame
     """
+
+    import tempfile
+    import numpy as np
+    import matplotlib.pyplot as plt
+
     # create a pyplot
     temp_png = tempfile.TemporaryFile(suffix='.png')
     fig, ax = plt.subplots(figsize=(9, 3))
@@ -660,6 +731,7 @@ def plot_camra_graph(t, all_dof, idx, autoselect=None):
 
     return temp_png
 
+
 def assemble_images(images, STANDARD_WIDTH=1120):
     """ paste together images
 
@@ -668,6 +740,9 @@ def assemble_images(images, STANDARD_WIDTH=1120):
     image - list
         a list of all the images that will be pasted together
     """
+
+    from PIL import Image
+
     # open the temporary images and resize them to the same width
     resized_images = [im.resize((STANDARD_WIDTH, int(im.size[1]*(STANDARD_WIDTH/im.size[0])))) for im in images]
     widths, heights = zip(*(im.size for im in resized_images))
@@ -681,6 +756,7 @@ def assemble_images(images, STANDARD_WIDTH=1120):
 
     return assembled_image
 
+
 def create_mp4_from_image_list(image_list, output_filename, fps=2):
     """ create a movie from a list of Image objects
 
@@ -693,10 +769,13 @@ def create_mp4_from_image_list(image_list, output_filename, fps=2):
     fps - int
         frames per second
     """
+    import os
+
     for idx, im in enumerate(image_list):
         im.save('image_'+str(idx).zfill(4)+'.png')
 
     os.system('ffmpeg -r '+str(fps)+' -f image2 -pattern_type glob -i "*.png" -vcodec libx264 -crf 20 -pix_fmt yuv420p '+output_filename)
+
 
 def advanced_colorbar_limits(image):
     """ calculate the colorbar limits by reducing the weight of the edge most voxels
@@ -706,6 +785,10 @@ def advanced_colorbar_limits(image):
     image - nibabel.Nifti1Image obj
         the pet image we are trying to get the colorbar limit from
     """
+
+    import numpy as np
+    from math import sin, pi
+
     fdata = image.get_fdata()
 
     # create the weighting array by using the sin function. The middle voxels

@@ -19,7 +19,7 @@ class CardBuilder():
     this is a helper to effectively eliminate duplicate code
     
     CardBuilder expects a Card and is will accept additional argument for
-    user defined fields    .
+    user defined fields.
     
     This will make the Card's datalines and parameters private attributes 
     for the new card. It will create attributes for all the parameters.

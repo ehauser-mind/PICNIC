@@ -34,12 +34,12 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `in_file` : file-like str, the nibabel readable image file
           -. `basename` : str, name of the output filename
         """
-        # imports
-        import nibabel
+
         import os
-        
+        import nibabel as nib
+
         # load file
-        image = nibabel.load(in_file)
+        image = nib.load(in_file)
         
         # if the image is a 4d image, assume it is a pet image and create a mp4
         if len(image.shape) > 3:
@@ -100,35 +100,35 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `basename` : str, name of the output filename
           -. `width` : int,number of pixels wide used in the report image
         """
-        # imports
-        import nibabel
-        import os
-        import numpy
-        from math import atan2, asin
+
+        import math
+        import numpy as np
+        import nibabel as nib
+
         from PIL import Image
-        
+
         # load the files
-        base_image = nibabel.load(base_file)
-        moco_image = nibabel.load(moco_file)
+        base_image = nib.load(base_file)
+        moco_image = nib.load(moco_file)
         
         # create an optimized colormap for pet brains
         cmap_lims = calculate_colormap_limits(base_image, UPPER_COLORMAP_LIMIT)
         
         # calculate the bounds early so the mp4 and png have the same bound
         bounds = calculate_bounds(moco_image)
-        ortho_cuts = [numpy.mean(bounds[direction]) for direction in 'xyz']
+        ortho_cuts = [np.mean(bounds[direction]) for direction in 'xyz']
         
         # loop through all the transformation matrices and derive all 6 dofs
         if mats is not None:
             dofs = []
             for mat in mats:
-                m = numpy.loadtxt(mat)
+                m = np.loadtxt(mat)
                 x, y, z = m[0,3], m[1, 3], m[2, 3]
-                rx = atan2(-m[1, 2], m[2, 2])
-                ry = asin(m[0, 2])
-                rz = atan2(-m[0, 1], m[0, 0])
-                dofs.append(numpy.array([x, y, z, rx, ry, rz]))
-            dofs = numpy.array(dofs)
+                rx = math.atan2(-m[1, 2], m[2, 2])
+                ry = math.asin(m[0, 2])
+                rz = math.atan2(-m[0, 1], m[0, 0])
+                dofs.append(np.array([x, y, z, rx, ry, rz]))
+            dofs = np.array(dofs)
         
         # loop over each frame and create a comparison orthogonal image for 
         #   pre and post correction
@@ -155,11 +155,11 @@ def _create_report(type_, in_files, additional_args=[]):
             # if a list of mat files were provided, create tracer plots
             if mats is not None:
                 # create a motion plot for the x, y and z dofs
-                # print(numpy.arange(moco_image.shape[3]))
+                # print(np.arange(moco_image.shape[3]))
                 # print(dofs[:, :3])
                 panels.append(
                     create_moco_plot(
-                        numpy.arange(moco_image.shape[3]),
+                        np.arange(moco_image.shape[3]),
                         dofs[:, :3],
                         frame,
                         basename = None,
@@ -172,7 +172,7 @@ def _create_report(type_, in_files, additional_args=[]):
                 # create a motion plot for the rx, ry and rz dofs
                 panels.append(
                     create_moco_plot(
-                        numpy.arange(moco_image.shape[3]),
+                        np.arange(moco_image.shape[3]),
                         dofs[:, 3:],
                         frame,
                         basename = None,
@@ -221,14 +221,13 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `basename` : str, name of the output filename
           -. `width` : int, number of pixels wide used in the report image
         """
-        # imports
-        import nibabel
-        import os
-        from numpy import linspace
-        
+
+        import numpy as np
+        import nibabel as nib
+
         # load file
-        base_image = nibabel.load(base_file)
-        over_image = nibabel.load(over_file)
+        base_image = nib.load(base_file)
+        over_image = nib.load(over_file)
         
         # create an optimized colormap for pet brains
         cmap_limits = calculate_colormap_limits(
@@ -241,7 +240,7 @@ def _create_report(type_, in_files, additional_args=[]):
         
         # create different pngs ramping up the opacity
         stills = []
-        for opacity in linspace(0., 0.7, 6):
+        for opacity in np.linspace(0., 0.7, 6):
             stills.append(
                 create_png_mosaic(
                     base_image,
@@ -279,12 +278,11 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `basename` : str, name of the output filename
           -. `width` : int, number of pixels wide used in the report image
         """
-        # imports
-        import os
-        import pandas
-        
+
+        import pandas as pd
+
         # load tacs file as a pandas dataset
-        data = pandas.read_csv(tac_file, delimiter='\t', header=0, index_col=0)
+        data = pd.read_csv(tac_file, delimiter='\t', header=0, index_col=0)
         
         # create a plot
         tac_plot = create_tacs_plot(
@@ -330,12 +328,13 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `n_cuts` : int, the number of stills in a panel
           -. `width` : int, width (in pixels) for the output image
         """
-        import tempfile
+
         import os
-        from numpy import linspace
-        from nilearn.plotting import plot_anat, plot_roi
+        import tempfile
+        import numpy as np
         from PIL import Image
-        
+        from nilearn.plotting import plot_anat, plot_roi
+
         # if the image is a 4d image, get the tmean
         image = force_3d_image(image)
         if overlay_image is not None:
@@ -353,7 +352,7 @@ def _create_report(type_, in_files, additional_args=[]):
                 _ = plot_anat(
                     image,
                     display_mode = direction,
-                    cut_coords = linspace(*bounds[direction], n_cuts),
+                    cut_coords = np.linspace(*bounds[direction], n_cuts),
                     output_file = panels[direction],
                     black_bg = True,
                     dim = 0.,
@@ -366,7 +365,7 @@ def _create_report(type_, in_files, additional_args=[]):
                     overlay_image,
                     image,
                     display_mode = direction,
-                    cut_coords = linspace(*bounds[direction], n_cuts),
+                    cut_coords = np.linspace(*bounds[direction], n_cuts),
                     output_file = panels[direction],
                     black_bg = True,
                     dim = 0.,
@@ -422,20 +421,20 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `vmax` : float, the max value for the colormap
           -. `width` : int, width (in pixels) for the output image
         """
-        import tempfile
+
         import os
-        from numpy import mean
-        from nilearn.plotting import plot_anat
+        import tempfile
+        import numpy as np
         from PIL import Image
-        
+        from nilearn.plotting import plot_anat
+
         # if the image is a 4d image, get the tmean
         image = force_3d_image(image)
         
         # if not provided, calculate the mosaic bounds
         if ortho_cuts is None:
             bounds = calculate_bounds(image)
-            ortho_cuts = [mean(bounds[direction]) for direction in ['xyz']]
-        
+            ortho_cuts = [np.mean(bounds[direction]) for direction in ['xyz']]
         
         # use nilearn's plot_anat to create each panel
         temp_panel = tempfile.TemporaryFile(suffix='.png')
@@ -485,12 +484,14 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `ref_frame` :int or None, denote the reference frame
           -. `width` : int, width (in pixels) for the output image
         """
-        # imports;
+
+        import os
         import tempfile
-        from numpy import min, max
+        import numpy as np
         import matplotlib.pyplot as plt
+
         from PIL import Image
-        
+
         # create a pyplot
         tmp_png = tempfile.TemporaryFile(suffix = '.png')
         fig, ax = plt.subplots(figsize = (9, 3))
@@ -559,12 +560,12 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `selected_rois` : list, a list of roi strings to plot
           -. `width` : int, width (in pixels) for the output image
         """
-        # imports
-        import tempfile
+
         import os
+        import tempfile
         import matplotlib.pyplot as plt
         from PIL import Image
-        
+
         # if selected plots are given, reduce the dataset
         title = 'All TACs'
         if len(selected_rois) > 0:
@@ -633,6 +634,7 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `width` : int, width (in pixels) for the output image
           -. `fps` : int, frames per seconds
         """
+
         # if not provided, calculate the mosaic bounds
         if bounds is None:
             image3d = force_3d_image(image)
@@ -674,10 +676,10 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `output_filename` : str, must be a movie file type (.mp4)
           -. `fps` : int, frames per second
         """
-        # imports
+
         import os
         import glob
-        
+
         # from each image in the list, save it as a temporary image
         for idx, image in enumerate(images):
             image.save('_image_' + str(idx).zfill(4) + '.png')
@@ -726,9 +728,9 @@ def _create_report(type_, in_files, additional_args=[]):
         :Parameters:
           -. image : nibabel.Nifti1Image, the nibabel image
         """
-        # imports
-        import numpy
-        
+
+        import numpy as np
+
         # isolate constants
         COORDS_IDX_KEY = {'x':0, 'y':1, 'z':2}
         COORDS_AXIS = {'x':(1, 2), 'y':(0, 2), 'z':(0, 1)}
@@ -743,18 +745,18 @@ def _create_report(type_, in_files, additional_args=[]):
         # loop over each direction
         bounds = {}
         for direction in 'xyz':
-            distribution = numpy.mean(fdata, axis=COORDS_AXIS[direction])
+            distribution = np.mean(fdata, axis=COORDS_AXIS[direction])
             
             # loop over low and high threshold
             bounds[direction] = []
             for thr in COORDS_THRESHOLD[direction]:
                 # bounce back and forth to locate the bounds
                 l_idx, u_idx = (0, len(distribution))
-                total_area = numpy.trapz(distribution)
+                total_area = np.trapz(distribution)
                 
                 while u_idx - l_idx > 1.:
                     idx = (l_idx + u_idx) // 2
-                    area = numpy.trapz(distribution[:idx])
+                    area = np.trapz(distribution[:idx])
                     if area/total_area > (thr/100.)+0.005:
                         u_idx = idx
                     elif area/total_area < (thr/100.)-0.005:
@@ -775,6 +777,10 @@ def _create_report(type_, in_files, additional_args=[]):
         :Parameters:
           -. `image` : nibabel.Nifti1Image, the nibabel image
         """
+
+        import numpy as np
+        import nibabel as nib
+
         # check the image dimensionality
         if len(image.shape) > 3:
             from numpy import mean
@@ -799,8 +805,8 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `upper_limit` : float, value between 0 and 100
         """
         import math
-        import numpy
-        
+        import numpy as np
+
         image = force_3d_image(image)
         fdata = image.get_fdata()
         
@@ -813,22 +819,23 @@ def _create_report(type_, in_files, additional_args=[]):
             :Parameters:
               -. `float_` : float (duh), a value between 0. and 1.
             """
-            return math.sin(float_*math.pi/2.+math.pi/4.)
+
+            return math.sin(float_ * math.pi / 2. + math.pi / 4.)
         
         # create a 3d array of 1s, multiply that by the x vector function above
         #   then the y and z. This gives a 3d array where the innermost voxels 
         #   will have a value of 1 and the outermost will be (root(2)/2.)**3.
-        wa = numpy.ones(image.shape)
-        vec = numpy.vectorize(vector_function)
-        wa *= vec(numpy.linspace(0., 1., fdata.shape[0]))[:, None, None]
-        wa *= vec(numpy.linspace(0., 1., fdata.shape[1]))[None, :, None]
-        wa *= vec(numpy.linspace(0., 1., fdata.shape[2]))[None, None, :]
+        wa = np.ones(image.shape)
+        vec = np.vectorize(vector_function)
+        wa *= vec(np.linspace(0., 1., fdata.shape[0]))[:, None, None]
+        wa *= vec(np.linspace(0., 1., fdata.shape[1]))[None, :, None]
+        wa *= vec(np.linspace(0., 1., fdata.shape[2]))[None, None, :]
         
         wght_fdata = wa * fdata
         
         # set lower bound to 0. and upper bound to the xth percentile (ignoring
         #  all values less than 0.)
-        return (0., numpy.percentile(wght_fdata[wght_fdata > 0.], upper_limit))
+        return (0., np.percentile(wght_fdata[wght_fdata > 0.], upper_limit))
     
     def draw_lines_on_image(image, numx, numy):
         """
@@ -840,16 +847,16 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `numx` : int, number of equally spaced vertical lines
           -. `numy` : int, number of equally spaced horizontal lines
         """
-        # imports
+
+        import numpy as np
         from PIL import ImageDraw
-        from numpy import linspace
-        
+
         # draw lines
         w, h = image.size
         draw = ImageDraw.Draw(image)
-        for line_height in linspace(0, h, numy)[1:-1]:
+        for line_height in np.linspace(0, h, numy)[1:-1]:
             draw.line((0, line_height, w, line_height), width=1)
-        for line_width in linspace(0, w, numx)[1:-1]:
+        for line_width in np.linspace(0, w, numx)[1:-1]:
             draw.line((line_width, 0, line_width, h), width=1)
         
         return image

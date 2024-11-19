@@ -9,20 +9,14 @@ from pathlib import Path
 
 from nipype import Function
 from nipype.interfaces.utility import Merge
-from nipype.interfaces import fsl
 
-# from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
-# from picnic.interfaces.nibabel_nodes import _reorient_image, _crop_image
-# from picnic.interfaces.custom_fsl_interfaces import ApplyXfm4D
-# from picnic.interfaces.io_nodes import _rename_image, _find_associated_sidecar
-# from picnic.interfaces.nilearn_nodes import _create_report
-# from picnic.interfaces.string_template_nodes import _fill_report_template
-from workflows.custom_workflow_constructors import NipibipyWorkflow
-from interfaces.nibabel_nodes import _reorient_image, _crop_image
-from interfaces.custom_fsl_interfaces import ApplyXfm4D
-from interfaces.io_nodes import _rename_image, _find_associated_sidecar
-from interfaces.nilearn_nodes import _create_report
-from interfaces.string_template_nodes import _fill_report_template
+from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
+from picnic.interfaces.nibabel_nodes import _reorient_image, _crop_image
+from picnic.interfaces.custom_fsl_interfaces import ApplyXfm4D
+from picnic.interfaces.io_nodes import _rename_image, _find_associated_sidecar
+from picnic.interfaces.nilearn_nodes import _create_report
+from picnic.interfaces.string_template_nodes import _fill_report_template
+
 
 # =======================================
 # Constants
@@ -312,6 +306,8 @@ class FlirtMocoWorkflow(MotionCorrectionWorkflow):
         single volume or mean image
         """
 
+        from nipype.interfaces import fsl
+
         # smooth the image
         last_node_name = '@crop_image'
         if self.params['smooth'] > 0:
@@ -465,6 +461,8 @@ class McflirtMocoWorkflow(MotionCorrectionWorkflow):
         single volume or mean image
         """
 
+        from nipype.interfaces import fsl
+
         # change blank or incomplete parameters to the defaults
         if not self.params['cost']:
             self.params['cost'] = 'normcorr'
@@ -552,6 +550,8 @@ class TwoStepMocoWorkflow(MotionCorrectionWorkflow):
         """ use FLIRT to motion correct each frame to a reference, either 
         single volume or mean image
         """
+
+        from nipype.interfaces import fsl
 
         # change blank or incomplete parameters to the defaults
         if not self.params['cost']:

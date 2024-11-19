@@ -1,16 +1,15 @@
 # =======================================
 # Imports
-import os
 
+import os
 from nipype.interfaces.base import (
     File,
     TraitedSpec,
     traits,
     isdefined,
-    BaseInterfaceInputSpec,
-    BaseInterface
 )
 from nipype.interfaces.fsl.base import FSLCommand, FSLCommandInputSpec
+
 
 # =======================================
 # Constants
@@ -37,6 +36,8 @@ class ApplyXfm4DInputSpec(FSLCommandInputSpec):
       -. `user_prefix` : str, define a prefix if mats don't start with MAT
     """
     # define the file inputs
+
+
     in_file = File(
         exists=True, 
         desc='the file to which to apply the transform', 
@@ -100,6 +101,7 @@ class ApplyXfm4DOutputSpec(TraitedSpec):
     :Attributes:
       -. `out_file` : file-like str, path/name of the transformed file
     """
+
     out_file = File(desc='path/name of transformed file')
 
 
@@ -112,7 +114,7 @@ class ApplyXfm4D(FSLCommand):
 
     Examples
     ---------
-    >>> from picnic import ApplyXfm4D
+    >>> from picnic.interfaces.custom_fsl_interfaces import ApplyXfm4D
     >>>
     >>> applyxfm = ApplyXfm4D()
     >>> applyxfm.inputs.in_file = 'pet.nii'
@@ -130,6 +132,7 @@ class ApplyXfm4D(FSLCommand):
         """
         create the out file name
         """
+
         out_file = self.inputs.out_file
         if not isdefined(out_file) and isdefined(self.inputs.in_file):
             out_file = self._gen_fname(self.inputs.in_file, suffix='_warp4D')
@@ -139,6 +142,7 @@ class ApplyXfm4D(FSLCommand):
         """
         list all the outputs
         """
+
         outputs = self.output_spec().get()
         outputs['out_file'] = self._gen_outfilename()
         return outputs
@@ -147,6 +151,7 @@ class ApplyXfm4D(FSLCommand):
         """
         generate a filename
         """
+
         if name == 'out_file':
             return self._gen_outfilename()
         return None

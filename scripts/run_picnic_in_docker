@@ -1,0 +1,168 @@
+#!/bin/bash
+
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+PICNIC_IMG="mfschmidt/picnic:0.0.5"
+
+
+# Provide usage instructions
+function usage {
+  echo "Usage for run_picnic_in_docker"
+  echo ""
+  echo "    You can 'run_picnic_in_docker --help' for usage, or"
+  echo ""
+  echo "    run_picnic_in_docker input_deck input_path fs_license [output_path]"
+  echo ""
+  echo "'input_deck'  The text file specifying the pipeline to run."
+  echo "              This is usually named *.inp"
+  echo "              You can create an input deck with PICNIC's pantry.py GUI."
+  echo ""
+  echo "'input_path'  The path to your input data"
+  echo "              This will be safely mounted read-only."
+  echo "              Paths in the input deck should be within this input_path,"
+  echo "              and docker will use this path to match its volume mounts."
+  echo ""
+  echo "'fs_license'  The text file containing your free FreeSurfer license."
+  echo "              This is obtained from the FreeSurfer group at"
+  echo "              https://surfer.nmr.mgh.harvard.edu/registration.html"
+  echo ""
+  echo "'output_path' The path where PICNIC will write results"
+  echo "              This should obviously be writable."
+  echo "              If not provided, PICNIC will use the current directory."
+  echo ""
+}
+
+
+# Handle completely naive or errant input
+if [[ -z "${1}" ]]; then
+  echo -e "${RED}"
+  echo "No arguments were provided. You can build one with 'pantry.py'."
+  echo -e "${NC}"
+  usage
+  exit 1
+elif [[ ${1} == *"help" ]]; then
+  usage
+  exit 1
+fi
+
+# Handle actual input
+ERRORS="FALSE"
+
+# Arg 1 is the input deck file
+if [[ -f "${1}" ]]; then
+  echo "Loading input deck from ${1}"
+  INPUT_DECK="${1}"
+elif [[ -e "${1}" ]]; then
+  echo -e "${RED}"
+  echo "'${1}' is not an input deck; it's a directory."
+  echo -e "${NC}"
+  ERRORS="TRUE"
+else
+  echo -e "${RED}"
+  echo "Input deck '${1}' does not exist."
+  echo -e "${NC}"
+  ERRORS="TRUE"
+fi
+
+# Arg 2 is the input path, required for mounting volumes properly
+if [[ -z "${2}" ]]; then
+  echo -e "${RED}"
+  echo "No input path was provided. What path should docker mount for reading?"
+  echo -e "${NC}"
+  usage
+  exit 1
+elif [[ -e "${2}" ]]; then
+  INPUT_DIR="${2}"
+else
+  echo -e "${RED}"
+  echo "Input path '${2}' does not exist"
+  echo -e "${NC}"
+  ERRORS="TRUE"
+fi
+
+# Arg 3 is the freesurfer license file
+if [[ -z "${3}" ]]; then
+  echo -e "${RED}"
+  echo "No FreeSurfer license was provided. This file is required."
+  echo -e "${NC}"
+  usage
+  exit 1
+elif [[ -f "${3}" ]]; then
+  FS_LICENSE="${3}"
+else
+  echo -e "${RED}"
+  echo "FreeSurfer license file '${3}' does not exist"
+  echo -e "${NC}"
+  ERRORS="TRUE"
+fi
+
+# Arg 4 is optional, the output path
+if [[ -z "${4}" ]]; then
+  OUTPUT_DIR=$(pwd)
+elif [[ -e "${4}" ]]; then
+  OUTPUT_DIR="${4}"
+else
+  echo -e "${RED}"
+  echo "Output path '${4}' does not exist"
+  echo -e "${NC}"
+  ERRORS="TRUE"
+fi
+
+# If we encountered command errors, bail out rather than run.
+if [[ "$ERRORS" == "TRUE" ]]; then
+  exit 1
+fi
+
+
+echo "Running from '${INPUT_DIR}' to '${OUTPUT_DIR}', guided by '${INPUT_DECK}'"
+
+
+# Tweak the input deck to utilize docker-volume-mounted paths
+NEW_INPUT_DECK_FILENAME=_dockerized_input_deck.inp
+# INPUT_DECK_DIR="${INPUT_DECK%/*}"
+# INPUT_DECK_FILE="${INPUT_DECK##*/}"
+if [[ -f "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}" ]]; then
+  # The docker-specific input deck already exists. Is that a problem?
+  if [[ "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}" == "${INPUT_DECK}" ]]; then
+    echo -e "${RED}"
+    echo "We need to write a new input deck with paths that work inside docker."
+    echo "But we can't because ${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME} already exists."
+    echo "Please rename it if you'd like to run PICNIC with it."
+    echo -e "${NC}"
+    exit 1
+  else
+    echo "Warning: overwriting ${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}"
+  fi
+fi
+
+# We are creating a new docker-transformed input deck and saving it into the output space.
+cp -a "${INPUT_DECK}" "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}"
+# echo "* Changing '${OUTPUT_DIR}' to '/output'"
+sed -i "s|${OUTPUT_DIR}|/output|g" "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}"
+# echo "* Changing '${INPUT_DIR}' to '/input'"
+sed -i "s|${INPUT_DIR}|/input|g" "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}"
+
+
+# Report our intentions
+echo -e "$RED"
+echo "  Docker mounting input read-only from '${INPUT_DIR}' to 'docker:/input'"
+echo "  Docker mounting output read-write from '${OUTPUT_DIR}' to 'docker:/output'"
+echo "  Writing path-altered input deck to '${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}'"
+echo -e "$NC"
+
+# Execute the input deck with pantry in docker
+HOST_NAME=$(hostname)
+export HOST_NAME
+HOST_UID=$(id -u)
+HOST_GID=$(id -g)
+docker run -it \
+  --env "HOST_NAME" \
+  --user "${HOST_UID}:${HOST_GID}" \
+  --volume="${HOME}:${HOME}:rw" \
+  --volume="/etc/group:/etc/group:ro" \
+  --volume="/etc/passwd:/etc/passwd:ro" \
+  --volume="/etc/shadow:/etc/shadow:ro" \
+  --volume="${INPUT_DIR}":/input:ro \
+  --volume="${OUTPUT_DIR}":/output:rw \
+  --volume="${FS_LICENSE}":/opt/freesurfer/license.txt \
+  ${PICNIC_IMG} "/output/${NEW_INPUT_DECK_FILENAME}"

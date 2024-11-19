@@ -7,8 +7,8 @@ from pathlib import Path
 from nipype import Function
 from nipype.interfaces.utility import Select, Merge
 
-from workflows.custom_workflow_constructors import NipibipyWorkflow
-from interfaces.nibabel_nodes import (
+from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
+from picnic.interfaces.nibabel_nodes import (
     _reorient_image,
     _create_bilateral_atlas,
     _generate_wholebrain_mask,
@@ -17,8 +17,9 @@ from interfaces.nibabel_nodes import (
     _generate_subcortical_mask,
     _generate_ventricle_mask
 )
-from interfaces.io_nodes import _rename_image
-from interfaces.string_template_nodes import _fill_report_template
+from picnic.interfaces.io_nodes import _rename_image
+from picnic.interfaces.string_template_nodes import _fill_report_template
+
 
 # =======================================
 # Constants
@@ -492,8 +493,9 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
         Parameters
         ----------
         """
+
         from nipype.interfaces.freesurfer import ReconAll
-        
+
         # use reconall
         if self.params['execution_type'] == 't1-only':
             self.wf.add_node(
@@ -548,9 +550,9 @@ class ReadReconallWorkflow(ReconallWorkflow):
         Parameters
         ----------
         """
-        import os
+
         from nipype.interfaces.io import FreeSurferSource
-        
+
         # break up provided filepath into freesurfer subject id/dir
         p = os.path.split(self.inflows['filepath'])
         

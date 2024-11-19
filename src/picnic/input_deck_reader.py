@@ -126,7 +126,7 @@ class InputDeck():
         """ A public option for adding cards without a separate file
         
         :Parameters:
-          -. `cardname` : str, the card's name as a string; *pet
+          -. `cardname` : str, the card's name as a string; \*pet
           -. `parameters` : a tuple of strings or a single dict, the optional
             parameters for the card; ('para_key=para_val', 'para_key=para_val')
             or {'para_key':'para_val', 'para_key':'para_val', ...}
@@ -138,8 +138,7 @@ class InputDeck():
             self.cards[-1].add_dataline = dataline
     
 class Card():
-    """ 
-    An object storing all the relevant information for '*' cards
+    """ An object storing all the relevant information for '\*' cards
     
     Card expects a name and a tuple of parameters. The tuple can be empty
     
@@ -149,37 +148,39 @@ class Card():
     default where applicable.
     
     The public attributes that are important:
-        `cardname` - the name of the card; '*image'
-        `parameters` - a dictionary of the parameters; {'para_key': 'para_val'}
-        `datalines` - a nested list of the data lines for each card; 
-          [['filepath'],['arg 1', 'arg 2']]
+        cardname - the name of the card; '\*image'
+        parameters - a dictionary of the parameters; {'para_key': 'para_val'}
+        datalines - a nested list of the data lines for each card; 
+        [['filepath'],['arg 1', 'arg 2']]
     
     Examples
     --------
-    >>> card = Card(*line.lower().split(','))  
+    >>> card = Card(*line.lower().split(','))
     """
+
     def __init__(self, cardname, *parameters):
         """
         :Parameters:
-          -. `cardname` : str, the name of the card; *pet
-          -. `parameters` : an unpacked tuple, packed tuple, list or single
-            dictionary the optional parameters for the card; 
-            'para_key=para_val', 'para_key=para_val', ... or
-            ('para_key=para_val', 'para_key=para_val', ...) or
-            ['para_key=para_val', 'para_key=para_val', ...] or
-            {'para_key':'para_val', 'para_key':'para_val', ...}
-            the optional parameter is where the user defines how the *card
-            should expect to behave or what its attributes may look like
-            
+            -. `cardname` : str, the name of the card; *pet
+            -. `parameters` : an unpacked tuple, packed tuple, list or single
+                dictionary the optional parameters for the card;
+                'para_key=para_val', 'para_key=para_val', ... or
+                ('para_key=para_val', 'para_key=para_val', ...) or
+                ['para_key=para_val', 'para_key=para_val', ...] or
+                {'para_key':'para_val', 'para_key':'para_val', ...}
+                the optional parameter is where the user defines how the *card
+                should expect to behave or what its attributes may look like
         """
+
         self.cardname = cardname
         self.parameters = parameters
         
         # load in the default parameters, then overwrite the with the user 
         #  defined parameters
         default_parameters = self._load_defaults()
-        self.parameters = self.check_parameter_syntax(default_parameters)
-        assert len(self.parameters) == len(default_parameters), 'Error: The optional parameter '+tuple(set(self.parameters.keys()).difference(default_parameters.keys()))[0] + ' is not supported for the card "' + self.cardname + '"'
+        self.parameters = dict(default_parameters, **self.parameters)
+        assert len(self.parameters) == len(default_parameters),\
+            'Error: The optional parameter '+tuple(set(self.parameters.keys()).difference(default_parameters.keys()))[0] + ' is not supported for the card "' + self.cardname + '"'
         
         # initialize the dataline list
         self.datalines = []
@@ -359,7 +360,7 @@ def check_file_exists(filename):
 
 def read_parameter_card(all_the_parameter_lines):
     """
-    A function built to read and execute the *parameter keyword. This has to be
+    A function built to read and execute the \*parameter keyword. This has to be
     in built in a local space outside the typical object structure to try and
     mitigate some of the danger of using the exec command. 
     all_the_parameter_lines = lines of str; this CANNOT be used as a parameter

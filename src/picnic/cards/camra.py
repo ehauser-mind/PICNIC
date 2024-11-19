@@ -5,8 +5,9 @@ import os
 
 # from picnic.cards.card_builder import CardBuilder
 # from picnic.workflows.camra_workflows import LcfCamraWorkflow
-from cards.card_builder import CardBuilder
-from workflows.camra_workflows import LcfCamraWorkflow
+from picnic.cards.card_builder import CardBuilder
+from picnic.workflows.camra_workflows import LcfCamraWorkflow
+
 
 # =======================================
 # Constants
@@ -29,7 +30,7 @@ class Camra(CardBuilder):
     The public attributes that are important:
     none
     """
-    def __init__(self, card=None, **kwargs):
+    def __init__(self, card=None, *args, **kwargs):
         """
         :Parameters:
           -. `card` : a Card obj, must contain Camra parameters
@@ -38,7 +39,7 @@ class Camra(CardBuilder):
         self.card = card
         
         # check the card syntax
-        CardBuilder.__init__(self, self.card, kwargs)
+        super().__init__(card, *args, **kwargs)
         logging.info('  Checking dataline syntax')
         self._check_dataline_syntax(
             expected_lines = '>1', 
