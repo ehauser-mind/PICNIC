@@ -5,8 +5,6 @@
 import sys
 import os
 import json
-import pkgutil
-import copy
 import string
 from pathlib import Path
 

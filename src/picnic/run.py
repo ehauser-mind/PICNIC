@@ -15,19 +15,15 @@ How To Use This Module
 """
 # =======================================
 # Imports
-import sys
 import os
-import shutil
-import glob
 import importlib
 import argparse
 import pandas
 import copy
-import tempfile
 from pathlib import Path
 
-# from picnic.input_deck_reader import read_input_deck
-from input_deck_reader import read_input_deck
+from picnic.input_deck_reader import read_input_deck
+
 
 # =======================================
 # Constants
@@ -104,8 +100,8 @@ class Pipeline():
                 print(card.cardname[1:])
                 instance_name = infer_class_name_from_card_name(card.cardname[1:])
                 module = importlib.import_module(
-                    # 'picnic.cards.' + '_'.join(cardname[1:].lower().split(' '))
-                    'cards.' + '_'.join(card.cardname[1:].lower().split(' ')),
+                    'picnic.cards.' + '_'.join(card.cardname[1:].lower().split(' '))
+                    # 'cards.' + '_'.join(card.cardname[1:].lower().split(' ')),
                 )
                 instance = getattr(module, instance_name)
                 
@@ -163,11 +159,6 @@ def infer_class_name_from_card_name(card_name):
     """
     return ''.join([s.capitalize() for s in card_name.split(' ')])
 
-def initialize_instance_from_keyword(card):
-    """
-    use the key to initialize the keyword class associated to the provided card
-    """
-    return CARD_INSTANCE_KEY[card.cardname[1:]](card)
 
 def insert_parameters(inps, dox_file):
     """
@@ -221,10 +212,10 @@ def insert_parameters(inps, dox_file):
                 new_parameters[parameter_name] = df.loc[parameter_name][run]
             
             # write out the new input deck with the additional parameters
-            new_inp = '_'.join(
+            new_inp = '_'.join([
                 os.path.splitext(os.path.basename(inp))[0],
                 'run' + str(idx).zfill(len(str(number_of_runs))) + '.inp'
-            )
+            ])
             with open(new_inp, 'w') as g:
                 for line in all_lines:
                     _ = g.write(line + '\n')
