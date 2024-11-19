@@ -12,14 +12,16 @@
     /Volumes/Seagate/results/sub-${sub}/ses-${pet_id}
   
   # MRI Imports
-  *Reconall, name=ses-${mri_id}, Type=Execute
-    /data/export/home/eric/BIDSify/irb-${irb}/rawdata/sub-${sub}/ses-${mri_id}/anat/sub-${sub}_ses-${mri_id}_T1w.nii.gz
     
   # PET Imports
+  *Import, name=ses-${mri_id}_t1, Type=nibabel
+    /data/export/home/eric/BIDSify/irb-${irb}/rawdata/sub-${sub}/ses-${mri_id}/anat/sub-${sub}_ses-${mri_id}_T1w.nii.gz
   *Import, name=ses-${pet_id}_pet, Type=nibabel
     /data/export/home/eric/BIDSify/irb-${irb}/rawdata/sub-${sub}/ses-${pet_id}/pet/sub-${sub}_ses-${pet_id}_pet.nii.gz
   
   # Modules
+  *Reconall, name=ses-${mri_id}, Type=Execute
+    ses-${mri_id}_t1.out_file
   *Motion Correction, Name=ses-${pet_id}_moco, Type=twostep, Ref Vol=8, Smooth=4, Crop Start=4
     @ses-${pet_id}_pet.out_file
   *Camra, Name=ses-${pet_id}_coreg, Type=LCF, DOF=6, Cost=mutualinfo
