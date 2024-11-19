@@ -1,0 +1,231 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>picnic.cards.coregistration &mdash; PICNIC 0.0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=282f96c0"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PICNIC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../run.html">The run module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cards.html">Base Card and CardBuilder</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cards.html#functional-cards">Functional Cards</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../workflows.html">PICNIC Nodes and Workflows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reporting.html">Reporting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PICNIC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">picnic.cards.coregistration</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for picnic.cards.coregistration</h1><div class="highlight"><pre>
+<span></span><span class="c1"># =======================================</span>
+<span class="c1"># Imports</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">picnic.cards.card_builder</span> <span class="kn">import</span> <span class="n">CardBuilder</span><span class="p">,</span> <span class="n">make_card</span>
+<span class="c1"># import flirt_coregistration</span>
+<span class="c1"># import register_coregistration</span>
+
+
+<span class="c1"># =======================================</span>
+<span class="c1"># Constants</span>
+<span class="n">AVAILABLE_TYPES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;flirt&#39;</span> <span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="c1"># flirt_coregistration,</span>
+    <span class="s1">&#39;register&#39;</span> <span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="c1"># register_coregistration</span>
+<span class="p">}</span>
+<span class="n">AVAILABLE_COSTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;flirt&#39;</span> <span class="p">:</span> <span class="p">(</span>
+        <span class="s1">&#39;mutualinfo&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;corratio&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;normcorr&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;normmi&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;leastsq&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;labeldiff&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;bbr&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;&#39;</span>
+    <span class="p">),</span>
+    <span class="s1">&#39;register&#39;</span> <span class="p">:</span> <span class="p">(</span>
+        <span class="s1">&#39;mi&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;nmi&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;ecc&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;ncc&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;&#39;</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1"># =======================================</span>
+<span class="c1"># Classes</span>
+<div class="viewcode-block" id="Coregistration">
+<a class="viewcode-back" href="../../../cards.html#picnic.cards.coregistration.Coregistration">[docs]</a>
+<span class="k">class</span> <span class="nc">Coregistration</span><span class="p">(</span><span class="n">CardBuilder</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; A class to create the Coregistration module. Stored here will be </span>
+<span class="sd">    the nodes and connections of the coregistration type chosen.</span>
+<span class="sd">    </span>
+<span class="sd">    The public attributes that are important:</span>
+<span class="sd">    none</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">card</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        card   : a Card obj, iterable or str</span>
+<span class="sd">            The motion correction card</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">card</span> <span class="o">=</span> <span class="n">card</span>
+        
+        <span class="n">CardBuilder</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">card</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;  Checking dataline syntax&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_dataline_syntax</span><span class="p">(</span><span class="s1">&#39;=1&#39;</span><span class="p">,</span> <span class="s1">&#39;=2&#39;</span><span class="p">)</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;  Checking parameter syntax&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_parameter_syntax</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">cinputs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;source&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_datalines</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> 
+                        <span class="s1">&#39;target&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_datalines</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()}</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">card</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_card</span>
+
+    <span class="nd">@card</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">card</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;Error: Must pass either a picnic.Card obj or str to represent the dataline&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">datalines</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_card</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="c1"># if the user passed a list, tuple or dict assume the first item is the dataline for motion correction</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">value</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">values</span><span class="p">()[:</span><span class="mi">2</span><span class="p">])</span>
+            
+            <span class="c1"># create a card on the fly</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_card</span> <span class="o">=</span> <span class="n">make_card</span><span class="p">(</span><span class="s1">&#39;*coregistration&#39;</span><span class="p">,</span> <span class="n">datalines</span><span class="o">=</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Error: Must pass either a picnic.Card obj or str to represent the dataline&#39;</span><span class="p">)</span>
+            
+    <span class="k">def</span> <span class="nf">_check_parameter_syntax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; check all the parameters associated with the module</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check the parameters</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_type</span> <span class="ow">in</span> <span class="n">AVAILABLE_TYPES</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="s1">&#39;Error: Unsupported type &#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">_type</span><span class="o">+</span><span class="s1">&#39; in &#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="s1">&#39; keyword&#39;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cost</span> <span class="ow">in</span> <span class="n">AVAILABLE_COSTS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_type</span><span class="p">],</span> <span class="s1">&#39;Error: Unsupported cost &#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">_cost</span><span class="o">+</span><span class="s1">&#39; in &#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="o">+</span><span class="s1">&#39; keyword&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dof</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_force_parameter_to_integer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dof</span><span class="p">,</span> <span class="s1">&#39;dof&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_crop_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_force_parameter_to_integer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_crop_start</span><span class="p">,</span> <span class="s1">&#39;crop start&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_crop_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_force_parameter_to_integer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_crop_end</span><span class="p">,</span> <span class="s1">&#39;crop end&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_end</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crop_start</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_crop_end</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_smooth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_force_parameter_to_integer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_smooth</span><span class="p">,</span> <span class="s1">&#39;smooth&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_search_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_force_parameter_to_integer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_search_angle</span><span class="p">,</span> <span class="s1">&#39;search angle&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">,</span> <span class="nb">bool</span><span class="p">),</span> <span class="s1">&#39;Error: Coregistration parameter: summary must be a boolean (True or False)&#39;</span>
+        
+<div class="viewcode-block" id="Coregistration.build_workflow">
+<a class="viewcode-back" href="../../../cards.html#picnic.cards.coregistration.Coregistration.build_workflow">[docs]</a>
+    <span class="k">def</span> <span class="nf">build_workflow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">optional_parameters</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; build the nipype workflow, this is the core functionality of this class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if the user has given some custom parameters, use those instead</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_defined_parameters</span><span class="p">(</span><span class="o">**</span><span class="n">optional_parameters</span><span class="p">)</span>
+        
+        <span class="c1"># Standard coregistration workflow goes:</span>
+        <span class="c1">#   1) force all 4d images to be 3d (by averaging 4d images)</span>
+        <span class="c1">#   2) register the source 3d image to the target to get the transformation</span>
+        <span class="c1">#   3) apply the transformation matrix to the original source image</span>
+        <span class="k">return</span> <span class="n">AVAILABLE_TYPES</span><span class="p">[</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;_type&#39;</span><span class="p">]](</span>
+            <span class="n">cost</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;_cost&#39;</span><span class="p">],</span> 
+            <span class="n">dof</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;_dof&#39;</span><span class="p">],</span> 
+            <span class="n">crop_start</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;_crop_start&#39;</span><span class="p">],</span> 
+            <span class="n">crop_end</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;_crop_end&#39;</span><span class="p">],</span> 
+            <span class="n">smooth</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;_smooth&#39;</span><span class="p">],</span> 
+            <span class="n">search_angle</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;_search_angle&#39;</span><span class="p">],</span> 
+            <span class="n">summary</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;_report&#39;</span><span class="p">],</span> 
+            <span class="n">workflow_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+        <span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, The NYSPI MIND Brain Imaging Lab.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

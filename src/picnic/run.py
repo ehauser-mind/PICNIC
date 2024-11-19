@@ -15,18 +15,15 @@ How To Use This Module
 """
 # =======================================
 # Imports
-import sys
 import os
-import shutil
-import glob
 import importlib
 import argparse
 import pandas
 import copy
-import tempfile
 from pathlib import Path
 
 from picnic.input_deck_reader import read_input_deck
+
 
 # =======================================
 # Constants
@@ -100,6 +97,7 @@ class Pipeline():
         # loop over all the cards
         for card in self.inp.cards:
             if not card.cardname[1:] == 'sink':
+                print(card.cardname[1:])
                 instance_name = infer_class_name_from_card_name(card.cardname[1:])
                 module = importlib.import_module(
                     'cards.' + '_'.join(card.cardname[1:].lower().split(' '))
@@ -113,17 +111,17 @@ class Pipeline():
                     for data in dataline:
                         if data.startswith('@'):
                             # set up a control flow to parse instance calls
-                            spliter = data[1:].split('.')
-                            if len(spliter) == 2:
+                            splitter = data[1:].split('.')
+                            if len(splitter) == 2:
                                 try:
-                                    data = self.pipeline_instances[spliter[0]].outflows[spliter[1]]
+                                    data = self.pipeline_instances[splitter[0]].outflows[splitter[1]]
                                 except KeyError:
-                                    raise Exception('Error: The outflow "' + spliter[1] + '" is not available for instance "' + spliter[0] + '"')
-                            elif len(spliter) == 1:
-                                data = list(self.pipeline_instances[spliter[0]].outflows.values())[0]
+                                    raise Exception('Error: The outflow "' + splitter[1] + '" is not available for instance "' + splitter[0] + '"')
+                            elif len(splitter) == 1:
+                                data = list(self.pipeline_instances[splitter[0]].outflows.values())[0]
                             else:
                                 raise Exception('Error: Syntax issue with data line "' + data + '"')
-                            
+
                         new_dataline.append(data)
                     new_datalines.append(new_dataline)
                 card.datalines = new_datalines
@@ -166,6 +164,7 @@ def infer_class_name_from_card_name(card_name):
       -.  a string
     """
     return ''.join([s.capitalize() for s in card_name.split(' ')])
+
 
 def insert_parameters(inps, dox_file):
     """
@@ -219,10 +218,10 @@ def insert_parameters(inps, dox_file):
                 new_parameters[parameter_name] = df.loc[parameter_name][run]
             
             # write out the new input deck with the additional parameters
-            new_inp = '_'.join(
+            new_inp = '_'.join([
                 os.path.splitext(os.path.basename(inp))[0],
                 'run' + str(idx).zfill(len(str(number_of_runs))) + '.inp'
-            )
+            ])
             with open(new_inp, 'w') as g:
                 for line in all_lines:
                     _ = g.write(line + '\n')
@@ -253,5 +252,5 @@ if __name__ == '__main__':
         # create a running tally of failed runs
         except:
             failed_runs.append(inp)
-    
+
     print('Failed runs:\n\t' + str(failed_runs))
