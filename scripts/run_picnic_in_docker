@@ -1,9 +1,12 @@
 #!/bin/bash
 
 RED='\033[0;31m'
+CYAN='\033[0;36m'
 NC='\033[0m' # No Color
-PICNIC_IMG="mfschmidt/picnic:0.0.5"
+PICNIC_IMG="mfschmidt/picnic:0.0.6d"
 
+# TODO: Figure out how to make this another user-modifiable option.
+WORK_DIR=/var/tmp/picnic
 
 # Provide usage instructions
 function usage {
@@ -144,7 +147,7 @@ sed -i "s|${INPUT_DIR}|/input|g" "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}"
 
 
 # Report our intentions
-echo -e "$RED"
+echo -e "$CYAN"
 echo "  Docker mounting input read-only from '${INPUT_DIR}' to 'docker:/input'"
 echo "  Docker mounting output read-write from '${OUTPUT_DIR}' to 'docker:/output'"
 echo "  Writing path-altered input deck to '${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}'"
@@ -164,5 +167,6 @@ docker run -it \
   --volume="/etc/shadow:/etc/shadow:ro" \
   --volume="${INPUT_DIR}":/input:ro \
   --volume="${OUTPUT_DIR}":/output:rw \
+  --volume="${WORK_DIR}":/work:rw \
   --volume="${FS_LICENSE}":/opt/freesurfer/license.txt \
   ${PICNIC_IMG} "/output/${NEW_INPUT_DECK_FILENAME}"
