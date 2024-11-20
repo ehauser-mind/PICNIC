@@ -131,11 +131,14 @@ class ReconallWorkflow():
         """ combine all the reoriented images to one volume and rename the file
         """
         # create an iterable connection for all outflows
+        for idx, a in enumerate(FREESURFER_OUTFLOWS_TO_EXPOSE):
+            print(f"  - inflow - 'in{str(idx + 1)}': '@execute_reconall.{a}'")
         self.wf.add_node(
             interface = Merge(len(FREESURFER_OUTFLOWS_TO_EXPOSE)),
             name = 'merge_outflows_to_expose',
             inflows = dict(
-                [['in' + str(idx + 1), '@execute_reconall.' + a] for idx, a in enumerate(FREESURFER_OUTFLOWS_TO_EXPOSE)]
+                [['in' + str(idx + 1), '@execute_reconall.' + a]
+                 for idx, a in enumerate(FREESURFER_OUTFLOWS_TO_EXPOSE)]
             ),
             outflows = (
                 'out',
