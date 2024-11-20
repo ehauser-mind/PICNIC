@@ -14,7 +14,7 @@
   # MRI Imports
   *Import, name=${subject_id}_t1w, Type=nibabel
     ${t1w_path}
-    
+
   # PET Imports
   *Import, name=${subject_id}_pet, Type=nibabel
     ${pet_path}
