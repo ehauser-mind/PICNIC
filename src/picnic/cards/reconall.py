@@ -78,6 +78,7 @@ class Reconall(CardBuilder):
                     self._name,
                     outflow + '.nii.gz'
                 )
+            print(f" ** ReconAll created outflow: '{outflow}' = '{self.outflows[outflow]}'")
         
     
     def build_workflow(self, sink_directory='', **optional_parameters):
