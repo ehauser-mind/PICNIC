@@ -21,7 +21,7 @@
   
   # Modules
   *Reconall, name=ses-${mri_id}, Type=Execute
-    ses-${mri_id}_t1.out_file
+    @ses-${mri_id}_t1.out_file
   *Motion Correction, Name=ses-${pet_id}_moco, Type=twostep, Ref Vol=8, Smooth=4, Crop Start=4
     @ses-${pet_id}_pet.out_file
   *Camra, Name=ses-${pet_id}_coreg, Type=LCF, DOF=6, Cost=mutualinfo
