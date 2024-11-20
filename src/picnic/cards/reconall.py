@@ -37,10 +37,8 @@ class Reconall(CardBuilder):
     """
     def __init__(self, card=None, **kwargs):
         """
-        Parameters
-        ----------
-        card   : a Card obj, iterable or str
-            The motion correction card
+        :Parameters:
+          -. `card` : a Card obj, must contain Reconall parameters
         """
         self.cardname = 'reconall'
         self.card = card
@@ -56,23 +54,44 @@ class Reconall(CardBuilder):
         
         # workflow standard attributes
         self.inflows = {'in_files' : [d[0] for d in self._datalines]}
-    
-    def build_workflow(self, sink_directory='', **optional_parameters):
-        """ build the nipype workflow, this is the core functionality of this class
-        """
-        # if the user has given some custom parameters, use those instead
-        params = self._user_defined_parameters(**optional_parameters)
-        
-        # set the outflows
-        if not sink_directory:
-            sink_directory = os.getcwd()
         self.outflows = {}
-        for outflow in ['T1', 'aseg', 'brainmask', 'wm', 'wmparc', 'bilateral', 'wm_mask', 'gm_mask']:
+        self.set_outflows()
+    
+    def set_outflows(self, sink_directory=''):
+        """
+        change the outflows to include the sink directory and change instance
+        calls, to file-like strings
+        """
+        for outflow in [
+            'T1',
+            'aseg',
+            'wholebrain_mask',
+            'wmparc',
+            'bilateral_wmparc',
+            'wm_mask',
+            'gm_mask',
+            'subcortical_mask',
+            'ventricle_mask'
+        ]:
             self.outflows[outflow] = os.path.join(
                     sink_directory,
                     self._name,
                     outflow + '.nii.gz'
                 )
+            print(f" ** ReconAll created outflow: '{outflow}' = '{self.outflows[outflow]}'")
+        
+    
+    def build_workflow(self, sink_directory='', **optional_parameters):
+        """
+        build the nipype workflow, this is the core functionality of this class
+        """
+        # if the user has given some custom parameters, use those instead
+        params = self._user_defined_parameters(**optional_parameters)
+        params['name'] = self._name
+        
+        # set the outflows
+        if not sink_directory:
+            sink_directory = os.getcwd()
         
         # Standard reconall workflow goes:
         #   1) either
@@ -80,10 +99,6 @@ class Reconall(CardBuilder):
         #       b) run recon-all on a set of images
         #   2) create a report
         return AVAILABLE_TYPES[params['_type']](
-            {
-                'name' : self._name,
-                'execution_type' : params['_execution_type'],
-                'report' : params['_report']
-            },
-            self.inflows['in_files']
+            params,
+            self.inflows
         ).build_workflow(sink_directory)

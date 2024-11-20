@@ -29,36 +29,27 @@ class ScanViewer(OrthoSlicer3D):
     Examples
     --------
     >>> from picnic.input_deck_reader import InputDeck
-    >>> from scan import Scan
     >>> inp = InputDeck('example.inp')
-    >>> pet = Scan(inp.cards['pet'][0])
-    >>> pet.import_and_save_nii(os.getcwd())
-    >>> viewer = ScanViewer(pet.scan)
+    >>> viewer = ScanViewer(inp.cards[0])
     
     """
     def __init__(self, fdata, expected=None, scan_size=None, affine=None, axes=None, title='Scan Viewer'):
         """
-        Parameters
-        ----------
-        fdata : array-like object; 3D or 4D
-            The data to show, can be suvs or raw data
-        expected : array-like object; 3D or 4D, optional
-            The user can pass an expected scan to compare results for quality 
-            control purposes.
-        scan_size : array-like object; 3D
-            Describes the size of the scan in measurable units, not indexes
-        affine : array-like or None, optional
-            Affine transform for the data. This is used to determine
-            how the data should be sliced for plotting into the sagittal,
-            coronal, and axial view axes. If None, identity is assumed.
-            The aspect ratio of the data are inferred from the affine
+        :Parameters:
+          -. `fdata` : array-like object, the imgplot values of the scan
+          -. `expected` : array-like object or None the user can pass an
+            expected scan to overlay it.
+          -. `scan_size` : 3d array-like object; describes the size of the scan
+            in measurable units, not indexes
+          -. `affine` : array-like or None, affine transform for the data. This
+            is used to determine how the data should be sliced for plotting into
+            the sagittal, coronal, and axial view axes. If None, identity is 
+            assumed. The aspect ratio of the data are inferred from the affine
             transform.
-        axes : tuple of mpl.Axes or None, optional
-            3 or 4 axes instances for the 3 slices plus volumes,
-            or None (default).
-        title : str or None, optional
-            The title to display. Can be None (default) to display no
-            title.
+          -. axes : tuple of mpl.Axes or None, 3 or 4 axes instances for the 3
+            slices plus volumes, or None (default).
+          -. title : str or None, the title to display. Can be None (default)
+            to display no title.
         """
         # get the averaged data and sset all values less than 0 to 0 for vizualization
         try:
@@ -96,7 +87,8 @@ class ScanViewer(OrthoSlicer3D):
                 
         
     def build(self):
-        """ Build the viewer to look like this:
+        """
+        build the viewer to look like this:
            ^ +---------+   ^ +---------+  +---+
            | |         |   | |         |  |   |
              |   Sag   |     |   Cor   |  | c |
@@ -160,14 +152,18 @@ class ScanViewer(OrthoSlicer3D):
         self.bExit.on_clicked(self._exit_clicked)
         
     def adjust_slice_aspect_ratios(self, scan_size):
-        # change the aspect ratio of the im plots
+        """
+        change the aspect ratio of the im plots
+        """
         for ax, coords in zip(self._axes[:3], ((0, 2), (1, 2), (0, 1))):
             ax.set_adjustable('box')
             ar = (self._data.shape[coords[0]]/self._data.shape[coords[1]]) * (scan_size[coords[1]]/scan_size[coords[0]])
             ax.set_aspect(ar)
-
     
     def reset_viewer(self):
+        """
+        reset the viewer
+        """
         if self.end_frame>0:
             self.sFrame.val = int(self.end_frame/2)
             self._set_volume_index(int(self.end_frame/2), update_slices=True)
@@ -175,7 +171,9 @@ class ScanViewer(OrthoSlicer3D):
         self._set_position(*[i/2. for i in self._data.shape[:3]], notify=True)
         
     def plot_histogram(self, log=True, numOfBins=100):
-        # remove the OrthoSlicer3D volume plot, we will replace this with our histogram plot
+        """
+        overload the OrthoSlicer3D volume plotwith our histogram plot
+        """
         if self.end_frame==0:
             for fig in self._figs:
                 x = self._axes[1].get_position().x0
@@ -222,10 +220,15 @@ class ScanViewer(OrthoSlicer3D):
             ax.set_xscale('log', basex=np.e)
         
     def _slider_update(self, val):
-        # set the slider value equal to the frame number and upate the canvas
+        """
+        set the slider value equal to the frame number and upate the canvas
+        """
         self._set_volume_index(self.sFrame.val, update_slices=True)
-
+    
     def _play_clicked(self, *arg):
+        """
+        private methodto actively change the slider
+        """
         frame = self.sFrame.val
         while self.cPlay.get_status()[0]:
             self._plt.pause(1.)
@@ -237,24 +240,35 @@ class ScanViewer(OrthoSlicer3D):
             self._set_volume_index(frame, update_slices=True)
     
     def _print_clicked(self, *arg):
+        """
+        private method to update the figure with every slider adjustment
+        """
         self._plt.savefig('fig.png')
         
     def _compare_clicked(self, *arg):
+        """
+        open a new scan viewer to investigate ONLY the overlaid image
+        """
         viewer = ScanViewer(self.e_scan)
         viewer.build()
         viewer._plt.show()
 
     def _exit_clicked(self, *arg):
+        """
+        close the figure
+        """
         self._plt.close('all')
 
     def show(self):
-        """Override the OrthoSlicer3D show method... Show the slicer in 
-        blocking mode; convenience for ``plt.show()``
+        """
+        ovverload the OrthoSlicer3D show method... Show the slicer in 
+        blocking mode; convenience for `plt.show()`
         """
         self._plt.show(block=False)
 
     def _draw(self):
-        """ Override the OrthoSlicer's draw method to remove the volume plot 
+        """
+        ovverride the OrthoSlicer's draw method to remove the volume plot 
         and replace with our own... Update all four (or three) plots
         """
         if self._closed:  # make sure we don't draw when we shouldn't
@@ -271,9 +285,15 @@ class ScanViewer(OrthoSlicer3D):
 # =======================================
 # Functions
 def create_button(BB, label=None, color='lightgrey', hovercolor='grey'):
+    """
+    we create a couple buttons so we create a function to generate them
+    """
     return Button(plt.axes(BB), label=label, color=color, hovercolor=hovercolor)
     
 def create_bins(n, bounds, log=False):
+    """
+    use numpy to create to automatically create the bin sizes for our histogram
+    """
     if not log:
         return np.linspace(bounds[0], bounds[1], n)
     else:

@@ -1,6 +1,7 @@
 # =======================================
 # Imports
 import logging
+import os
 
 # from picnic.cards.card_builder import CardBuilder
 # from picnic.workflows.camra_workflows import LcfCamraWorkflow
@@ -29,18 +30,16 @@ class Camra(CardBuilder):
     The public attributes that are important:
     none
     """
-    def __init__(self, card=None, **kwargs):
+    def __init__(self, card=None, *args, **kwargs):
         """
-        Parameters
-        ----------
-        card   : a Card obj, iterable or str
-            The motion correction card
+        :Parameters:
+          -. `card` : a Card obj, must contain Camra parameters
         """
         self.cardname = 'camra'
         self.card = card
         
         # check the card syntax
-        CardBuilder.__init__(self, self.card, kwargs)
+        super().__init__(card, *args, **kwargs)
         logging.info('  Checking dataline syntax')
         self._check_dataline_syntax(
             expected_lines = '>1', 
@@ -62,29 +61,45 @@ class Camra(CardBuilder):
                 self.inflows['gmmask'] = filename
             elif 'ct' in filename:
                 self.inflows['ct'] = filename
+        self.outflows = {}
+        self.set_outflows()
+    
+    def set_outflows(self, sink_directory=''):
+        """
+        change the outflows to include the sink directory and change instance
+        calls, to file-like strings
+        """
+        self.outflows = {
+            'out_file' : os.path.join(
+                sink_directory,
+                self._name,
+                self._name + '.nii.gz'
+            ),
+            'mats' : os.path.join(
+                sink_directory,
+                self._name,
+                self._name + '.mat'
+            )
+        }
     
     def build_workflow(self, sink_directory='', **optional_parameters):
-        """ build the nipype workflow, this is the core functionality of this class
+        """
+        build the nipype workflow, this is the core functionality of this class
         """
         # if the user has given some custom parameters, use those instead
         params = self._user_defined_parameters(**optional_parameters)
+        params['name'] = self._name
         
-        # Standard reconall workflow goes:
-        #   1) either
-        #       a) read in an existing freesurfer file
-        #       b) run recon-all on a set of images
-        #   2) create a report
+        # set the outflows
+        if not sink_directory:
+            sink_directory = os.getcwd()
+        
+        # Standard camra workflow goes:
+        #   1) take 4d image and tmean it
+        #   2) coregister using flirt and spm 20 different systems
+        #   3) using the defined cost function, determine the best option
+        #   4) create the report
         return AVAILABLE_TYPES[params['_type']](
-            {
-                'name' : self.cardname,
-                'cost' : params['_cost'],
-                'dof' : params['_dof'],
-                'crop_start' : params['_crop_start'],
-                'crop_end' :params['_crop_end'],
-                'smooth' : params['_smooth'],
-                'search_angle' : params['_search_angle'],
-                'rank' : params['_rank'],
-                'report' : params['_report']
-            },
+            params,
             self.inflows
         ).build_workflow(sink_directory)

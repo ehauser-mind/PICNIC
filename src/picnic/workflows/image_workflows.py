@@ -264,7 +264,8 @@ class NibabelLoadWorkflow(ImageWorkflow):
         inflows - list
             list of file-like strs
         """
-        super().__init__(params, {'in_files' : inflows})
+        params['type'] = 'nibabel'
+        super().__init__(params, inflows)
         self.params['method'] = 'nibabel'
     
     def convert_to_nii(self):
@@ -308,7 +309,8 @@ class Dcm2niixWorkflow(ImageWorkflow):
         inflows - list
             list of file-like strs
         """
-        super().__init__(params, {'in_files' : inflows})
+        params['type'] = 'dcm2niix'
+        super().__init__(params, inflows)
         self.params['method'] = 'dcm2niix'
     
     def convert_to_nii(self):
@@ -374,7 +376,8 @@ class Dcm2niiWorkflow(ImageWorkflow):
         inflows - list
             list of file-like strs
         """
-        super().__init__(params, {'in_files' : inflows})
+        params['type'] = 'dcm2nii'
+        super().__init__(params, inflows)
         self.params['method'] = 'dcm2nii'
     
     def convert_to_nii(self):

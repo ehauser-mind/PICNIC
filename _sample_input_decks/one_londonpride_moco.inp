@@ -1,0 +1,6 @@
+*start
+  *sink
+    /home/mike/picnic_test
+  *motion correction, name=moco-1, type=mcflirt, ref vol=8, smooth=4, crop start=false, crop end=false, cost=corratio, mean=false, search angle=0, celtc=0, ct=false, report=true
+    /home/mike/mnt/brunodata/pet/ds001705/sub-000101/ses-baseline/pet/sub-000101_ses-baseline_pet.nii
+*end
