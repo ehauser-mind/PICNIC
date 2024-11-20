@@ -122,7 +122,7 @@ class CardBuilder():
         
     def _user_defined_parameters(self, **optional_parameters):
         """
-        if the user has passed some non-default parameters, check that they
+        If the user has passed some non-default parameters, check that they
         are compatible and return the new user-defined parameters along with a 
         dict of the "non-overwritten" defaults.
         

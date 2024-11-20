@@ -3,18 +3,14 @@
 import logging
 import os
 
-# from picnic.cards.card_builder import CardBuilder
-# from picnic.workflows.image_workflows import (
-    # NibabelLoadWorkflow,
-    # Dcm2niixWorkflow,
-    # Dcm2niiWorkflow
-# )
-from cards.card_builder import CardBuilder
-from workflows.image_workflows import (
+from picnic.cards.card_builder import CardBuilder
+from picnic.workflows.image_workflows import (
     NibabelLoadWorkflow,
     Dcm2niixWorkflow,
     Dcm2niiWorkflow
 )
+
+
 # =======================================
 # Constants
 AVAILABLE_TYPES = {
