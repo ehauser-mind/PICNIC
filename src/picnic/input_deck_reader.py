@@ -178,9 +178,13 @@ class Card():
         # load in the default parameters, then overwrite the with the user 
         #  defined parameters
         default_parameters = self._load_defaults()
-        self.parameters = dict(default_parameters, **self.parameters)
-        assert len(self.parameters) == len(default_parameters),\
-            'Error: The optional parameter '+tuple(set(self.parameters.keys()).difference(default_parameters.keys()))[0] + ' is not supported for the card "' + self.cardname + '"'
+        self.parameters = self.check_parameter_syntax(default_parameters)
+        assert len(self.parameters) == (
+            len(default_parameters),
+            ('Error: The optional parameter ' +
+             tuple(set(self.parameters.keys()).difference(default_parameters.keys()))[0] +
+             ' is not supported for the card "' + self.cardname + '"')
+        )
         
         # initialize the dataline list
         self.datalines = []
