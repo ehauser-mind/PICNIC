@@ -153,7 +153,7 @@ class Card():
     
     Examples
     --------
-    >>> card = Card(*line.lower().split(','))  
+    >>> card = Card(*line.lower().split(','))
     """
 
     def __init__(self, cardname, *parameters):
