@@ -154,6 +154,7 @@ def create_parser():
     )
     return parser
 
+
 def infer_class_name_from_card_name(card_name):
     """
     returns a string of the suspected class name by giving a card name. This
@@ -250,6 +251,7 @@ if __name__ == '__main__':
     for k, v in os.environ.items():
         print(f"  '{k}': '{v}'")
 
+    # create the pipelines
     pipelines = []
     failed_runs = []
     for inp in arginputs.inps:
