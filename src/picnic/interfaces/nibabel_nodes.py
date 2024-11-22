@@ -23,30 +23,50 @@ def _reorient_image(in_file, gz=True):
 
     import os
     import nibabel as nib
+    from nibabel.orientations import OrientationError
     from picnic.interfaces.utility import nibabel_image_types
 
 
     # open the image with nibabel
+    base_name = ""
     dirname, filename = os.path.split(in_file)
     for img_type in nibabel_image_types:
         if filename.endswith(img_type):
-            basename = filename.replace(img_type, '')
+            base_name = filename.replace(img_type, '')
             break
     orig_image = nib.load(in_file)
-    if orig_image is not None:
+    if orig_image is None:
+        print(f"SHIT! Failed to load '{in_file}' - orig_image is None")
+    else:
         print(f"Loaded image for reorientation, shaped {orig_image.shape}")
 
     # grab the important image parameters
     # TODO: Eric reports that having a non-diagonal affine breaks FLIRT.
     #       I'm sure he's right, but I can't find any information, so I'll see what happens.
-    reornt_image = nib.funcs.as_closest_canonical(orig_image, enforce_diag=False)
-    
+    try:
+        reoriented_image = nib.funcs.as_closest_canonical(orig_image, enforce_diag=True)
+    except OrientationError:
+        print("WARNING!")
+        print(f"WARNING! The image '{in_file}' has a non-diagonal affine.")
+        print(f"WARNING! We are hacking up a new fake diagnoal affine.")
+        print("WARNING!")
+        affine = orig_image.affine
+        ornt, flip = [], []
+        for idx in range(3):
+            v = affine[idx, :3]
+            v_hat = v / (v ** 2).sum() ** 0.5
+
+            ornt.append(list(v_hat).index(max(v_hat, key=abs)))
+            flip.append(int(round(v_hat.sum(), 0)))
+        reoriented_image = orig_image.as_reoriented([[a, flip[a]] for a in ornt])
+
     # save out the new image
     if gz:
-        new_image_path = os.path.join(os.getcwd(), basename+'_reoriented.nii.gz')
+        new_image_path = os.path.join(os.getcwd(), f"{base_name}_reoriented.nii.gz")
     else:
-        new_image_path = os.path.join(os.getcwd(), basename+'_reoriented.nii')
-    nib.save(reornt_image, new_image_path)
+        new_image_path = os.path.join(os.getcwd(), f"{base_name}_reoriented.nii")
+    print(f"Saving reoriented image as '{new_image_path}'")
+    nib.save(reoriented_image, new_image_path)
     
     return new_image_path
 

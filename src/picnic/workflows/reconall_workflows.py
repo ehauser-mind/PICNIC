@@ -126,6 +126,12 @@ class ReconallWorkflow():
     def execute_reconall(self):
         """ this will be overloaded by all its children
         """
+
+        print("ERROR: ")
+        print("ERROR: This 'ReconallWorkflow::execute_reconall' ")
+        print("ERROR: should have been overloaded and never run.")
+        print("ERROR: ")
+
         pass
     
     def reorient_outflows(self):

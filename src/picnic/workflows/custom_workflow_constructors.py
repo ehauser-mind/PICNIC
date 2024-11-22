@@ -35,7 +35,7 @@ class NipibipyWorkflow():
         self.all_nodes = {}
         
         # self.workflow = Workflow(name)
-        self.workflow = Workflow(name, base_dir=os.path.join(sink_directory))
+        self.workflow = Workflow(name, base_dir='/work/')
         self.sink = False
         if sink_directory:
             self.sink = Node(

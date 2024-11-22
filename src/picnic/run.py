@@ -245,6 +245,11 @@ if __name__ == '__main__':
     arginputs = ProcessInputs(pargs)
 
     # create the pipelines
+
+    print("Environment variables:")
+    for k, v in os.environ.items():
+        print(f"  '{k}': '{v}'")
+
     pipelines = []
     failed_runs = []
     for inp in arginputs.inps:
