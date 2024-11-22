@@ -125,6 +125,12 @@ class ReconallWorkflow():
     def execute_reconall(self):
         """ this will be overloaded by all its children
         """
+
+        print("ERROR: ")
+        print("ERROR: This 'ReconallWorkflow::execute_reconall' ")
+        print("ERROR: should have been overloaded and never run.")
+        print("ERROR: ")
+
         pass
     
     def reorient_outflows(self):
@@ -499,6 +505,12 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
 
         from nipype.interfaces.freesurfer import ReconAll
 
+        print("GOOD: ")
+        print("GOOD: This 'ExecuteReconallWorkflow::execute_reconall' ")
+        print("GOOD: will actually run reconall.")
+        print("GOOD: ")
+        print(self.params)
+
         # use reconall
         if self.params['execution_type'] == 't1-only':
             self.wf.add_node(
@@ -509,6 +521,7 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
+            print(f"  - inflow - 'T1_files': '{self.inflows['t1s']}'")
         elif self.params['execution_type'] == 't2':
             self.wf.add_node(
                 interface = ReconAll(),
@@ -520,6 +533,9 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
+            print(f"  - inflow - 'subject_id': '{self.inflows['t1s']}'")
+            print(f"  - inflow - 'subjects_dir': '{self.inflows['t2']}'")
+            print(f"  - inflow - 'use_T2': '{True}'")
         elif self.params['execution_type'] == 'flair':
             self.wf.add_node(
                 interface = ReconAll(),
@@ -531,7 +547,10 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
-    
+            print(f"  - inflow - 'T1_files': '{self.inflows['t1s']}'")
+            print(f"  - inflow - 'FLAIR_file': '{self.inflows['flair']}'")
+            print(f"  - inflow - 'use_FLAIR': '{True}'")
+
 class ReadReconallWorkflow(ReconallWorkflow):
     """ read a freesurfer directory using nipype's FreeSurferSource 
     """
@@ -556,6 +575,11 @@ class ReadReconallWorkflow(ReconallWorkflow):
 
         from nipype.interfaces.io import FreeSurferSource
 
+        print("GOOD: ")
+        print("GOOD: This 'ReadReconallWorkflow::execute_reconall' ")
+        print("GOOD: will actually run reconall.")
+        print("GOOD: ")
+
         # break up provided filepath into freesurfer subject id/dir
         p = os.path.split(self.inflows['filepath'])
         
@@ -570,3 +594,5 @@ class ReadReconallWorkflow(ReconallWorkflow):
             outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
         )
 
+        print(f"  - inflow - 'subject_id': '{p[1]}'")
+        print(f"  - inflow - 'subjects_dir': '{p[0]}'")

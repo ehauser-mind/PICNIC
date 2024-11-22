@@ -113,6 +113,9 @@ class Pipeline():
                         if data.startswith('@'):
                             outflow_instance, outflow = data[1:].split('.')
                             print('\t'.join([outflow_instance, outflow]))
+                            print("possible outflows: {}".format(
+                                ','.join(self.pipeline_instances[outflow_instance].outflows.keys())
+                            ))
                             # should include error catch about not able to find instance
                             data = self.pipeline_instances[outflow_instance].outflows[outflow]
                             # print(data)
@@ -234,10 +237,13 @@ if __name__ == '__main__':
     parser = create_parser()
     pargs = parser.parse_args()
     arginputs = ProcessInputs(pargs)
-    
+
+    print("Environment variables:")
+    for k, v in os.environ.items():
+        print(f"  '{k}': '{v}'")
+
     pipelines = []
     for inp in arginputs.inps:
         pipeline = Pipeline(inp)
         pipeline.build_workflow()
         pipelines.append(pipeline)
-        
