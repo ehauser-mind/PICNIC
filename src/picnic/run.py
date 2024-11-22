@@ -26,8 +26,7 @@ import copy
 import tempfile
 from pathlib import Path
 
-# from picnic.input_deck_reader import read_input_deck
-from input_deck_reader import read_input_deck
+from picnic.input_deck_reader import read_input_deck
 
 # =======================================
 # Constants
@@ -101,11 +100,9 @@ class Pipeline():
         # loop over all the cards
         for card in self.inp.cards:
             if not card.cardname[1:] == 'sink':
-                print(card.cardname[1:])
                 instance_name = infer_class_name_from_card_name(card.cardname[1:])
                 module = importlib.import_module(
-                    # 'picnic.cards.' + '_'.join(cardname[1:].lower().split(' '))
-                    'cards.' + '_'.join(card.cardname[1:].lower().split(' ')),
+                    'cards.' + '_'.join(card.cardname[1:].lower().split(' '))
                 )
                 instance = getattr(module, instance_name)
                 
@@ -115,11 +112,18 @@ class Pipeline():
                     new_dataline = []
                     for data in dataline:
                         if data.startswith('@'):
-                            outflow_instance, outflow = data[1:].split('.')
-                            print('\t'.join([outflow_instance, outflow]))
-                            # should include error catch about not able to find instance
-                            data = self.pipeline_instances[outflow_instance].outflows[outflow]
-                            # print(data)
+                            # set up a control flow to parse instance calls
+                            spliter = data[1:].split('.')
+                            if len(spliter) == 2:
+                                try:
+                                    data = self.pipeline_instances[spliter[0]].outflows[spliter[1]]
+                                except KeyError:
+                                    raise Exception('Error: The outflow "' + spliter[1] + '" is not available for instance "' + spliter[0] + '"')
+                            elif len(spliter) == 1:
+                                data = list(self.pipeline_instances[spliter[0]].outflows.values())[0]
+                            else:
+                                raise Exception('Error: Syntax issue with data line "' + data + '"')
+                            
                         new_dataline.append(data)
                     new_datalines.append(new_dataline)
                 card.datalines = new_datalines
@@ -162,12 +166,6 @@ def infer_class_name_from_card_name(card_name):
       -.  a string
     """
     return ''.join([s.capitalize() for s in card_name.split(' ')])
-
-def initialize_instance_from_keyword(card):
-    """
-    use the key to initialize the keyword class associated to the provided card
-    """
-    return CARD_INSTANCE_KEY[card.cardname[1:]](card)
 
 def insert_parameters(inps, dox_file):
     """
@@ -244,9 +242,16 @@ if __name__ == '__main__':
     pargs = parser.parse_args()
     arginputs = ProcessInputs(pargs)
     
+    # create the pipelines
     pipelines = []
+    failed_runs = []
     for inp in arginputs.inps:
-        pipeline = Pipeline(inp)
-        pipeline.build_workflow()
-        pipelines.append(pipeline)
-        
+        try:
+            pipeline = Pipeline(inp)
+            pipeline.build_workflow()
+            pipelines.append(pipeline)
+        # create a running tally of failed runs
+        except:
+            failed_runs.append(inp)
+    
+    print('Failed runs:\n\t' + str(failed_runs))
