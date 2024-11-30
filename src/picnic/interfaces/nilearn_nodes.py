@@ -505,8 +505,8 @@ def _create_report(type_, in_files, additional_args=[]):
         # create vertical lines for the current and reference frame
         _ = ax.vlines(
             t[frame],
-            min(dofs[:, :3]),
-            max(dofs[:, :3]),
+            np.min(dofs[:, :3]),
+            np.max(dofs[:, :3]),
             colors = 'r',
             linestyles = 'dashed',
             label = 'current'
@@ -514,8 +514,8 @@ def _create_report(type_, in_files, additional_args=[]):
         if ref_frame is not None:
             _ = ax.vlines(
                 ref_frame,
-                min(dofs[:, :3]),
-                max(dofs[:, :3]),
+                np.min(dofs[:, :3]),
+                np.max(dofs[:, :3]),
                 colors = 'g',
                 linestyles = 'dashed',
                 label = 'ref'
