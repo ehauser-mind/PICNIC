@@ -14,6 +14,7 @@ from nipype.interfaces.fsl.maths import ApplyMask, BinaryMaths, MathsCommand
 from nipype.interfaces.fsl import (
     IsotropicSmooth, MeanImage, FLIRT, ApplyXFM, BET
 )
+
 # from picnic.interfaces.nibabel_nodes import _reorient_image, _crop_image, _binarize_images, _resample_image
 # from picnic.interfaces.custom_fsl_interfaces import ApplyXfm4D
 # from picnic.interfaces.io_nodes import _rename_image, _find_associated_sidecar, _rename_textfile
@@ -26,7 +27,6 @@ from interfaces.io_nodes import _rename_image, _find_associated_sidecar, _rename
 from interfaces.nilearn_nodes import _create_report
 from interfaces.string_template_nodes import _fill_report_template
 from workflows.custom_workflow_constructors import NipibipyWorkflow
-
 
 # =======================================
 # Constants
@@ -481,8 +481,6 @@ class CamraWorkflow():
         """ coregister each source to each target using different registration
         softwares
         """
-
-
         # sources
         sources = ['@tmean.out_file']
         if not self.inflows['ct'] is None:
@@ -559,6 +557,7 @@ class CamraWorkflow():
             ]
         )
         
+        """
         # prepare spm for its coregistration
         self.wf.add_mapnode(
             interface = Function(
@@ -633,6 +632,7 @@ class CamraWorkflow():
                 'out',
             )
         )
+        """
         
     def pick_best_coregistration(self):
         """ this will be overloaded by all its children
@@ -838,7 +838,8 @@ class LcfCamraWorkflow(CamraWorkflow):
             name = 'get_mats_from_coregs',
             inflows = {
                 'in_file' : '@merge_all_sources',
-                'reference' : '@merge_coregs',
+                # 'reference' : '@merge_coregs',
+                'reference' : '@flirt_coregistration',
                 'cost' : 'corratio',
                 'dof' : 6
             },
