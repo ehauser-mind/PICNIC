@@ -72,6 +72,72 @@ RUN mkdir /opt/convert3d && \
     curl -fsSL --retry 5 https://sourceforge.net/projects/c3d/files/c3d/Experimental/c3d-1.4.0-Linux-gcc64.tar.gz/download \
     | tar -xz -C /opt/convert3d --strip-components 1
 
+# Matlab MCR and SPM
+FROM downloader AS spm
+
+# Architecture of spm docker container based on github spm/spm-docker
+ARG MATLAB_VERSION=R2024b
+ARG AGREE_TO_MATLAB_RUNTIME_LICENSE=yes
+ARG SPM_VERSION=24
+ARG SPM_RELEASE=24.10
+ARG SPM_REVISION=alpha22
+ENV SPM_TAG=${SPM_RELEASE}${SPM_REVISION:+.${SPM_REVISION}}
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    unzip xorg wget \
+    && apt-get clean \
+    && rm -rf \
+    /tmp/hsperfdata* \
+    /var/*/apt/*/partial \
+    /var/lib/apt/lists/* \
+    /var/log/apt/term*
+
+ENV LD_LIBRARY_PATH=/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/runtime/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/bin/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/sys/os/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/sys/opengl/lib/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/extern/bin/glnxa64
+ENV MCR_INHIBIT_CTF_LOCK=1
+ENV SPM_HTML_BROWSER=0
+
+RUN wget --no-check-certificate --progress=bar:force -P /opt https://github.com/spm/spm/releases/download/${SPM_TAG}/spm_standalone_${SPM_TAG}_Linux.zip \
+    && unzip -q /opt/spm_standalone_${SPM_TAG}_Linux.zip -d /opt \
+    && rm -f /opt/spm_standalone_${SPM_TAG}_Linux.zip \
+    && mv /opt/spm_standalone /opt/spm \
+    && /opt/runtime_installer/Runtime_${MATLAB_VERSION}_for_spm_standalone_${SPM_TAG}.install -agreeToLicense ${AGREE_TO_MATLAB_RUNTIME_LICENSE} \
+    && chmod +w /opt/spm \
+    && /opt/spm/spm${SPM_VERSION} function exit \
+    && chmod +x /opt/spm/spm${SPM_VERSION} \
+    && ln -s /opt/spm/spm${SPM_VERSION} /usr/local/bin/spm
+
+FROM downloader AS ants
+
+ARG CC=gcc-11
+ARG CXX=g++-11
+ARG BUILD_SHARED_LIBS=ON
+
+RUN \
+    --mount=type=cache,sharing=private,target=/var/cache/apt \
+    apt-get update && apt-get install -y g++-11 cmake make ninja-build git bc
+
+WORKDIR /usr/local/src
+RUN git config --global url.'https://'.insteadOf 'git://' \
+    && git clone https://github.com/ANTsX/ANTs.git
+
+WORKDIR /build
+RUN cmake \
+    -GNinja \
+    -DBUILD_TESTING=ON \
+    -DRUN_LONG_TESTS=OFF \
+    -DRUN_SHORT_TESTS=ON \
+    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS} \
+    -DCMAKE_INSTALL_PREFIX=/opt/ants \
+    /usr/local/src/ANTs
+RUN cmake --build . --parallel
+WORKDIR /build/ANTS-build
+RUN cmake --install .
+
+ENV PATH="/opt/ants/bin:$PATH" \
+    LD_LIBRARY_PATH=/opt/ants/lib
+
+RUN cmake --build . --target test
+
 # Micromamba
 FROM downloader AS micromamba
 
@@ -110,18 +176,17 @@ ENV DEBIAN_FRONTEND="noninteractive" \
     LANG="en_US.UTF-8" \
     LC_ALL="en_US.UTF-8"
 
-# Some baseline tools; bc is needed for FreeSurfer, so don't drop it
+# Some baseline tools, needed before even setting up PPAs
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-                    bc \
-                    ca-certificates \
-                    curl \
-                    git \
-                    gnupg \
-                    lsb-release \
-                    netbase \
-                    xvfb && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+        bc \
+        ca-certificates \
+        curl \
+        git \
+        gnupg \
+        lsb-release \
+        netbase \
+        xvfb
 
 # Configure PPAs for libpng12 and libxp6
 RUN GNUPGHOME=/tmp gpg --keyserver hkps://keyserver.ubuntu.com --no-default-keyring --keyring /usr/share/keyrings/linuxuprising.gpg --recv 0xEA8CACC073C3DB2A \
@@ -129,24 +194,26 @@ RUN GNUPGHOME=/tmp gpg --keyserver hkps://keyserver.ubuntu.com --no-default-keyr
     && echo "deb [signed-by=/usr/share/keyrings/linuxuprising.gpg] https://ppa.launchpadcontent.net/linuxuprising/libpng12/ubuntu jammy main" > /etc/apt/sources.list.d/linuxuprising.list \
     && echo "deb [signed-by=/usr/share/keyrings/zeehio.gpg] https://ppa.launchpadcontent.net/zeehio/libxp/ubuntu jammy main" > /etc/apt/sources.list.d/zeehio.list
 
-# Dependencies for AFNI; requires a discontinued multiarch-support package from bionic (18.04)
+# Dependencies
+# AFNI requires a discontinued multiarch-support package from bionic (18.04)
+# FreeSurfer and ANTs both need bc
 RUN apt-get update -qq \
     && apt-get install -y -q --no-install-recommends \
-           ed \
-           gsl-bin \
-           libglib2.0-0 \
-           libglu1-mesa-dev \
-           libglw1-mesa \
-           libgomp1 \
-           libjpeg62 \
-           libpng12-0 \
-           libxm4 \
-           libxp6 \
-           netpbm \
-           tcsh \
-           xfonts-base \
-           xvfb \
-           ffmpeg \
+        ed \
+        gsl-bin \
+        libglib2.0-0 \
+        libglu1-mesa-dev \
+        libglw1-mesa \
+        libgomp1 \
+        libjpeg62 \
+        libpng12-0 \
+        libxm4 \
+        libxp6 \
+        netpbm \
+        tcsh \
+        xfonts-base \
+        xvfb \
+        ffmpeg \
     && curl -sSL --retry 5 -o /tmp/multiarch.deb http://archive.ubuntu.com/ubuntu/pool/main/g/glibc/multiarch-support_2.27-3ubuntu1.5_amd64.deb \
     && dpkg -i /tmp/multiarch.deb \
     && rm /tmp/multiarch.deb \
@@ -163,48 +230,56 @@ COPY --from=freesurfer /opt/freesurfer /opt/freesurfer
 COPY --from=afni /opt/afni-latest /opt/afni-latest
 COPY --from=workbench /opt/workbench /opt/workbench
 COPY --from=c3d /opt/convert3d/bin/c3d_affine_tool /usr/bin/c3d_affine_tool
+COPY --from=spm /opt/spm /opt/spm
+COPY --from=spm /usr/local/MATLAB /usr/local/MATLAB
+COPY --from=ants /opt/ants /opt/ants
+COPY --from=micromamba /bin/micromamba /bin/micromamba
+COPY --from=micromamba /opt/conda/envs/picnic /opt/conda/envs/picnic
 
-# Simulate SetUpFreeSurfer.sh
+# Simulate SetUpFreeSurfer.sh & FSL & AFNI & Workbench & SPM & ANTs configs
 ENV OS="Linux" \
+    IS_DOCKER_PICNIC=1 \
     FS_OVERRIDE=0 \
     FIX_VERTEX_AREA="" \
     FSF_OUTPUT_FORMAT="nii.gz" \
-    FREESURFER_HOME="/opt/freesurfer"
-ENV SUBJECTS_DIR="$FREESURFER_HOME/subjects" \
+    FREESURFER_HOME="/opt/freesurfer" \
+    SUBJECTS_DIR="$FREESURFER_HOME/subjects" \
     FUNCTIONALS_DIR="$FREESURFER_HOME/sessions" \
     MNI_DIR="$FREESURFER_HOME/mni" \
     LOCAL_DIR="$FREESURFER_HOME/local" \
     MINC_BIN_DIR="$FREESURFER_HOME/mni/bin" \
     MINC_LIB_DIR="$FREESURFER_HOME/mni/lib" \
-    MNI_DATAPATH="$FREESURFER_HOME/mni/data"
-ENV PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5" \
+    MNI_DATAPATH="$FREESURFER_HOME/mni/data" \
+    PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5" \
     MNI_PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5" \
-    PATH="$FREESURFER_HOME/bin:$FREESURFER_HOME/tktools:$MINC_BIN_DIR:$PATH"
-
-# AFNI config
-ENV PATH="/opt/afni-latest:$PATH" \
+    PYTHONNOUSERSITE=1 \
+    FSLDIR="/opt/conda/envs/picnic" \
+    FSLOUTPUTTYPE="NIFTI_GZ" \
+    FSLMULTIFILEQUIT="TRUE" \
+    FSLLOCKDIR="" \
+    FSLMACHINELIST="" \
+    FSLREMOTECALL="" \
+    FSLGECUDAQ="cuda.q" \
     AFNI_IMSAVE_WARNINGS="NO" \
-    AFNI_PLUGINPATH="/opt/afni-latest"
+    AFNI_PLUGINPATH="/opt/afni-latest" \
+    MCR_INHIBIT_CTF_LOCK=1 \
+    SPM_HTML_BROWSER=0 \
+    CPATH="/opt/conda/envs/picnic/include:$CPATH" \
+    MAMBA_ROOT_PREFIX="/opt/conda" \
+    MKL_NUM_THREADS=1 \
+    OMP_NUM_THREADS=1 \
+    LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/runtime/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/bin/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/sys/os/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/sys/opengl/lib/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/extern/bin/glnxa64:/opt/workbench/lib_linux64" \
+    PATH="/opt/conda/envs/picnic/bin:/opt/afni-latest:$FREESURFER_HOME/bin:$FREESURFER_HOME/tktools:$MINC_BIN_DIR:$PATH:/opt/workbench/bin_linux64" \
+    HOME="/home/picnic"
 
-# Workbench config
-ENV PATH="/opt/workbench/bin_linux64:$PATH" \
-    LD_LIBRARY_PATH="/opt/workbench/lib_linux64:$LD_LIBRARY_PATH"
+# SPM config
+RUN chmod a+w /opt/spm && ln -s /opt/spm/spm${SPM_VERSION} /usr/local/bin/spm
 
 # Create a shared $HOME directory
 RUN useradd -m -s /bin/bash -G users picnic
 WORKDIR /home/picnic
-ENV HOME="/home/picnic" \
-    LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH"
-
-COPY --from=micromamba /bin/micromamba /bin/micromamba
-COPY --from=micromamba /opt/conda/envs/picnic /opt/conda/envs/picnic
-
-ENV MAMBA_ROOT_PREFIX="/opt/conda"
 RUN micromamba shell init -s bash && \
     echo "micromamba activate picnic" >> $HOME/.bashrc
-ENV PATH="/opt/conda/envs/picnic/bin:$PATH" \
-    CPATH="/opt/conda/envs/picnic/include:$CPATH" \
-    LD_LIBRARY_PATH="/opt/conda/envs/picnic/lib:$LD_LIBRARY_PATH"
 
 # Precaching atlases
 COPY scripts/fetch_templates.py fetch_templates.py
@@ -213,50 +288,28 @@ RUN python fetch_templates.py && \
     find $HOME/.cache/templateflow -type d -exec chmod go=u {} + && \
     find $HOME/.cache/templateflow -type f -exec chmod go=u {} +
 
-# FSL environment
-ENV LANG="C.UTF-8" \
-    LC_ALL="C.UTF-8" \
-    PYTHONNOUSERSITE=1 \
-    FSLDIR="/opt/conda/envs/picnic" \
-    FSLOUTPUTTYPE="NIFTI_GZ" \
-    FSLMULTIFILEQUIT="TRUE" \
-    FSLLOCKDIR="" \
-    FSLMACHINELIST="" \
-    FSLREMOTECALL="" \
-    FSLGECUDAQ="cuda.q"
-
-# Unless otherwise specified each process should only use one thread - nipype
-# will handle parallelization
-ENV MKL_NUM_THREADS=1 \
-    OMP_NUM_THREADS=1
-
 # MSM HOCR (Nov 19, 2019 release)
 RUN curl -L -H "Accept: application/octet-stream" https://api.github.com/repos/ecr05/MSM_HOCR/releases/assets/16253707 -o /usr/local/bin/msm \
     && chmod +x /usr/local/bin/msm
 
 # Installing PICNIC
 COPY --from=src /src/dist/*.whl .
-RUN pip install --no-cache-dir $( ls *.whl )
+RUN pip install --no-cache-dir $( ls *.whl ) \
+    && find $HOME -type d -exec chmod go=u {} \; \
+    && find $HOME -type f -exec chmod go=u {} \; \
+    && rm -rf $HOME/.npm $HOME/.conda $HOME/.empty \
+    && ldconfig
 
-RUN find $HOME -type d -exec chmod go=u {} + && \
-    find $HOME -type f -exec chmod go=u {} + && \
-    rm -rf $HOME/.npm $HOME/.conda $HOME/.empty
-
-# For detecting the container
-ENV IS_DOCKER_PICNIC=1
-
-RUN ldconfig
 WORKDIR /tmp
 ENTRYPOINT ["/opt/conda/envs/picnic/bin/python3", "/opt/conda/envs/picnic/bin/run.py"]
 
-ARG BUILD_DATE
-ARG VCS_REF
-ARG VERSION
+ARG BUILD_DATE=2024-12-11
+ARG PICNIC_VERSION=0.0.8
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.name="PICNIC" \
       org.label-schema.description="PICNIC - A modular PET preprocessing tool" \
       org.label-schema.url="https://github.com/ehauser-mind/PICNIC" \
-      org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.vcs-ref=V$PICNIC_VERSION \
       org.label-schema.vcs-url="https://github.com/ehauser-mind/PICNIC" \
-      org.label-schema.version=$VERSION \
+      org.label-schema.version=$PICNIC_VERSION \
       org.label-schema.schema-version="1.0"
