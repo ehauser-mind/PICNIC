@@ -76,6 +76,7 @@ RUN mkdir /opt/convert3d && \
 FROM downloader AS spm
 
 # Architecture of spm docker container based on github spm/spm-docker
+# These args are repeated in the final image, so make changes in both places.
 ARG MATLAB_VERSION=R2024b
 ARG AGREE_TO_MATLAB_RUNTIME_LICENSE=yes
 ARG SPM_VERSION=24
@@ -159,13 +160,6 @@ WORKDIR /tmp
 RUN micromamba create -y -f /tmp/env.yml && \
     micromamba clean -y -a
 
-# UV_USE_IO_URING for apparent race-condition (https://github.com/nodejs/node/issues/48444)
-# Check if this is still necessary when updating the base image.
-# ENV PATH="/opt/conda/envs/picnic/bin:$PATH" \
-#     UV_USE_IO_URING=0
-# RUN npm install -g svgo@^3.2.0 bids-validator@^1.14.0 && \
-#     rm -r ~/.npm
-
 # =============================================================================
 # Main stage
 #
@@ -173,6 +167,7 @@ FROM ${BASE_IMAGE} AS picnic
 
 # Configure apt
 ENV DEBIAN_FRONTEND="noninteractive" \
+    LANGUAGE="en_US.UTF-8" \
     LANG="en_US.UTF-8" \
     LC_ALL="en_US.UTF-8"
 
@@ -209,6 +204,7 @@ RUN apt-get update -qq \
         libpng12-0 \
         libxm4 \
         libxp6 \
+        locales \
         netpbm \
         tcsh \
         xfonts-base \
@@ -222,7 +218,8 @@ RUN apt-get update -qq \
     && gsl2_path="$(find / -name 'libgsl.so.19' || printf '')" \
     && if [ -n "$gsl2_path" ]; then \
          ln -sfv "$gsl2_path" "$(dirname $gsl2_path)/libgsl.so.0"; \
-    fi \
+       fi \
+    && locale-gen "$LC_ALL" \
     && ldconfig
 
 # Install files from stages
@@ -237,21 +234,23 @@ COPY --from=micromamba /bin/micromamba /bin/micromamba
 COPY --from=micromamba /opt/conda/envs/picnic /opt/conda/envs/picnic
 
 # Simulate SetUpFreeSurfer.sh & FSL & AFNI & Workbench & SPM & ANTs configs
+ARG FREESURFER_HOME="/opt/freesurfer"
+ARG MATLAB_VERSION=R2024b
 ENV OS="Linux" \
     IS_DOCKER_PICNIC=1 \
     FS_OVERRIDE=0 \
     FIX_VERTEX_AREA="" \
     FSF_OUTPUT_FORMAT="nii.gz" \
-    FREESURFER_HOME="/opt/freesurfer" \
-    SUBJECTS_DIR="$FREESURFER_HOME/subjects" \
-    FUNCTIONALS_DIR="$FREESURFER_HOME/sessions" \
-    MNI_DIR="$FREESURFER_HOME/mni" \
-    LOCAL_DIR="$FREESURFER_HOME/local" \
-    MINC_BIN_DIR="$FREESURFER_HOME/mni/bin" \
-    MINC_LIB_DIR="$FREESURFER_HOME/mni/lib" \
-    MNI_DATAPATH="$FREESURFER_HOME/mni/data" \
-    PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5" \
-    MNI_PERL5LIB="$MINC_LIB_DIR/perl5/5.8.5" \
+    FREESURFER_HOME="${FREESURFER_HOME}" \
+    SUBJECTS_DIR="${FREESURFER_HOME}/subjects" \
+    FUNCTIONALS_DIR="${FREESURFER_HOME}/sessions" \
+    MNI_DIR="${FREESURFER_HOME}/mni" \
+    LOCAL_DIR="${FREESURFER_HOME}/local" \
+    MINC_BIN_DIR="${FREESURFER_HOME}/mni/bin" \
+    MINC_LIB_DIR="${FREESURFER_HOME}/mni/lib" \
+    MNI_DATAPATH="${FREESURFER_HOME}/mni/data" \
+    PERL5LIB="${FREESURFER_HOME}/mni/lib/perl5/5.8.5" \
+    MNI_PERL5LIB="${FREESURFER_HOME}/mni/lib/perl5/5.8.5" \
     PYTHONNOUSERSITE=1 \
     FSLDIR="/opt/conda/envs/picnic" \
     FSLOUTPUTTYPE="NIFTI_GZ" \
@@ -262,14 +261,16 @@ ENV OS="Linux" \
     FSLGECUDAQ="cuda.q" \
     AFNI_IMSAVE_WARNINGS="NO" \
     AFNI_PLUGINPATH="/opt/afni-latest" \
+    MCRSPMCMD=/some/command/to/spm \  # TODO: Find the path!
+    FORCE_SPMMCR="TRUE" \
     MCR_INHIBIT_CTF_LOCK=1 \
     SPM_HTML_BROWSER=0 \
-    CPATH="/opt/conda/envs/picnic/include:$CPATH" \
+    CPATH="/opt/conda/envs/picnic/include:${CPATH}" \
     MAMBA_ROOT_PREFIX="/opt/conda" \
     MKL_NUM_THREADS=1 \
     OMP_NUM_THREADS=1 \
     LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/runtime/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/bin/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/sys/os/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/sys/opengl/lib/glnxa64:/usr/local/MATLAB/MATLAB_Runtime/${MATLAB_VERSION}/extern/bin/glnxa64:/opt/workbench/lib_linux64" \
-    PATH="/opt/conda/envs/picnic/bin:/opt/afni-latest:$FREESURFER_HOME/bin:$FREESURFER_HOME/tktools:$MINC_BIN_DIR:$PATH:/opt/workbench/bin_linux64" \
+    PATH="/opt/conda/envs/picnic/bin:/opt/afni-latest:${FREESURFER_HOME}/bin:${FREESURFER_HOME}/tktools:${FREESURFER_HOME}/mni/bin:/opt/workbench/bin_linux64:${PATH}" \
     HOME="/home/picnic"
 
 # SPM config
@@ -309,7 +310,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.name="PICNIC" \
       org.label-schema.description="PICNIC - A modular PET preprocessing tool" \
       org.label-schema.url="https://github.com/ehauser-mind/PICNIC" \
-      org.label-schema.vcs-ref=V$PICNIC_VERSION \
+      org.label-schema.vcs-ref=v$PICNIC_VERSION \
       org.label-schema.vcs-url="https://github.com/ehauser-mind/PICNIC" \
       org.label-schema.version=$PICNIC_VERSION \
       org.label-schema.schema-version="1.0"
