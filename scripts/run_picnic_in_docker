@@ -3,7 +3,7 @@
 RED='\033[0;31m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
-PICNIC_IMG="mfschmidt/picnic:0.0.6d"
+PICNIC_IMG="mfschmidt/picnic:latest"
 
 # TODO: Figure out how to make this another user-modifiable option.
 WORK_DIR=/var/tmp/picnic
