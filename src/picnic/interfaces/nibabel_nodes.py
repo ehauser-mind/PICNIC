@@ -42,12 +42,14 @@ def _reorient_image(in_file, gz=True):
     # grab the important image parameters
     # TODO: Eric reports that having a non-diagonal affine breaks FLIRT.
     #       I'm sure he's right, but I can't find any information, so I'll see what happens.
+    #       The best approach to fix this is probably to apply the non-diagonal
+    #       affine, then resample back?
     try:
         reoriented_image = nib.funcs.as_closest_canonical(orig_image, enforce_diag=True)
     except OrientationError:
         print("WARNING!")
         print(f"WARNING! The image '{in_file}' has a non-diagonal affine.")
-        print(f"WARNING! We are hacking up a new fake diagnoal affine.")
+        print(f"WARNING! We are hacking up a new fake diagonal affine.")
         print("WARNING!")
         affine = orig_image.affine
         ornt, flip = [], []
