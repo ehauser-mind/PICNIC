@@ -558,6 +558,7 @@ class CamraWorkflow():
             ]
         )
         
+        """
         # prepare spm for its coregistration
         self.wf.add_mapnode(
             interface = Function(
@@ -632,7 +633,8 @@ class CamraWorkflow():
                 'out',
             )
         )
-        
+        """
+
     def pick_best_coregistration(self):
         """ this will be overloaded by all its children
         """
@@ -827,7 +829,7 @@ class LcfCamraWorkflow(CamraWorkflow):
             name = 'merge_all_sources',
             inflows = {
                 'in1' : '@merge_source_list',
-                'in2' : '@merge_source_list'
+                # 'in2' : '@merge_source_list'
             },
             outflows = (
                 'out',
@@ -840,7 +842,7 @@ class LcfCamraWorkflow(CamraWorkflow):
             name = 'get_mats_from_coregs',
             inflows = {
                 'in_file' : '@merge_all_sources',
-                'reference' : '@merge_coregs',
+                'reference' : '@flirt_coregistration',
                 'cost' : 'corratio',
                 'dof' : 6
             },
