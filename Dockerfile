@@ -261,7 +261,7 @@ ENV OS="Linux" \
     FSLGECUDAQ="cuda.q" \
     AFNI_IMSAVE_WARNINGS="NO" \
     AFNI_PLUGINPATH="/opt/afni-latest" \
-    MCRSPMCMD=/some/command/to/spm \  # TODO: Find the path!
+    MCRSPMCMD="/usr/local/bin/spm" \
     FORCE_SPMMCR="TRUE" \
     MCR_INHIBIT_CTF_LOCK=1 \
     SPM_HTML_BROWSER=0 \
@@ -274,7 +274,7 @@ ENV OS="Linux" \
     HOME="/home/picnic"
 
 # SPM config
-RUN chmod a+w /opt/spm && ln -s /opt/spm/spm${SPM_VERSION} /usr/local/bin/spm
+RUN chmod a+w /opt/spm && ln -s /opt/spm/spm${SPM_VERSION} ${MCRSPMCMD}
 
 # Create a shared $HOME directory
 RUN useradd -m -s /bin/bash -G users picnic
