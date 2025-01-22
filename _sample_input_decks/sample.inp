@@ -4,7 +4,6 @@
     pet_path = '/path/to/pet/scan.nii.gz'
     t1w_path = '/path/to/mri/scan.nii.gz'
     export_path = '/path/to/export/directory'
-    
     subject_id = 'subject_name'
   
   # Sink location
@@ -30,9 +29,8 @@
     @${subject_id}_reconall.wholebrain_mask
     @${subject_id}_reconall.wm_mask
     @${subject_id}_reconall.gm_mask
-
   *TACs, name=ses-${pet_id}_tacs
     ${subject_id}_coreg.out_file
     ${subject_id}_reconall.bilateral_wmparc
-    
+
 *End
