@@ -29,7 +29,7 @@ def _create_report(type_, in_files, additional_args=[]):
     def image_report(in_file, basename='image'):
         """
         wrap the necessary steps to create a report of *image
-        
+
         :Parameters:
           -. `in_file` : file-like str, the nibabel readable image file
           -. `basename` : str, name of the output filename
@@ -38,7 +38,7 @@ def _create_report(type_, in_files, additional_args=[]):
         import os
         import nibabel as nib
 
-        # load file
+        # Load file
         image = nib.load(in_file)
         
         # if the image is a 4d image, assume it is a pet image and create a mp4
@@ -89,7 +89,7 @@ def _create_report(type_, in_files, additional_args=[]):
         width = 600
     ):
         """
-        wrap the necessary steps to create a report of *motion correction
+        Wrap the necessary steps to create a report of *motion correction
         
         :Parameters:
           -. `base_file` : file-like str, the nibabel readable image file
@@ -131,7 +131,7 @@ def _create_report(type_, in_files, additional_args=[]):
             dofs = np.array(dofs)
         
         # loop over each frame and create a comparison orthogonal image for 
-        #   pre and post correction
+        #   pre- and post- correction
         stills = []
         for frame in range(moco_image.shape[3]):
             panels = []
@@ -308,7 +308,7 @@ def _create_report(type_, in_files, additional_args=[]):
         width = STANDARD_WIDTH
     ):
         """
-        create a still picture of a brain image in a mosaic format
+        Create a still picture of a brain image in a mosaic format
         
         |----------------------|
         | [] [] [] [] [] [] [] | y
@@ -435,8 +435,8 @@ def _create_report(type_, in_files, additional_args=[]):
         if ortho_cuts is None:
             bounds = calculate_bounds(image)
             ortho_cuts = [np.mean(bounds[direction]) for direction in ['xyz']]
-        
-        # use nilearn's plot_anat to create each panel
+
+        # Use nilearn's plot_anat to create each panel
         temp_panel = tempfile.TemporaryFile(suffix='.png')
         _ = plot_anat(
             image,
@@ -475,7 +475,7 @@ def _create_report(type_, in_files, additional_args=[]):
         width = STANDARD_WIDTH
     ):
         """
-        create pyplots for motion correction
+        Create pyplots for motion correction
         
         :Parameters:
           -. `t` : numpy array, x axis
@@ -614,7 +614,7 @@ def _create_report(type_, in_files, additional_args=[]):
         fps = FRAMES_PER_SECOND
     ):
         """
-        create a movie based on stills from the create_png_mosaic function
+        Create a movie based on stills from the create_png_mosaic function
         
         |----------------------|
         | [] [] [] [] [] [] [] | y
@@ -706,7 +706,7 @@ def _create_report(type_, in_files, additional_args=[]):
     # ============================================================ Calculations
     def calculate_bounds(image):
         """
-        use nibabel to calculate the cut coords bounds. Calculations are 
+        Use nibabel to calculate the cut coords bounds. Calculations are
         done by:
         (a) finding the distribution over a single axis
         |   __
@@ -723,7 +723,7 @@ def _create_report(type_, in_files, additional_args=[]):
         | /|    \
         |/ |    |\
         ---*---*---
-            see the astriks
+            see the asterisks
         
         :Parameters:
           -. image : nibabel.Nifti1Image, the nibabel image
@@ -783,19 +783,15 @@ def _create_report(type_, in_files, additional_args=[]):
 
         # check the image dimensionality
         if len(image.shape) > 3:
-            from numpy import mean
-            from nibabel import Nifti1Image
-            
             # average along the time axis and return a Nifti
             fdata = image.get_fdata()
-            fdata = mean(fdata, axis=3)
-            return Nifti1Image(fdata, image.affine)
+            fdata = np.mean(fdata, axis=3)
+            return nib.Nifti1Image(fdata, image.affine)
         
         return image
     
     def calculate_colormap_limits(image, upper_limit=UPPER_COLORMAP_LIMIT):
-        """ 
-        calculate the colormap's limits by:
+        """ calculate the colormap's limits by:
         (a) weighting the voxels closest to the center
         (b) set the lower bound to 0. and the upper bound to a value in the 
         upper_limit-th percentile
@@ -804,6 +800,7 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `image` : nibabel.Nifti1Image, the nibabel image
           -. `upper_limit` : float, value between 0 and 100
         """
+
         import math
         import numpy as np
 
@@ -815,7 +812,7 @@ def _create_report(type_, in_files, additional_args=[]):
         def vector_function(float_):
             """
             used for numpy.vectorize
-            
+
             :Parameters:
               -. `float_` : float (duh), a value between 0. and 1.
             """
@@ -882,13 +879,3 @@ def _create_report(type_, in_files, additional_args=[]):
             in_files[0],
             *additional_args
         )
-
-# =======================================
-# Main
-def main():
-    pass
-
-if __name__ == '__main__':
-    main()
-
-

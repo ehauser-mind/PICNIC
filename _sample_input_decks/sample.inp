@@ -1,37 +1,38 @@
 *Start
   # Variables
   *Parameter
-    irb = '7935'
-    sub = 'F1746'
+    pet_path = '/path/to/pet/scan.nii.gz'
+    t1w_path = '/path/to/mri/scan.nii.gz'
+    export_path = '/path/to/export/directory'
     
-    mri_id = '8422'
-    pet_id = 'pbr701'
+    subject_id = 'subject_name'
   
   # Sink location
   *Sink
-    /Volumes/Seagate/results/sub-${sub}/ses-${pet_id}
+    ${export_path}
   
   # MRI Imports
-    
+  *Import, name=${subject_id}_t1w, Type=nibabel
+    ${t1w_path}
+
   # PET Imports
-  *Import, name=ses-${mri_id}_t1, Type=nibabel
-    /data/export/home/eric/BIDSify/irb-${irb}/rawdata/sub-${sub}/ses-${mri_id}/anat/sub-${sub}_ses-${mri_id}_T1w.nii.gz
-  *Import, name=ses-${pet_id}_pet, Type=nibabel
-    /data/export/home/eric/BIDSify/irb-${irb}/rawdata/sub-${sub}/ses-${pet_id}/pet/sub-${sub}_ses-${pet_id}_pet.nii.gz
+  *Import, name=${subject_id}_pet, Type=nibabel
+    ${pet_path}
   
   # Modules
-  *Reconall, name=ses-${mri_id}, Type=Execute
-    @ses-${mri_id}_t1.out_file
-  *Motion Correction, Name=ses-${pet_id}_moco, Type=twostep, Ref Vol=8, Smooth=4, Crop Start=4
-    @ses-${pet_id}_pet.out_file
-  *Camra, Name=ses-${pet_id}_coreg, Type=LCF, DOF=6, Cost=mutualinfo
-    @ses-${pet_id}_moco.out_file
-    @ses-${mri_id}.T1
-    @ses-${mri_id}.brainmask
-    @ses-${mri_id}.wm_mask
-    @ses-${mri_id}.gm_mask
+  *Reconall, name=${subject_id}_reconall, Type=Execute
+    @${subject_id}_t1w
+  *Motion Correction, Name=${subject_id}_moco, Type=twostep, Ref Vol=8, Smooth=4, Crop Start=4
+    @${subject_id}_pet
+  *Camra, Name=${subject_id}_coreg, Type=LCF, DOF=6, Cost=mutualinfo
+    @${subject_id}_moco.out_file
+    @${subject_id}_reconall.T1
+    @${subject_id}_reconall.wholebrain_mask
+    @${subject_id}_reconall.wm_mask
+    @${subject_id}_reconall.gm_mask
+
   *TACs, name=ses-${pet_id}_tacs
-    @ses-${pet_id}_coreg.out_file
-    @ses-${mri_id}.bilateral_wmparc
+    ${subject_id}_coreg.out_file
+    ${subject_id}_reconall.bilateral_wmparc
     
 *End

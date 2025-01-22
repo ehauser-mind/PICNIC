@@ -142,7 +142,7 @@ class ImageWorkflow():
                 'out_file'
             ]
         )
-    
+
     def search_for_jsons(self):
         """ search for any associated jsons
         """
@@ -181,7 +181,7 @@ class ImageWorkflow():
                 'out_file'
             ]
         )
-    
+
     def create_report(self):
         """ create a report
         """

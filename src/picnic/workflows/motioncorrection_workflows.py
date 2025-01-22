@@ -785,11 +785,12 @@ def _grab_flirt_transforms(in_mat_files, crop_start, original_image):
         the original, un-motion corrected image. This determines how many frames
         we need
     """
+
     import os
-    import nibabel as nib
     import shutil
     import glob
-    
+    import nibabel as nib
+
     # if tuple, force to be list
     if not isinstance(in_mat_files, list):
         in_mat_files = [in_mat_files]

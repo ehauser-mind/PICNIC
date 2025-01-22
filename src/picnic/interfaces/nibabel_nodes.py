@@ -15,7 +15,7 @@
 def _reorient_image(in_file, gz=True):
     """
     use nibabel to load an imaging file type and save it as a nifti1
-    
+
     :Parameters:
       -. `in_file` : file-like str, the file name
       -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
@@ -26,7 +26,8 @@ def _reorient_image(in_file, gz=True):
     from nibabel.orientations import OrientationError
     from picnic.interfaces.utility import nibabel_image_types
 
-    # open the image with nibabel
+
+    # Open the image with nibabel
     base_name = ""
     dirname, filename = os.path.split(in_file)
     for img_type in nibabel_image_types:
@@ -72,10 +73,10 @@ def _reorient_image(in_file, gz=True):
     return new_image_path
 
 
-''' while this function DOES work, it is suggested the user utilize the nibabel 
+""" While this function DOES work, it is suggested the user utilize the nibabel 
     function nibabel.func.as_closest_canonical(). They give the same results, 
     but nibabel's is faster and better tested
-'''
+"""
 def _reorient_image_deprecated(in_file, gz=True):
     """
     use nibabel to load an imaging file type and save it as a nifti1
@@ -132,7 +133,8 @@ def _merge_images(images, gz=True):
     import nibabel as nib
     from picnic.interfaces.utility import nibabel_image_types
 
-    # open the image with nibabel
+
+    # Open the image with nibabel
     dirname, filename = os.path.split(images[0])
     for img_type in nibabel_image_types:
         if filename.endswith(img_type):
@@ -154,7 +156,7 @@ def _merge_images(images, gz=True):
 
 def _create_bilateral_atlas(atlas, lookup_table, gz=True):
     """
-    a nipype function used to create a bilateral atlas for deterministic
+    A nipype function used to create a bilateral atlas for deterministic
     atlases.
     
     :Parameters:
@@ -196,15 +198,15 @@ def _create_bilateral_atlas(atlas, lookup_table, gz=True):
     idx_added = []
     for roi_idx in np.unique(unilateral_fdata):
         roi_idx = int(roi_idx)
-        # because the opposite hemisphere gets assigned the first time its
-        #  counterpart is found. It needs to be skipped
+        # Because the opposite hemisphere gets assigned the first time its
+        # counterpart is found, it needs to be skipped
         if roi_idx in idx_added:
             continue
         
-        # find the index's associated label
+        # Find the index's associated label
         idx_label = label_lookup[roi_idx]
         
-        # use np..where to find all the voxels with the index
+        # Use np.where to find all the voxels with the index
         bilateral_fdata += np.where(unilateral_fdata == roi_idx, roi_idx, 0.)
         bilateral_lookup[roi_idx] = idx_label
         idx_added.append(roi_idx)
@@ -320,7 +322,8 @@ def _crop_image(in_file, crop_start=0, crop_end=0, gz=True):
     import nibabel as nib
     from picnic.interfaces.utility import nibabel_image_types
 
-    # open the image with nibabel
+
+    # Open the image with nibabel
     dirname, filename = os.path.split(in_file)
     for img_type in nibabel_image_types:
         if filename.endswith(img_type):
@@ -345,7 +348,7 @@ def _crop_image(in_file, crop_start=0, crop_end=0, gz=True):
 
 def _resample_image(source, target, gz=True):
     """
-    use nibabel.processing.resmple_from_to to resample the source image to
+    Use nibabel.processing.resmple_from_to to resample the source image to
     target image space
     
     :Parameters:
@@ -383,7 +386,7 @@ def _resample_image(source, target, gz=True):
 
 def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, units='uci'):
     """
-    a nipype function used to create a tacs file based on an atlas and 4d
+    A nipype function used to create a tacs file based on an atlas and 4d
     image. 
     (1) Load the source and atlas image
     (2) Force atlas to be 3d (it already should be)
@@ -437,7 +440,7 @@ def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, un
         # load the atlas image
         atlas_image = nib.load(atlas)
         
-        # load the atlas side car
+        # load the atlas sidecar
         try:
             atlas_side_car = atlas_side_cars[idx]
             with open(atlas_side_car) as f:
@@ -474,7 +477,7 @@ def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, un
                 label = label_lookup[str(roi_idx)]
             except KeyError:
                 label = str(roi_idx)
-            
+
             # force each label name to be unique
             if label in labels:
                 label_idx = 1
@@ -498,11 +501,13 @@ def _create_tacs(source, atlases, source_side_car=None, atlas_side_cars=None, un
     
     return tac_file
 
+
+
 def _generate_wholebrain_mask(in_file, gz=True):
     """
-    use nibabel to create a wholebrain mask starting from the aseg 
+    use nibabel to create a wholebrain mask starting from the aseg
     generated from freesurfer's reconall
-    
+
     :Parameters:
       -. `in_file` : file-like str, the aseg file
       -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
@@ -510,7 +515,7 @@ def _generate_wholebrain_mask(in_file, gz=True):
     import nibabel as nib
     import numpy as np
     import os
-    
+
     # the exclusions used to translate aseg to wholebrain
     WB_EXCLUSIONS = [
         2,
@@ -534,11 +539,11 @@ def _generate_wholebrain_mask(in_file, gz=True):
         254,
         255
     ]
-    
+
     # load the aseg atlas
     aseg_atlas = nib.load(in_file)
     aseg_fdata = aseg_atlas.get_fdata().astype(int)
-    
+
     # create the wholebrain mask by exclusing certain rois
     wholebrain_mask = np.zeros(aseg_atlas.shape)
     wholebrain_mask += np.where(aseg_fdata > 0, 1., 0.)
@@ -557,14 +562,14 @@ def _generate_wholebrain_mask(in_file, gz=True):
         ),
         mask_path
     )
-    
+
     return mask_path
 
 def _generate_gray_matter_mask(in_file, gz=True):
     """
-    use nibabel to create a gray matter mask starting from the aseg 
+    use nibabel to create a gray matter mask starting from the aseg
     generated from freesurfer's reconall
-    
+
     :Parameters:
       -. `in_file` : file-like str, the aseg file
       -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
@@ -572,7 +577,7 @@ def _generate_gray_matter_mask(in_file, gz=True):
     import nibabel as nib
     import numpy as np
     import os
-    
+
     # the inclusions used to translate aseg to gray matter
     GM_INCLUSIONS = [
         3,
@@ -580,7 +585,7 @@ def _generate_gray_matter_mask(in_file, gz=True):
         42,
         47
     ]
-    
+
     # load the aseg atlas
     aseg_atlas = nib.load(in_file)
     aseg_fdata = aseg_atlas.get_fdata().astype(int)
@@ -602,14 +607,14 @@ def _generate_gray_matter_mask(in_file, gz=True):
         ),
         mask_path
     )
-    
+
     return mask_path
 
 def _generate_white_matter_mask(in_file, gz=True):
     """
-    use nibabel to create a gray matter mask starting from the aseg 
+    use nibabel to create a gray matter mask starting from the aseg
     generated from freesurfer's reconall
-    
+
     :Parameters:
       -. `in_file` : file-like str, the aseg file
       -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
@@ -617,7 +622,7 @@ def _generate_white_matter_mask(in_file, gz=True):
     import nibabel as nib
     import numpy as np
     import os
-    
+
     # the inclusions used to translate aseg to white matter
     WM_INCLUSIONS = [
         2,
@@ -630,17 +635,17 @@ def _generate_white_matter_mask(in_file, gz=True):
         254,
         255
     ]
-    
+
     # load the aseg atlas
     aseg_atlas = nib.load(in_file)
     aseg_fdata = aseg_atlas.get_fdata().astype(int)
-    
+
     # create the wholebrain mask by exclusing certain rois
     wm_mask = np.zeros(aseg_atlas.shape)
     for roi in WM_INCLUSIONS:
         wm_mask += np.where(aseg_fdata == roi, 1., 0.)
-    
-    # save out the new image
+
+    # Save out the new image
     if gz:
         mask_path = os.path.join(os.getcwd(), 'wm_mask.nii.gz')
     else:
@@ -652,14 +657,14 @@ def _generate_white_matter_mask(in_file, gz=True):
         ),
         mask_path
     )
-    
+
     return mask_path
 
 def _generate_subcortical_mask(in_file, gz=True):
     """
-    use nibabel to create a subcortical mask starting from the aseg 
+    Use nibabel to create a subcortical mask starting from the aseg
     generated from freesurfer's reconall
-    
+
     :Parameters:
       -. `in_file` : file-like str, the aseg file
       -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
@@ -667,7 +672,7 @@ def _generate_subcortical_mask(in_file, gz=True):
     import nibabel as nib
     import numpy as np
     import os
-    
+
     # the exclusions used to translate aseg to subcortical
     SUBCORTICAL_EXCLUSIONS = [
         2,
@@ -693,11 +698,11 @@ def _generate_subcortical_mask(in_file, gz=True):
         254,
         255
     ]
-    
+
     # load the aseg atlas
     aseg_atlas = nib.load(in_file)
     aseg_fdata = aseg_atlas.get_fdata().astype(int)
-    
+
     # create the subcortical mask by exclusing certain rois
     subcortical_mask = np.zeros(aseg_atlas.shape)
     subcortical_mask += np.where(aseg_fdata > 0, 1., 0.)
@@ -716,14 +721,14 @@ def _generate_subcortical_mask(in_file, gz=True):
         ),
         mask_path
     )
-    
+
     return mask_path
 
 def _generate_ventricle_mask(in_file, gz=True):
     """
-    use nibabel to create a ventricle mask starting from the aseg 
+    use nibabel to create a ventricle mask starting from the aseg
     generated from freesurfer's reconall
-    
+
     :Parameters:
       -. `in_file` : file-like str, the aseg file
       -. `gz` : boolean, save the file as a nifti_gz (True) or nifti (False)
@@ -731,7 +736,7 @@ def _generate_ventricle_mask(in_file, gz=True):
     import nibabel as nib
     import numpy as np
     import os
-    
+
     # the inclusions used to translate aseg to venticle
     VENTRICLE_INCLUSIONS = [
         4,
@@ -742,17 +747,17 @@ def _generate_ventricle_mask(in_file, gz=True):
         43,
         44
     ]
-    
+
     # load the aseg atlas
     aseg_atlas = nib.load(in_file)
     aseg_fdata = aseg_atlas.get_fdata().astype(int)
-    
+
     # create the wholebrain mask by exclusing certain rois
     ventricle_mask = np.zeros(aseg_atlas.shape)
     for roi in VENTRICLE_INCLUSIONS:
         ventricle_mask += np.where(aseg_fdata == roi, 1., 0.)
-    
-    # save out the new image
+
+    # Save out the new image
     if gz:
         mask_path = os.path.join(os.getcwd(), 'ventricle_mask.nii.gz')
     else:
@@ -764,7 +769,7 @@ def _generate_ventricle_mask(in_file, gz=True):
         ),
         mask_path
     )
-    
+
     return mask_path
 
 
@@ -797,12 +802,3 @@ def find_linear_tail_tac_aberrations(image_4d, json=None):
     im = nib.load(image_4d)
     tac = np.sum(im.get_fdata(), (0,1,2))
 '''
-# =======================================
-# Main
-def main():
-    pass
-
-if __name__ == '__main__':
-    main()
-
-
