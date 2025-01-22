@@ -101,6 +101,7 @@ class InputDeck():
                                     #   exit the iterator. Load the first card after *parameter
                                     line = string.Template(line.strip()).substitute(user_defined_parameters)
                                     logging.info('    Reader:    ' + line.lower())
+                                    logging.info(f"      {len(line.lower().split(','))} items")
                                     self.cards.append(Card(*[itm.strip() for itm in line.lower().split(',')]))
                                     break
                                 
@@ -177,8 +178,13 @@ class Card():
         #  defined parameters
         default_parameters = self._load_defaults()
         self.parameters = self.check_parameter_syntax(default_parameters)
-        assert len(self.parameters) == len(default_parameters), 'Error: The optional parameter '+tuple(set(self.parameters.keys()).difference(default_parameters.keys()))[0] + ' is not supported for the card "' + self.cardname + '"'
-        
+        assert len(self.parameters) == (
+            len(default_parameters),
+            ('Error: The optional parameter ' +
+             tuple(set(self.parameters.keys()).difference(default_parameters.keys()))[0] +
+             ' is not supported for the card "' + self.cardname + '"')
+        )
+
         # initialize the dataline list
         self.datalines = []
     

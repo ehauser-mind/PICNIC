@@ -27,7 +27,7 @@ def _reorient_image(in_file, gz=True):
     from picnic.interfaces.utility import nibabel_image_types
 
 
-    # open the image with nibabel
+    # Open the image with nibabel
     base_name = ""
     dirname, filename = os.path.split(in_file)
     for img_type in nibabel_image_types:
@@ -134,7 +134,7 @@ def _merge_images(images, gz=True):
     from picnic.interfaces.utility import nibabel_image_types
 
 
-    # open the image with nibabel
+    # Open the image with nibabel
     dirname, filename = os.path.split(images[0])
     for img_type in nibabel_image_types:
         if filename.endswith(img_type):
@@ -198,15 +198,15 @@ def _create_bilateral_atlas(atlas, lookup_table, gz=True):
     idx_added = []
     for roi_idx in np.unique(unilateral_fdata):
         roi_idx = int(roi_idx)
-        # because the opposite hemisphere gets assigned the first time its
-        #  counterpart is found. It needs to be skipped
+        # Because the opposite hemisphere gets assigned the first time its
+        # counterpart is found, it needs to be skipped
         if roi_idx in idx_added:
             continue
         
-        # find the index's associated label
+        # Find the index's associated label
         idx_label = label_lookup[roi_idx]
         
-        # use np.where to find all the voxels with the index
+        # Use np.where to find all the voxels with the index
         bilateral_fdata += np.where(unilateral_fdata == roi_idx, roi_idx, 0.)
         bilateral_lookup[roi_idx] = idx_label
         idx_added.append(roi_idx)
@@ -323,7 +323,7 @@ def _crop_image(in_file, crop_start=0, crop_end=0, gz=True):
     from picnic.interfaces.utility import nibabel_image_types
 
 
-    # open the image with nibabel
+    # Open the image with nibabel
     dirname, filename = os.path.split(in_file)
     for img_type in nibabel_image_types:
         if filename.endswith(img_type):
@@ -645,7 +645,7 @@ def _generate_white_matter_mask(in_file, gz=True):
     for roi in WM_INCLUSIONS:
         wm_mask += np.where(aseg_fdata == roi, 1., 0.)
 
-    # save out the new image
+    # Save out the new image
     if gz:
         mask_path = os.path.join(os.getcwd(), 'wm_mask.nii.gz')
     else:
@@ -757,9 +757,7 @@ def _generate_ventricle_mask(in_file, gz=True):
     for roi in VENTRICLE_INCLUSIONS:
         ventricle_mask += np.where(aseg_fdata == roi, 1., 0.)
 
-        ventricle_mask += np.where(aseg_fdata == roi, 1., 0.)
-
-    # save out the new image
+    # Save out the new image
     if gz:
         mask_path = os.path.join(os.getcwd(), 'ventricle_mask.nii.gz')
     else:

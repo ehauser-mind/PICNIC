@@ -15,10 +15,7 @@ How To Use This Module
 """
 # =======================================
 # Imports
-import sys
 import os
-import shutil
-import glob
 import importlib
 import argparse
 import pandas
@@ -245,13 +242,11 @@ if __name__ == '__main__':
     pargs = parser.parse_args()
     arginputs = ProcessInputs(pargs)
 
-    # create the pipelines
-
     print("Environment variables:")
     for k, v in os.environ.items():
         print(f"  '{k}': '{v}'")
 
-    # create the pipelines
+    # Create the pipelines
     pipelines = []
     failed_runs = []
     for inp in arginputs.inps:

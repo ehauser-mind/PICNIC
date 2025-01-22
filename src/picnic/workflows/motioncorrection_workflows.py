@@ -9,7 +9,6 @@ from pathlib import Path
 
 from nipype import Function
 from nipype.interfaces.utility import Merge
-from nipype.interfaces import fsl
 
 from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
 from picnic.interfaces.nibabel_nodes import _reorient_image, _crop_image

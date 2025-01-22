@@ -35,7 +35,10 @@ def _create_report(type_, in_files, additional_args=[]):
           -. `basename` : str, name of the output filename
         """
 
-        # load file
+        import os
+        import nibabel as nib
+
+        # Load file
         image = nib.load(in_file)
         
         # if the image is a 4d image, assume it is a pet image and create a mp4
@@ -433,7 +436,7 @@ def _create_report(type_, in_files, additional_args=[]):
             bounds = calculate_bounds(image)
             ortho_cuts = [np.mean(bounds[direction]) for direction in ['xyz']]
 
-        # use nilearn's plot_anat to create each panel
+        # Use nilearn's plot_anat to create each panel
         temp_panel = tempfile.TemporaryFile(suffix='.png')
         _ = plot_anat(
             image,

@@ -30,6 +30,7 @@
     @${subject_id}_reconall.wholebrain_mask
     @${subject_id}_reconall.wm_mask
     @${subject_id}_reconall.gm_mask
+
   *TACs, name=ses-${pet_id}_tacs
     ${subject_id}_coreg.out_file
     ${subject_id}_reconall.bilateral_wmparc

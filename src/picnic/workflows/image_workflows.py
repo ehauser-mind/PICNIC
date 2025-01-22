@@ -5,7 +5,6 @@ import os
 
 from nipype import Function
 from nipype.interfaces.utility import Select, Rename, Merge
-from nipype.interfaces.dcm2nii import Dcm2niix, Dcm2nii
 
 from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
 from picnic.interfaces.nibabel_nodes import _merge_images
@@ -318,6 +317,9 @@ class Dcm2niixWorkflow(ImageWorkflow):
         """ use dcm2niix to convert a list of dicoms to nii
         """
 
+        from nipype.interfaces.dcm2nii import Dcm2niix
+        from picnic.interfaces.nibabel_nodes import _reorient_image
+
         # use dcm2niix
         self.wf.add_mapnode(
             interface = Dcm2niix(),
@@ -381,6 +383,9 @@ class Dcm2niiWorkflow(ImageWorkflow):
     def convert_to_nii(self):
         """ use dcm2niix to convert a list of dicoms to nii
         """
+
+        from nipype.interfaces.dcm2nii import Dcm2nii
+        from picnic.interfaces.nibabel_nodes import _reorient_image
 
         # use dcm2nii
         self.wf.add_mapnode(

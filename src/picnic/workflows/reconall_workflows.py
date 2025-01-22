@@ -8,6 +8,8 @@ from nipype import Function
 from nipype.interfaces.utility import Select, Merge
 
 from picnic.workflows.custom_workflow_constructors import NipibipyWorkflow
+from picnic.interfaces.io_nodes import _rename_image, _pop_list
+from picnic.interfaces.string_template_nodes import _fill_report_template
 from picnic.interfaces.nibabel_nodes import (
     _reorient_image,
     _create_bilateral_atlas,
@@ -18,8 +20,6 @@ from picnic.interfaces.nibabel_nodes import (
     _generate_subcortical_mask,
     _generate_ventricle_mask
 )
-from picnic.interfaces.io_nodes import _rename_image, _pop_list
-from picnic.interfaces.string_template_nodes import _fill_report_template
 
 
 # =======================================
@@ -508,6 +508,7 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
 
         from nipype.interfaces.freesurfer import ReconAll
 
+
         # use reconall
         if self.params['execution_type'] == 't1-only':
             self.wf.add_node(
@@ -518,6 +519,7 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
+            print(f"  - inflow - 'T1_files': '{self.inflows['t1s']}'")
         elif self.params['execution_type'] == 't2':
             self.wf.add_node(
                 interface = ReconAll(),
@@ -529,6 +531,9 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
+            print(f"  - inflow - 'subject_id': '{self.inflows['t1s']}'")
+            print(f"  - inflow - 'subjects_dir': '{self.inflows['t2']}'")
+            print(f"  - inflow - 'use_T2': '{True}'")
         elif self.params['execution_type'] == 'flair':
             self.wf.add_node(
                 interface = ReconAll(),
@@ -540,7 +545,10 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
-    
+            print(f"  - inflow - 'T1_files': '{self.inflows['t1s']}'")
+            print(f"  - inflow - 'FLAIR_file': '{self.inflows['flair']}'")
+            print(f"  - inflow - 'use_FLAIR': '{True}'")
+
 class ReadReconallWorkflow(ReconallWorkflow):
     """ read a freesurfer directory using nipype's FreeSurferSource 
     """
@@ -566,7 +574,8 @@ class ReadReconallWorkflow(ReconallWorkflow):
         import os
         from nipype.interfaces.io import FreeSurferSource
 
-        # break up provided filepath into freesurfer subject id/dir
+        
+        # Break up provided filepath into freesurfer subject id/dir
         p = os.path.split(self.inflows['filepath'])
         
         # read existing reconall
