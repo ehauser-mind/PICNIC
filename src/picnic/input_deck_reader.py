@@ -6,16 +6,15 @@ import sys
 import os
 import json
 import string
-from pathlib import Path
-
 import logging
+from pathlib import Path
 
 # =======================================
 # Constants
 INPUT_DECK_EXTENSION = '.inp'
 commenter = '#'
+# default_jsons_path = "cards/default_parameters"
 
-jsons_path = 'cards/default_parameters'  # this HAS to be a literal, cannot use os.path
 
 # =======================================
 # Classes
@@ -211,7 +210,7 @@ class Card():
         else:
             raise TypeError('Error: Unexpected data type passed to Card.parameters must be a tuple or dict')
             
-    def _load_defaults(self, defaults_path=DEFAULT_JSONS_PATH):
+    def _load_defaults(self, defaults_path=None):
         """
         Set aside in a method so we can change the json if necessary
 
@@ -219,7 +218,13 @@ class Card():
           -. `defaults_path` : file-like str, path to a json file where the
             default values are stored
         """
+
         # path of the json file
+        if defaults_path is None:
+            defaults_path = (
+                    Path(__file__).parent.absolute() /
+                    "cards" / "default_parameters"
+            )
         json_path = os.path.join(
             defaults_path,
             self.cardname[1:].replace(' ', '_')+'.json'
