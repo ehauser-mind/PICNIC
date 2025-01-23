@@ -177,11 +177,10 @@ class Card():
         #  defined parameters
         default_parameters = self._load_defaults()
         self.parameters = self.check_parameter_syntax(default_parameters)
-        assert len(self.parameters) == (
-            len(default_parameters),
-            ('Error: The optional parameter ' +
-             tuple(set(self.parameters.keys()).difference(default_parameters.keys()))[0] +
-             ' is not supported for the card "' + self.cardname + '"')
+        assert len(self.parameters) == len(default_parameters), (
+            f"Error: The optional parameter "
+            f"{tuple(set(self.parameters.keys()).difference(default_parameters.keys()))[0]}"
+            f" is not supported for the card '{self.cardname}"
         )
 
         # initialize the dataline list
