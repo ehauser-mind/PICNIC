@@ -119,7 +119,7 @@ class InputDeck():
         raise InputDeckSyntaxError('Error: Input deck does not contain the either the keyword "*start" or "*end"')
     
     def add_card(self, cardname, parameters, datalines):
-        """ A public option for adding cards without a separate file
+        r""" A public option for adding cards without a separate file
         
         :Parameters:
           -. `cardname` : str, the card's name as a string; \*pet
@@ -135,7 +135,7 @@ class InputDeck():
 
 
 class Card():
-    """
+    r"""
     An object storing all the relevant information for '\*' cards
     
     Card expects a name and a tuple of parameters. The tuple can be empty
@@ -367,7 +367,7 @@ def check_file_exists(filename):
     return os.path.exists(filename)
 
 def read_parameter_card(all_the_parameter_lines):
-    """
+    r"""
     A function built to read and execute the \*parameter keyword. This has to be
     in built in a local space outside the typical object structure to try and
     mitigate some of the danger of using the exec command.
@@ -378,7 +378,7 @@ def read_parameter_card(all_the_parameter_lines):
     for _ in all_the_parameter_lines:
         exec(_)
     
-    # remove all the variables outside of the ones created by exec
+    # Remove all the variables outside the ones created by exec
     del _
     del all_the_parameter_lines
     return locals()
