@@ -722,4 +722,3 @@ if __name__ == '__main__':
             deck.build_graph_element(graph)
         else:
             print(event, values)
-
