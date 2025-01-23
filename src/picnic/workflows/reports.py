@@ -9,7 +9,7 @@
 
 # =======================================
 # Functions
-def create_report(report_type, files, basename='', extras=[]):
+def create_report(report_type, files, basename='', extras=None):
     """ a function to create reports
     
     Parameters
@@ -19,6 +19,9 @@ def create_report(report_type, files, basename='', extras=[]):
     files - list
         a list of input files
     """
+
+    if extras is None:
+        extras = list()
 
     # control flow for reports
     #  image report
@@ -165,7 +168,12 @@ def motion_correction_summary(base_file, moco_file, mats=None, ref_frame=None, b
     # get ready to create some motion correction graphs
     base_fdata = base_image.get_fdata()
     moco_fdata = moco_image.get_fdata()
-    clim = advanced_colorbar_limits(nib.Nifti1Image(np.mean(base_fdata, axis=3), base_image.affine))
+    clim = advanced_colorbar_limits(
+        nib.Nifti1Image(
+            np.mean(base_fdata, axis=3),
+            base_image.affine
+        )
+    )
     t = np.arange(base_fdata.shape[3])
 
     # loop over each frame and create some brain images and a transformation graph
@@ -173,7 +181,15 @@ def motion_correction_summary(base_file, moco_file, mats=None, ref_frame=None, b
     for frame in range(base_fdata.shape[3]):
         coords = []
         for img in (base_fdata, moco_fdata):
-            coords.append(plot_motion_correction_image(nib.Nifti1Image(img[:,:,:,frame], base_image.affine), cut_coords_bounds, cmap='jet', vmin=clim[0], vmax=clim[1]))
+            coords.append(
+                plot_motion_correction_image(
+                    nib.Nifti1Image(img[:,:,:,frame], base_image.affine),
+                    cut_coords_bounds,
+                    cmap='jet',
+                    vmin=clim[0],
+                    vmax=clim[1]
+                )
+            )
 
             # draw lines on the brain images
             i = Image.open(coords[-1])
@@ -282,14 +298,34 @@ def camra_summary(base_file, overlay_files, rank_list, mats=None, rank=1, basena
         images = []
         for idx in sorted_rank_list:
             img = overlay_images[rank_list.index(idx)]
-            images.append(plot_camra_image(base_image, img, cut_coords_bounds, cmap='jet', alpha=alpha, vmin=clim[0], vmax=clim[1], title=str(idx)))
+            images.append(
+                plot_camra_image(
+                    base_image,
+                    img,
+                    cut_coords_bounds,
+                    cmap='jet',
+                    alpha=alpha,
+                    vmin=clim[0],
+                    vmax=clim[1],
+                    title=str(idx)
+                )
+            )
 
         # open the temporary images and resize them to the same width
         images_across = 4
         images = [Image.open(im) for im in images]
-        resized_images = [im.resize((STANDARD_WIDTH, ceil(im.size[1]*(STANDARD_WIDTH/im.size[0])))) for im in images]
+        resized_images = [
+            im.resize((STANDARD_WIDTH, ceil(im.size[1]*(STANDARD_WIDTH/im.size[0]))))
+            for im in images
+        ]
         widths, heights = zip(*(im.size for im in resized_images))
-        assembled_image = Image.new('RGB', (ceil(STANDARD_WIDTH*images_across/10.)*10, ceil(ceil(len(images)/images_across)*heights[0]/10.)*10))
+        assembled_image = Image.new(
+            'RGB',
+            (
+                ceil(STANDARD_WIDTH*images_across/10.)*10,
+                ceil(ceil(len(images)/images_across)*heights[0]/10.)*10
+            )
+        )
 
         # paste all three resized images into one new image
         y_offset = 0
@@ -316,14 +352,20 @@ def camra_summary(base_file, overlay_files, rank_list, mats=None, rank=1, basena
         all_dof = np.array(all_dof)
 
     # plot the overlay for the autoselected image
-    auto_overlay_plot = plot_camra_image(base_image, overlay_images[rank-1], cut_coords_bounds, cmap='jet', alpha=0.2, vmin=clim[0], vmax=clim[1])
+    auto_overlay_plot = plot_camra_image(
+        base_image, overlay_images[rank-1], cut_coords_bounds, cmap='jet', alpha=0.2, vmin=clim[0], vmax=clim[1]
+    )
 
     # loop over each camra method and create some brain images and a transformation graph
     assembled_images = []
     for idx in sorted_rank_list:
         img = overlay_images[rank_list.index(idx)]
         coords = [auto_overlay_plot]
-        coords.append(plot_camra_image(base_image, img, cut_coords_bounds, cmap='jet', alpha=0.2, vmin=clim[0], vmax=clim[1], title=str(idx)))
+        coords.append(
+            plot_camra_image(
+                base_image, img, cut_coords_bounds, cmap='jet', alpha=0.2, vmin=clim[0], vmax=clim[1], title=str(idx)
+            )
+        )
 
         # create the transformation graph
         if mats is not None:
@@ -407,11 +449,11 @@ def calculate_cut_coords_bounds(nifti):
         cut_coords_bounds[direction] = []
         for thr in COORDS_THRESHOLD[direction]:
             lower_idx, upper_idx = int(0), len(dist)
-            total_area = np.trapz(dist)
+            total_area = np.trapezoid(dist)
 
             while upper_idx-lower_idx > 1.:
                 idx = (lower_idx + upper_idx) // 2
-                area = np.trapz(dist[:idx])
+                area = np.trapezoid(dist[:idx])
                 if area/total_area > (thr/100.)+0.005:
                     upper_idx = idx
                 elif area/total_area < (thr/100.)-0.005:
@@ -419,7 +461,9 @@ def calculate_cut_coords_bounds(nifti):
                 else:
                     break
 
-            cut_coords_bounds[direction].append(affine[COORDS_IDX_KEY[direction], 3] + (idx * zooms[COORDS_IDX_KEY[direction]]))
+            cut_coords_bounds[direction].append(
+                affine[COORDS_IDX_KEY[direction], 3] + (idx * zooms[COORDS_IDX_KEY[direction]])
+            )
 
     return cut_coords_bounds
 
@@ -462,7 +506,10 @@ def plot_anat(image, cut_coords_bounds, cmap='gray', vmin=None, vmax=None, n_cut
     return coords
 
 
-def plot_image_overlay(overlay_image, base_image, cut_coords_bounds, direction='y', cmap='gray', n_cuts=5, alpha=0.7, vmin=None, vmax=None):
+def plot_image_overlay(
+        overlay_image, base_image, cut_coords_bounds,
+        direction='y', cmap='gray', n_cuts=5, alpha=0.7, vmin=None, vmax=None
+):
     """ use nilearn.plotting to plot the anatomy
 
     Parameters
@@ -595,7 +642,10 @@ def plot_motion_correction_graph(t, all_dof, frame, ref_frame=None):
     return temp_png
 
 
-def plot_coregistration(overlay_image, base_image, cut_coords_bounds, cmap='jet', n_cuts=7, alpha=0.7, vmin=None, vmax=None):
+def plot_coregistration(
+        overlay_image, base_image, cut_coords_bounds,
+        cmap='jet', n_cuts=7, alpha=0.7, vmin=None, vmax=None
+):
     """ use nilearn.plotting to plot the anatomy
 
     Parameters
@@ -638,7 +688,10 @@ def plot_coregistration(overlay_image, base_image, cut_coords_bounds, cmap='jet'
     return coords
 
 
-def plot_camra_image(base_image, overlay_image, cut_coords_bounds, cmap='jet', alpha=0.5, vmin=None, vmax=None, title=None):
+def plot_camra_image(
+        base_image, overlay_image, cut_coords_bounds,
+        cmap='jet', alpha=0.5, vmin=None, vmax=None, title=None
+):
     """ use nilearn.plotting to plot the ortho for motion correction
 
     Parameters
