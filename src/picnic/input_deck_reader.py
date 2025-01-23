@@ -67,17 +67,17 @@ class InputDeck():
         """
         read in the input deck and assign data for all the star keywords
         """
-        logging.info('  Opening file '+self.filename)
+        print('  Opening file '+self.filename)
         user_defined_parameters = {}
         # loop over all the data, start reading with *start
         with open(self.filename, 'r') as f:
             for line in f:
                 if line.lower().strip().startswith('*start'):
-                    logging.info('    Reader:    *start')
+                    print('    Reader:    *start')
                     for line in f: # python iterator will continue its iteration until consumed
                         line = string.Template(line.strip()).substitute(user_defined_parameters)
                         if line.lower().startswith('*end'): # stop reading and exit method at *end
-                            logging.info('    Reader:    *end\n\n')
+                            print('    Reader:    *end\n\n')
                             return
                         elif not line: # if the line is empty, skip it
                             continue
@@ -99,19 +99,19 @@ class InputDeck():
                                     # I personally don't like this, but I can't think of a better way to
                                     #   exit the iterator. Load the first card after *parameter
                                     line = string.Template(line.strip()).substitute(user_defined_parameters)
-                                    logging.info('    Reader:    ' + line.lower())
-                                    logging.info(f"      {len(line.lower().split(','))} items")
+                                    print('    Reader:    ' + line.lower())
+                                    print(f"      {len(line.lower().split(','))} items")
                                     self.cards.append(Card(*[itm.strip() for itm in line.lower().split(',')]))
                                     break
                                 
                         # create a Card obj for every * keyword, even the ones that are not supported
                         elif line.startswith('*'):
-                            logging.info('    Reader:    ' + line.lower())
+                            print('    Reader:    ' + line.lower())
                             self.cards.append(Card(*[itm.strip() for itm in line.lower().split(',')]))
                                                                         
                         # if the line does not start with * nor is blank, assume it is a data line
                         else:
-                            logging.info('    Reader:      '+line)
+                            print('    Reader:      '+line)
                             self.cards[-1].add_dataline(line)
         
         # if we get to this point the reader has not found either a *start or *end, exit the pipeline
