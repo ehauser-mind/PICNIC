@@ -1,7 +1,7 @@
 # Included in yml file, must match versions
-numpy~=2.2.2
+numpy~=1.26
 scipy~=1.15.1
-matplotlib~=3.10
+matplotlib~=3.8
 pandas~=2.2
 # Independent of yml file
 setuptools~=75.8.0
