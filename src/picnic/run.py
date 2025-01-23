@@ -20,18 +20,12 @@ import importlib
 import argparse
 import pandas
 import copy
-from pathlib import Path
 
 from picnic.input_deck_reader import read_input_deck
 
 
 # =======================================
 # Constants
-DEFAULT_JSONS_PATH = os.path.join(
-    Path(__file__).parent.absolute(),
-    'cards',
-    'default_parameters'
-)
 
 # =======================================
 # Classes
@@ -56,13 +50,13 @@ class ProcessInputs():
 
     def fill_dox(self):
         """
-        use the csv build a dox and create new inps
+        use the csv build a dox and create new inputs
         """
         self.inps = insert_parameters(self.inps, self.dox)
 
     def initialize_pipelines(self):
         """
-        initialize all of the pipelines
+        initialize all the pipelines
         """
         for inp in self.inps:
             self.pipelines.append(Pipeline(inp))
@@ -142,6 +136,7 @@ def create_parser():
     :Return:
       -. an ArgumentParser obj
     """
+
     parser = argparse.ArgumentParser()
     parser.add_argument('i', nargs='+', help='filepath to the input deck')
     parser.add_argument(
@@ -180,7 +175,8 @@ def insert_parameters(inps, dox_file):
     :Return:
       -. a list, of newly created input decks
     """
-    # read in the dox file
+
+    # Read in the dox file
     df = pandas.read_csv(dox_file, index_col=0)
     number_of_runs = df.shape[1]
 
@@ -234,6 +230,7 @@ def insert_parameters(inps, dox_file):
 
     return new_inps
 
+
 # =======================================
 # Main
 if __name__ == '__main__':
@@ -250,6 +247,7 @@ if __name__ == '__main__':
     pipelines = []
     failed_runs = []
     for inp in arginputs.inps:
+        print(f"'inp': {str(inp)}")
         try:
             pipeline = Pipeline(inp)
             pipeline.build_workflow()
@@ -258,4 +256,5 @@ if __name__ == '__main__':
         except:
             failed_runs.append(inp)
 
-    print('Failed runs:\n\t' + str(failed_runs))
+    if len(failed_runs) > 0:
+        print('Failed runs:\n\t' + str(failed_runs))
