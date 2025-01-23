@@ -6,16 +6,15 @@ import sys
 import os
 import json
 import string
-from pathlib import Path
-
 import logging
+from pathlib import Path
 
 # =======================================
 # Constants
 INPUT_DECK_EXTENSION = '.inp'
 commenter = '#'
+# default_jsons_path = "cards/default_parameters"
 
-jsons_path = 'cards/default_parameters'  # this HAS to be a literal, cannot use os.path
 
 # =======================================
 # Classes
@@ -68,17 +67,17 @@ class InputDeck():
         """
         read in the input deck and assign data for all the star keywords
         """
-        logging.info('  Opening file '+self.filename)
+        print('  Opening file '+self.filename)
         user_defined_parameters = {}
         # loop over all the data, start reading with *start
         with open(self.filename, 'r') as f:
             for line in f:
                 if line.lower().strip().startswith('*start'):
-                    logging.info('    Reader:    *start')
+                    print('    Reader:    *start')
                     for line in f: # python iterator will continue its iteration until consumed
                         line = string.Template(line.strip()).substitute(user_defined_parameters)
                         if line.lower().startswith('*end'): # stop reading and exit method at *end
-                            logging.info('    Reader:    *end\n\n')
+                            print('    Reader:    *end\n\n')
                             return
                         elif not line: # if the line is empty, skip it
                             continue
@@ -100,19 +99,19 @@ class InputDeck():
                                     # I personally don't like this, but I can't think of a better way to
                                     #   exit the iterator. Load the first card after *parameter
                                     line = string.Template(line.strip()).substitute(user_defined_parameters)
-                                    logging.info('    Reader:    ' + line.lower())
-                                    logging.info(f"      {len(line.lower().split(','))} items")
+                                    print('    Reader:    ' + line.lower())
+                                    print(f"      {len(line.lower().split(','))} items")
                                     self.cards.append(Card(*[itm.strip() for itm in line.lower().split(',')]))
                                     break
                                 
                         # create a Card obj for every * keyword, even the ones that are not supported
                         elif line.startswith('*'):
-                            logging.info('    Reader:    ' + line.lower())
+                            print('    Reader:    ' + line.lower())
                             self.cards.append(Card(*[itm.strip() for itm in line.lower().split(',')]))
                                                                         
                         # if the line does not start with * nor is blank, assume it is a data line
                         else:
-                            logging.info('    Reader:      '+line)
+                            print('    Reader:      '+line)
                             self.cards[-1].add_dataline(line)
         
         # if we get to this point the reader has not found either a *start or *end, exit the pipeline
@@ -120,7 +119,7 @@ class InputDeck():
         raise InputDeckSyntaxError('Error: Input deck does not contain the either the keyword "*start" or "*end"')
     
     def add_card(self, cardname, parameters, datalines):
-        """ A public option for adding cards without a separate file
+        r""" A public option for adding cards without a separate file
         
         :Parameters:
           -. `cardname` : str, the card's name as a string; \*pet
@@ -136,7 +135,7 @@ class InputDeck():
 
 
 class Card():
-    """
+    r"""
     An object storing all the relevant information for '\*' cards
     
     Card expects a name and a tuple of parameters. The tuple can be empty
@@ -178,11 +177,10 @@ class Card():
         #  defined parameters
         default_parameters = self._load_defaults()
         self.parameters = self.check_parameter_syntax(default_parameters)
-        assert len(self.parameters) == (
-            len(default_parameters),
-            ('Error: The optional parameter ' +
-             tuple(set(self.parameters.keys()).difference(default_parameters.keys()))[0] +
-             ' is not supported for the card "' + self.cardname + '"')
+        assert len(self.parameters) == len(default_parameters), (
+            f"Error: The optional parameter "
+            f"{tuple(set(self.parameters.keys()).difference(default_parameters.keys()))[0]}"
+            f" is not supported for the card '{self.cardname}"
         )
 
         # initialize the dataline list
@@ -211,7 +209,7 @@ class Card():
         else:
             raise TypeError('Error: Unexpected data type passed to Card.parameters must be a tuple or dict')
             
-    def _load_defaults(self, defaults_path=DEFAULT_JSONS_PATH):
+    def _load_defaults(self, defaults_path=None):
         """
         Set aside in a method so we can change the json if necessary
 
@@ -219,7 +217,13 @@ class Card():
           -. `defaults_path` : file-like str, path to a json file where the
             default values are stored
         """
+
         # path of the json file
+        if defaults_path is None:
+            defaults_path = (
+                    Path(__file__).parent.absolute() /
+                    "cards" / "default_parameters"
+            )
         json_path = os.path.join(
             defaults_path,
             self.cardname[1:].replace(' ', '_')+'.json'
@@ -362,7 +366,7 @@ def check_file_exists(filename):
     return os.path.exists(filename)
 
 def read_parameter_card(all_the_parameter_lines):
-    """
+    r"""
     A function built to read and execute the \*parameter keyword. This has to be
     in built in a local space outside the typical object structure to try and
     mitigate some of the danger of using the exec command.
@@ -373,7 +377,7 @@ def read_parameter_card(all_the_parameter_lines):
     for _ in all_the_parameter_lines:
         exec(_)
     
-    # remove all the variables outside of the ones created by exec
+    # Remove all the variables outside the ones created by exec
     del _
     del all_the_parameter_lines
     return locals()

@@ -6,7 +6,7 @@ NC='\033[0m' # No Color
 PICNIC_IMG="mfschmidt/picnic:latest"
 
 # TODO: Figure out how to make this another user-modifiable option.
-WORK_DIR=/var/tmp/picnic
+WORK_DIR=/work
 
 # Provide usage instructions
 function usage {

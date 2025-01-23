@@ -1,18 +1,18 @@
 # =======================================
 # Imports
 import numpy as np
+import logging
 import matplotlib
-matplotlib.use('TKAgg')
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, Button, CheckButtons
 from scipy import stats
 from nibabel.viewers import OrthoSlicer3D
 
-import logging
-logger = logging.getLogger(__name__)
 
 # =======================================
 # Constants
+matplotlib.use('TKAgg')
+logger = logging.getLogger(__name__)
 
 # =======================================
 # Classes

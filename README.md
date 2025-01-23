@@ -25,6 +25,7 @@ docker run --rm \
   -v /path/to/your/data:/input:ro \
   -v /path/to/your/results:/output:rw \
   -v /path/to/your/input_deck.inp:/input_deck.inp:ro \
+  -v /path/to/your/freesurfer/license.txt:/opt/freesurfer/license.txt:ro \
   mfschmidt/picnic:latest /input_deck.inp
 ```
 

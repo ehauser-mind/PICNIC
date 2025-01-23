@@ -1,5 +1,5 @@
 
-PICNIC (early draft v0.0.8)
+PICNIC (early draft v0.0.9)
 =======================================
 
 Quick Start
