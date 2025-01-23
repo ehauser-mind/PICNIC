@@ -57,7 +57,8 @@ class ImageWorkflow():
         self.inflows.update(inflows)
     
     def build_workflow(self, sink_directory):
-        """ create a nipype workflow to convert all images provided to a 
+        """
+        Create a nipype workflow to convert all images provided to a
         standard imaging file type (nii or nii.gz)
         
         Parameters
