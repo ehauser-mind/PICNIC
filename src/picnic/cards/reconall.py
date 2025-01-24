@@ -47,13 +47,16 @@ class Reconall(CardBuilder):
         CardBuilder.__init__(self, self.card, kwargs)
         logging.info('  Checking dataline syntax')
         self._check_dataline_syntax(
-            expected_lines = '>0', 
+            expected_lines = '>1',
             expected_in_lines = '=1'
         )
         logging.info('  Checking parameter syntax')
         
         # workflow standard attributes
-        self.inflows = {'in_files' : [d[0] for d in self._datalines]}
+        self.inflows = {
+            'subject_id': self._datalines[0][0],
+            'in_files' : [d[0] for d in self._datalines[1:]]
+        }
         self.outflows = {}
         self.set_outflows()
     

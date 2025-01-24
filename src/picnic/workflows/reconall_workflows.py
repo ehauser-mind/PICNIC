@@ -57,10 +57,11 @@ class ReconallWorkflow():
     wf - the nipype.Workflow
     """
     DEFAULT_INFLOWS = {
-        't1s' : [],
-        't2' : None,
-        'flair' : None,
-        'filepath' : None
+        'subject_id': None,
+        't1s': [],
+        't2': None,
+        'flair': None,
+        'filepath': None
     }
     
     def __init__(self, params, inflows):
@@ -490,6 +491,7 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
         """
         params['type'] = 'execute'
         super().__init__(params, {})
+        self.inflows['subject_id'] = inflows['subject_id']
         if self.params['execution_type'] == 't1-only':
             self.inflows['t1s'] = inflows['in_files']
         elif self.params['execution_type'] == 't2':
@@ -515,36 +517,42 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 interface = ReconAll(),
                 name = 'execute_reconall',
                 inflows = {
-                    'T1_files' : self.inflows['t1s']
+                    'subject_id': self.inflows['subject_id'],
+                    'T1_files': self.inflows['t1s'],
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
+            print(f"  - inflow - 'subject_id': '{self.inflows['subject_id']}'")
             print(f"  - inflow - 'T1_files': '{self.inflows['t1s']}'")
         elif self.params['execution_type'] == 't2':
             self.wf.add_node(
                 interface = ReconAll(),
                 name = 'execute_reconall',
                 inflows = {
+                    'subject_id': self.inflows['subject_id'],
                     'T1_files' : self.inflows['t1s'],
                     'T2_file' : self.inflows['t2'],
                     'use_T2' : True
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
-            print(f"  - inflow - 'subject_id': '{self.inflows['t1s']}'")
-            print(f"  - inflow - 'subjects_dir': '{self.inflows['t2']}'")
+            print(f"  - inflow - 'subject_id': '{self.inflows['subject_id']}'")
+            print(f"  - inflow - 'T1_files': '{self.inflows['t1s']}'")
+            print(f"  - inflow - 'T2_file': '{self.inflows['t2']}'")
             print(f"  - inflow - 'use_T2': '{True}'")
         elif self.params['execution_type'] == 'flair':
             self.wf.add_node(
                 interface = ReconAll(),
                 name = 'execute_reconall',
                 inflows = {
+                    'subject_id': self.inflows['subject_id'],
                     'T1_files' : self.inflows['t1s'],
                     'FLAIR_file' : self.inflows['flair'],
                     'use_FLAIR' : True
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
+            print(f"  - inflow - 'subject_id': '{self.inflows['subject_id']}'")
             print(f"  - inflow - 'T1_files': '{self.inflows['t1s']}'")
             print(f"  - inflow - 'FLAIR_file': '{self.inflows['flair']}'")
             print(f"  - inflow - 'use_FLAIR': '{True}'")
