@@ -6,10 +6,8 @@ import os
 import PySimpleGUI as sg
 import base64
 import tempfile
-import glob
 import importlib
 from io import BytesIO
-from pathlib import Path
 
 from PIL import (
     Image,
@@ -17,8 +15,8 @@ from PIL import (
     ImageFont
 )
 
-# from picnic.input_deck_reader import read_input_deck, make_card
-from input_deck_reader import (
+from picnic.cards import get_path_to_jsons
+from picnic.input_deck_reader import (
     read_input_deck,
     make_card
 )
@@ -59,12 +57,6 @@ THEME_IDX = 0
 
 PADDING = 4
 CARD_SIZE = (780, 116)
-
-DEFAULT_JSONS_PATH = os.path.join(
-    Path(__file__).parent.absolute(),
-    'cards',
-    'default_parameters'
-)
 
 FOOTER_BUTTON_SIZE = (17, 2)
 
@@ -406,7 +398,7 @@ def add_card_manually():
         [
             sg.T('Add Preprocessing Step'),
             sg.Combo(
-                list(get_card_list(DEFAULT_JSONS_PATH).keys()),
+                list(get_card_list(get_path_to_jsons()).keys()),
                 key = '-COMBO-'
             )
         ],
@@ -607,7 +599,7 @@ def create_variable_window(variables):
             window.Close()
             return None
     
-def get_card_list(folder_path=DEFAULT_JSONS_PATH, extension='.json'):
+def get_card_list(folder_path=None, extension='.json'):
     """
     return a list of cards found in the `cards.default_parameters`
     sub-directory. We use this to determine which instances steps will be
@@ -620,13 +612,15 @@ def get_card_list(folder_path=DEFAULT_JSONS_PATH, extension='.json'):
     :Return:
       -. a dictionary, cards and their associated picnic classes
     """
+
     # {key = 'card name' : val = CardName obj}
     # example {'camra' : picnic.cards.camra.Camra}
     card_instance_legend = {}
 
-    # get all the jsons in the default parameters folder
-    all_jsons = glob.glob(os.path.join(folder_path, '*' + extension))
-    for json_ in all_jsons:
+    # Get all the jsons in the default parameters folder
+    if folder_path is None:
+        folder_path = get_path_to_jsons()
+    for json_ in folder_path.glob(f"*{extension}"):
         card_name = os.path.basename(json_).replace(extension, '').replace('_', ' ')
         module_ = importlib.import_module(
             # '.'.join(('picnic', 'cards', card_name.replace(' ', '_')))

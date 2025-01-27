@@ -7,14 +7,14 @@ import os
 import json
 import string
 import logging
-from pathlib import Path
+
+from picnic.cards import get_path_to_json
+
 
 # =======================================
 # Constants
 INPUT_DECK_EXTENSION = '.inp'
 commenter = '#'
-# default_jsons_path = "cards/default_parameters"
-
 
 # =======================================
 # Classes
@@ -209,7 +209,7 @@ class Card():
         else:
             raise TypeError('Error: Unexpected data type passed to Card.parameters must be a tuple or dict')
             
-    def _load_defaults(self, defaults_path=None):
+    def _load_defaults(self):
         """
         Set aside in a method so we can change the json if necessary
 
@@ -218,18 +218,8 @@ class Card():
             default values are stored
         """
 
-        # path of the json file
-        if defaults_path is None:
-            defaults_path = (
-                    Path(__file__).parent.absolute() /
-                    "cards" / "default_parameters"
-            )
-        json_path = os.path.join(
-            defaults_path,
-            self.cardname[1:].replace(' ', '_')+'.json'
-        )
-
-        # load the json
+        # Load the json
+        json_path = get_path_to_json(self.cardname[1:].replace(' ', '_'))
         with open(json_path, 'r') as f:
             data = json.load(f)
 
@@ -337,12 +327,14 @@ class Card():
                     self._datalines.append([itm.strip() for itm in l.strip().split(',')])
         else:
             raise InputDeckSyntaxError('Error: Unexpected data type when setting dataline for card ' + self.cardname)
-        
+
+
 class InputDeckSyntaxError(Exception):
     """
     Custom error to trap input deck specific errors
     """
     pass
+
 
 # =======================================
 # Functions
@@ -356,6 +348,7 @@ def check_file_extension(filename, extension):
     """
     return os.path.splitext(filename)[-1].lower() == extension
 
+
 def check_file_exists(filename):
     """
     Check that the file exists where the user thinks it does
@@ -364,6 +357,7 @@ def check_file_exists(filename):
       -. `filename` : str, the input deck file
     """
     return os.path.exists(filename)
+
 
 def read_parameter_card(all_the_parameter_lines):
     r"""
@@ -382,20 +376,13 @@ def read_parameter_card(all_the_parameter_lines):
     del all_the_parameter_lines
     return locals()
     
-def load_default_parameter_json(keyword, json_path):
-    """
-    Load in the default options provided by the json file keyword = str; 'pet'
-    json_path = filepath; 'static/default_parameters'
-    """
-    print(keyword + '\n\t' + json_path)
-    return json.loads(os.path.join(json_path, keyword.replace(' ', '_')+'.json'))[keyword]
-
 
 def read_input_deck(input_deck):
     """
     A function that will call the InputDeck class and fill it given a file
     """
     return InputDeck(input_deck)
+
 
 def make_card(cardname, parameters=None, datalines=None):
     """
@@ -421,6 +408,7 @@ def make_card(cardname, parameters=None, datalines=None):
         for line in datalines:
             card.add_dataline(line)
     return card
+
 
 # =======================================
 # Main
