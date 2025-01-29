@@ -20,6 +20,7 @@ import importlib
 import argparse
 import pandas
 import copy
+import traceback
 
 from picnic.input_deck_reader import read_input_deck
 
@@ -94,7 +95,7 @@ class Pipeline():
                 print(card.cardname[1:])
                 instance_name = infer_class_name_from_card_name(card.cardname[1:])
                 module = importlib.import_module(
-                    'cards.' + '_'.join(card.cardname[1:].lower().split(' '))
+                    'picnic.cards.' + '_'.join(card.cardname[1:].lower().split(' '))
                 )
                 instance = getattr(module, instance_name)
 
@@ -253,7 +254,9 @@ if __name__ == '__main__':
             pipeline.build_workflow()
             pipelines.append(pipeline)
         # create a running tally of failed runs
-        except:
+        except Exception as e:
+            print(e)
+            print(traceback.format_exc())
             failed_runs.append(inp)
 
     if len(failed_runs) > 0:
