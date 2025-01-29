@@ -491,7 +491,17 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
         """
         params['type'] = 'execute'
         super().__init__(params, {})
-        self.inflows['subject_id'] = inflows['subject_id']
+
+        # If the card name is bidsy, find the sub-NAME, otherwise, use as is
+        try:
+            subject_id = {
+                k.split('-')[0]: k
+                for k in self.params['name'].split('_')
+            }['sub'].split('-')[1]
+        except KeyError:
+            subject_id = self.params.get('name', "_")
+
+        self.inflows['subject_id'] = subject_id
         if self.params['execution_type'] == 't1-only':
             self.inflows['t1s'] = inflows['in_files']
         elif self.params['execution_type'] == 't2':
