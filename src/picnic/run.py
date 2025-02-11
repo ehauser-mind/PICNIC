@@ -88,7 +88,10 @@ class Pipeline():
         for card in self.inp.cards:
             if card.cardname[1:] == 'sink':
                 self.sink_directory = card.datalines[0][0]
-
+        
+        # start the html
+        report_lines = build_summary_report()
+        
         # loop over all the cards
         for card in self.inp.cards:
             if not card.cardname[1:] == 'sink':
@@ -127,7 +130,17 @@ class Pipeline():
                 self.pipeline_instances[name].set_outflows(self.sink_directory)
                 self.pipeline_workflows[name] = instance(card).build_workflow(self.sink_directory)
                 self.pipeline_workflows[name].workflow.run()
-
+                report_lines = build_summary_report(
+                    report_lines, 
+                    self.pipeline_instances[name].outflows['report'],
+                    name
+                )
+        
+        # finish building out the html and saving it
+        report_lines = build_summary_report(report_lines)
+        with open(os.path.join(sink_directory, 'full_report.html'), 'w') as f:
+            _ = f.write('\n'.join(report_lines))
+        
 # =======================================
 # Functions
 def create_parser():
@@ -231,6 +244,45 @@ def insert_parameters(inps, dox_file):
 
     return new_inps
 
+def build_summary_report(all_lines=[], individual_report=None, instance_name=''):
+    """
+    creates an composite summary report building from all the individual
+    reports.
+
+    :Parameters:
+      -. `all_lines` : a list, strings that represent each html line
+      -. `individual_report` : a file-like str, the instance's report
+      -. `instance_name` : a str, the name of the instance
+
+    :Return:
+      -. a list, of strings representing html lines
+    """
+    # create a new html by not passing an individual report
+    if individual_report is None:
+        if not all_lines:
+            all_lines.append('<html xmlns="http://www.w3.org/1999/xhtml" lang="en">')
+            all_lines.append('  <head>')
+            all_lines.append('    <title>Full Report</title>')
+            all_lines.append('  </head>')
+            all_lines.append('  <body>')
+        else:
+            # end the html by not passing an individual report and passing lines
+            all_lines.append('  </body>')
+            all_lines.append('</html>')
+    
+    else:
+        # open the individual report and read everything between the body tags
+        include = False
+        with open(individual_report, 'r') as f:
+            for line in f.readlines():
+                if line.strip() == '<body>':
+                    include = True
+                elif line.strip() == '</body>':
+                    include = False
+                else:
+                    if include:
+                        all_lines.append(line.replace('src="', 'src="' + instance_name + '/'))
+    return all_lines
 
 # =======================================
 # Main
