@@ -138,20 +138,19 @@ if [[ -f "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}" ]]; then
   fi
 fi
 
-# We are creating a new docker-transformed input deck and saving it into the output space.
-cp -a "${INPUT_DECK}" "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}"
-# echo "* Changing '${OUTPUT_DIR}' to '/output'"
-sed -i "s|${OUTPUT_DIR}|/output|g" "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}"
-# echo "* Changing '${INPUT_DIR}' to '/input'"
-sed -i "s|${INPUT_DIR}|/input|g" "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}"
-
-
 # Report our intentions
 echo -e "$CYAN"
 echo "  Docker mounting input read-only from '${INPUT_DIR}' to 'docker:/input'"
 echo "  Docker mounting output read-write from '${OUTPUT_DIR}' to 'docker:/output'"
 echo "  Writing path-altered input deck to '${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}'"
 echo -e "$NC"
+
+# We are creating a new docker-transformed input deck and saving it into the output space.
+cp -a "${INPUT_DECK}" "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}"
+# echo "* Changing '${OUTPUT_DIR}' to '/output'"
+sed -i "s|${OUTPUT_DIR}|/output|g" "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}"
+# echo "* Changing '${INPUT_DIR}' to '/input'"
+sed -i "s|${INPUT_DIR}|/input|g" "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}"
 
 # Execute the input deck with pantry in docker
 HOST_NAME=$(hostname)
