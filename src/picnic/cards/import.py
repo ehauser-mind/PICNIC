@@ -61,6 +61,12 @@ class Import(CardBuilder):
                 self._name + '.nii.gz'
             )
         }
+        if self._report:
+            self.outflows['report'] = os.path.join(
+                sink_directory,
+                self._name,
+                'report.html'
+            )
     
     def build_workflow(self, sink_directory='', **optional_parameters):
         """

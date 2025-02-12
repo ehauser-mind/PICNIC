@@ -82,6 +82,12 @@ class Reconall(CardBuilder):
                 )
             print(f" ** ReconAll created outflow: '{outflow}' = '{self.outflows[outflow]}'")
         
+        if self._report:
+            self.outflows['report'] = os.path.join(
+                sink_directory,
+                self._name,
+                'report.html'
+            )
     
     def build_workflow(self, sink_directory='', **optional_parameters):
         """
