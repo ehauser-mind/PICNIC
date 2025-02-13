@@ -138,7 +138,7 @@ class Pipeline():
         
         # finish building out the html and saving it
         report_lines = build_summary_report(report_lines)
-        with open(os.path.join(sink_directory, 'full_report.html'), 'w') as f:
+        with open(os.path.join(self.sink_directory, 'full_report.html'), 'w') as f:
             _ = f.write('\n'.join(report_lines))
         
 # =======================================
