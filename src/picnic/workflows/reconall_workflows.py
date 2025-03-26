@@ -532,8 +532,8 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
-            print(f"  - inflow - 'subject_id': '{self.inflows['subject_id']}'")
-            print(f"  - inflow - 'T1_files': '{self.inflows['t1s']}'")
+            print(f"  - t1-only inflow - 'subject_id': '{self.inflows['subject_id']}'")
+            print(f"  - t1-only inflow - 'T1_files': '{self.inflows['t1s']}'")
         elif self.params['execution_type'] == 't2':
             self.wf.add_node(
                 interface = ReconAll(),
@@ -546,10 +546,10 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
-            print(f"  - inflow - 'subject_id': '{self.inflows['subject_id']}'")
-            print(f"  - inflow - 'T1_files': '{self.inflows['t1s']}'")
-            print(f"  - inflow - 'T2_file': '{self.inflows['t2']}'")
-            print(f"  - inflow - 'use_T2': '{True}'")
+            print(f"  - t2 inflow - 'subject_id': '{self.inflows['subject_id']}'")
+            print(f"  - t2 inflow - 'T1_files': '{self.inflows['t1s']}'")
+            print(f"  - t2 inflow - 'T2_file': '{self.inflows['t2']}'")
+            print(f"  - t2 inflow - 'use_T2': '{True}'")
         elif self.params['execution_type'] == 'flair':
             self.wf.add_node(
                 interface = ReconAll(),
@@ -562,10 +562,10 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
-            print(f"  - inflow - 'subject_id': '{self.inflows['subject_id']}'")
-            print(f"  - inflow - 'T1_files': '{self.inflows['t1s']}'")
-            print(f"  - inflow - 'FLAIR_file': '{self.inflows['flair']}'")
-            print(f"  - inflow - 'use_FLAIR': '{True}'")
+            print(f"  - flair inflow - 'subject_id': '{self.inflows['subject_id']}'")
+            print(f"  - flair inflow - 'T1_files': '{self.inflows['t1s']}'")
+            print(f"  - flair inflow - 'FLAIR_file': '{self.inflows['flair']}'")
+            print(f"  - flair inflow - 'use_FLAIR': '{True}'")
 
 class ReadReconallWorkflow(ReconallWorkflow):
     """ read a freesurfer directory using nipype's FreeSurferSource 
