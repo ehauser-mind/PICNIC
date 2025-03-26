@@ -54,7 +54,7 @@ class Reconall(CardBuilder):
         
         # workflow standard attributes
         self.inflows = {
-            'in_files' : [d[0] for d in self._datalines[1:]]
+            'in_files' : [d[0] for d in self._datalines]
         }
         self.outflows = {}
         self.set_outflows()
