@@ -5,9 +5,6 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 PICNIC_IMG="mfschmidt/picnic:latest"
 
-# TODO: Figure out how to make this another user-modifiable option.
-WORK_DIR=/work
-
 # Provide usage instructions
 function usage {
   echo "Usage for run_picnic_in_docker"
@@ -166,6 +163,5 @@ docker run -it \
   --volume="/etc/shadow:/etc/shadow:ro" \
   --volume="${INPUT_DIR}":/input:ro \
   --volume="${OUTPUT_DIR}":/output:rw \
-  --volume="${WORK_DIR}":/work:rw \
   --volume="${FS_LICENSE}":/opt/freesurfer/license.txt \
   ${PICNIC_IMG} "/output/${NEW_INPUT_DECK_FILENAME}"
