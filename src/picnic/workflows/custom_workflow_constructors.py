@@ -1,7 +1,7 @@
 # =======================================
 # Imports
 import os
-from pathlib import Path
+import tempfile
 from nipype import Node, MapNode, Workflow, DataSink
 
 
@@ -46,18 +46,11 @@ class NipibipyWorkflow():
             )
             self.workflow = Workflow(
                 name,
-                base_dir=os.path.join(sink_directory, "work")
+                base_dir=os.path.join(sink_directory, "_work")
             )
         else:
-            for work_directory in (
-                os.getenv("TEMP"),  # should exist if running in Windows
-                '/tmp/',  # should exist if running in linux
-                '/work/',  # probably doesn't exist, but worth a last try
-            ):
-                if work_directory is not None and Path(work_directory).exists():
-                    self.workflow = Workflow(name, base_dir='/tmp/')
-                    print(f"Work directory {work_directory} exists")
-                    break
+            work_directory = tempfile.mkdtemp()
+            self.workflow = Workflow(name, base_dir=work_directory)
 
     def add_node(self, interface, name, inflows, outflows, to_sink=None):
         """ add a node to the current workflow
