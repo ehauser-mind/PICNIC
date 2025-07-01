@@ -1,7 +1,9 @@
 # =======================================
 # Imports
 import os
+import tempfile
 from nipype import Node, MapNode, Workflow, DataSink
+
 
 # =======================================
 # Constants
@@ -33,9 +35,6 @@ class NipibipyWorkflow():
         self.name = name
         self.outflows = outflows
         self.all_nodes = {}
-        
-        # self.workflow = Workflow(name)
-        self.workflow = Workflow(name, base_dir='/work/')
         self.sink = False
         if sink_directory:
             self.sink = Node(
@@ -45,7 +44,13 @@ class NipibipyWorkflow():
                 ),
                 name=name+'_sink', 
             )
-
+            self.workflow = Workflow(
+                name,
+                base_dir=os.path.join(sink_directory, "_work")
+            )
+        else:
+            work_directory = tempfile.mkdtemp()
+            self.workflow = Workflow(name, base_dir=work_directory)
 
     def add_node(self, interface, name, inflows, outflows, to_sink=None):
         """ add a node to the current workflow

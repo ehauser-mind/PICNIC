@@ -1,0 +1,35 @@
+*Start
+  # Variables
+  *Parameter
+    input_path = '/mnt/cache/ds004513'
+    export_path = '/mnt/cache/picnic_output_20250619'
+    subject_id = 's012'
+  
+  # Sink location
+  *Sink
+    ${export_path}
+  
+  # MRI Imports
+  *Import, name=${subject_id}_t1w, Type=nibabel
+    ${input_path}/sub-${subject_id}/ses-open/anat/sub-${subject_id}_ses-open_T1w.nii.gz
+
+  # PET Imports
+  *Import, name=${subject_id}_pet, Type=nibabel
+    ${input_path}/sub-${subject_id}/ses-open/anat/sub-${subject_id}_ses-open_T1w.nii.gz
+  
+  # Modules
+  *Reconall, name=${subject_id}_reconall, Type=Execute
+    @${subject_id}_t1w
+  *Motion Correction, Name=${subject_id}_moco, Type=twostep, Ref Vol=8, Smooth=4, Crop Start=4
+    @${subject_id}_pet
+  *Camra, Name=${subject_id}_coreg, Type=LCF, DOF=6, Cost=mutualinfo
+    @${subject_id}_moco.out_file
+    @${subject_id}_reconall.T1
+    @${subject_id}_reconall.wholebrain_mask
+    @${subject_id}_reconall.wm_mask
+    @${subject_id}_reconall.gm_mask
+  *TACs, name=ses-${subject_id}_tacs
+    ${subject_id}_coreg.out_file
+    ${subject_id}_reconall.bilateral_wmparc
+
+*End
