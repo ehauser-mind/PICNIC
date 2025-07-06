@@ -30,7 +30,11 @@ Pass your input deck to PICNIC's docker container.
 
 .. code-block:: bash
 
-   scripts/run_picnic_in_docker /path/to/input_deck.inp
+   ./scripts/run_picnic_in_docker \
+   /path/to/input_deck.inp \
+   /path/to/your/read_only_input_data \
+   /path/to/freesurfer/license.txt \
+   /path/to/write/picnic_results
 
 
 The script, `run_picnic_in_docker`, does several things for you.

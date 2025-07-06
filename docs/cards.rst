@@ -16,7 +16,7 @@ Base Card and CardBuilder
 Functional Cards
 ================
 
-.. autoclass:: picnic.cards.coregistration::Coregistration
+.. autoclass:: picnic.cards.import::Import
     :members:
     :undoc-members:
 
@@ -35,12 +35,3 @@ Functional Cards
 .. autoclass:: picnic.cards.tacs::Tacs
     :members:
     :undoc-members:
-
-.. autoclass:: picnic.cards.sink::Sink
-    :members:
-    :undoc-members:
-
-.. autoclass:: picnic.misc::Results
-    :members:
-    :undoc-members:
-
