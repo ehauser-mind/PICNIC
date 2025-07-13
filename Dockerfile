@@ -79,9 +79,9 @@ FROM downloader AS spm
 # These args are repeated in the final image, so make changes in both places.
 ARG MATLAB_VERSION=R2024b
 ARG AGREE_TO_MATLAB_RUNTIME_LICENSE=yes
-ARG SPM_VERSION=24
-ARG SPM_RELEASE=24.10
-ARG SPM_REVISION=alpha22
+ARG SPM_VERSION=25
+ARG SPM_RELEASE=${SPM_VERSION}.01
+ARG SPM_REVISION=02
 ENV SPM_TAG=${SPM_RELEASE}${SPM_REVISION:+.${SPM_REVISION}}
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y install \

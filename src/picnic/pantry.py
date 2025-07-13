@@ -3,7 +3,7 @@
 # =======================================
 # Imports
 import os
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 import base64
 import tempfile
 import importlib
@@ -105,7 +105,7 @@ class Deck():
         build the canvas for which to draw
 
         :Parameters:
-          -. `graph` : PySimpleGUI.Graph element, the graph to be drawn on
+          -. `graph` : FreeSimpleGUI.Graph element, the graph to be drawn on
           -. `depressed` : int, clicking on a button changes the color
         """
         # clear the graph
@@ -247,8 +247,8 @@ def create_main_window(deck, theme, window=None):
 
     :Parameters:
       -. `deck` : input_deck_reader.InputDeck obj, a picnic input deck
-      -. `theme` : str, a PySimpleGUI default color
-      -. `window` : PySimpleGUI.Window, if one already exists, overwrite it
+      -. `theme` : str, a FreeSimpleGUI default color
+      -. `window` : FreeSimpleGUI.Window, if one already exists, overwrite it
     """
     # set the theme, this can be changed from the menubar
     sg.theme(theme)
