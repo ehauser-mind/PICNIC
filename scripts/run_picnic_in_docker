@@ -118,7 +118,7 @@ echo "Running from '${INPUT_DIR}' to '${OUTPUT_DIR}', guided by '${INPUT_DECK}'"
 
 
 # Tweak the input deck to utilize docker-volume-mounted paths
-NEW_INPUT_DECK_FILENAME=_dockerized_input_deck.inp
+NEW_INPUT_DECK_FILENAME="_dockerized_${INPUT_DECK##*/}"
 # INPUT_DECK_DIR="${INPUT_DECK%/*}"
 # INPUT_DECK_FILE="${INPUT_DECK##*/}"
 if [[ -f "${OUTPUT_DIR}/${NEW_INPUT_DECK_FILENAME}" ]]; then
