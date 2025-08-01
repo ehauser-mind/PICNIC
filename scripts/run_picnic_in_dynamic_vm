@@ -1,0 +1,53 @@
+#!/bin/bash
+
+PICNIC_IMG="mfschmidt/picnic:latest"
+
+# Provide usage instructions
+function usage {
+  echo "Usage for run_picnic_in_dynamic_vm"
+  echo ""
+  echo "    Because this is being run with arguments from a form,"
+  echo "    This function is really only for explaining the script's"
+  echo "    intent regarding the arguments it gets from the html form."
+  echo ""
+  echo "    You can 'run_picnic_in_dynamic_vm --help' for usage, or"
+  echo ""
+  echo "    run_picnic_in_dynamic_vm input_deck input_path output_path "
+  echo ""
+  echo "'input_deck'  The text file (path as mounted inside docker) specifying"
+  echo "              the pipeline to run. This is usually named *.inp"
+  echo "              You can create an input deck with PICNIC's pantry.py GUI."
+  echo "              Paths in the input deck will not be rewritten to match"
+  echo "              the docker volume mounts. The input deck should be written"
+  echo "              from the perspective of '/input/' and '/output/' paths."
+  echo "              This argument should be specified as the path visible from "
+  echo "              inside the docker container, probably starting with /input/"
+  echo "              or /output/."
+  echo ""
+  echo "'input_path'  The path (as mounted on mindbase) to your input data"
+  echo "              This will be safely mounted read-only."
+  echo "              Paths in the input deck should be within this input_path,"
+  echo "              and docker will use this path to match its volume mounts."
+  echo ""
+  echo "'output_path' The path (as mounted on mindbase) where PICNIC will write results"
+  echo "              This should obviously be writable."
+  echo ""
+}
+
+INPUT_DECK="${1}"
+INPUT_DIR="${2}"
+OUTPUT_DIR="${3}"
+FS_LICENSE="/minddata/home_on_aws/mschmid/freesurfer/license.txt"
+
+echo "Running from '${INPUT_DIR}' to '${OUTPUT_DIR}', guided by '${INPUT_DECK}'"
+
+# Execute the input deck in docker
+HOST_NAME=$(hostname)
+export HOST_NAME
+docker run -it \
+  --env "HOST_NAME" \
+  --mount "type=bind,\"src=${INPUT_DIR}\",\"dst=/input\",ro" \
+  --mount "type=bind,\"src=${OUTPUT_DIR}\",\"dst=/output\"" \
+  --mount "type=bind,\"src=${FS_LICENSE}\",\"dst=/opt/freesurfer/license.txt\",ro" \
+  ${PICNIC_IMG} "${INPUT_DECK}"
+
