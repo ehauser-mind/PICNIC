@@ -1,5 +1,5 @@
 
-PICNIC (release candidate v0.1.4)
+PICNIC (release candidate v__VERSION__)
 =======================================
 
 Quick Start

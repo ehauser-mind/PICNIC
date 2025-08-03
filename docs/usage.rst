@@ -57,6 +57,8 @@ write it to `/home/username/pet_data/derivatives/picnic_0.1.4/sub-01/`, and
 execute the commands in input deck `/home/username/sub-01_processing.inp`,
 you could use the following command:
 
+.. code-block:: bash
+
    ./scripts/run_picnic_in_docker \
    /home/username/sub-01_processing.inp \
    /home/username/pet_data/rawdata \
@@ -69,7 +71,7 @@ docker container as `/input` and `/output`.
 
 By default, docker runs as root, and writes files as root.
 If you have specific needs to run docker as yourself, you can use
-the alternative script, `./scripts/run_picnic_remapped_in_docker_as_user.
+the alternative script, `./scripts/run_picnic_remapped_in_docker_as_user`.
 
 
 Step 2. (the direct method)

@@ -7,9 +7,9 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'PICNIC'
-copyright = '2024, The NYSPI MIND Brain Imaging Lab'
+copyright = '2025, The NYSPI MIND Brain Imaging Lab'
 author = 'The NYSPI MIND Brain Imaging Lab'
-release = '0.0.5'
+release = '0.1.4'
 
 
 # -- General configuration ---------------------------------------------------
