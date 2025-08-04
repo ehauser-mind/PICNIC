@@ -33,21 +33,46 @@ Pass your input deck to PICNIC's docker container.
    ./scripts/run_picnic_in_docker \
    /path/to/input_deck.inp \
    /path/to/your/read_only_input_data \
-   /path/to/freesurfer/license.txt \
-   /path/to/write/picnic_results
+   /path/to/write/picnic_results \
+   /path/to/freesurfer/license.txt
 
 
 The script, `run_picnic_in_docker`, does several things for you.
-First, it sets up volume mounts so docker can read your input
-data from your host system, write your outputs to your host system,
-and map the those two paths on your host into the docker container
-correctly.
 
-The docker container is especially useful because it has all of
+First, and most importantly, the docker container has all of
 PICNIC's dependencies pre-installed. These include FreeSurfer 7.3.2,
 AFNI, Connectome Workbench, Convert3d, SPM12 with a Matlab
-2024b runtime, ANTs, and Python3. This is why we strongly recommend
+2024b runtime, ANTs, and Python3. You don't have to install any
+of them to your local environment. This is why we strongly recommend
 running PICNIC in docker.
+
+Second, it sets up volume mounts so docker can read your input
+data from your host system, write your outputs to your host system,
+and map the those two paths on your host into the docker container
+correctly. To do this, you specify the paths as they exist in your
+host environment. But in your input deck, you need to specify the
+paths as they exist inside the docker container. If you need to
+read input data from `/home/username/pet_data/rawdata/sub-01/` and
+write it to `/home/username/pet_data/derivatives/picnic_0.1.4/sub-01/`, and
+execute the commands in input deck `/home/username/sub-01_processing.inp`,
+you could use the following command:
+
+.. code-block:: bash
+
+   ./scripts/run_picnic_in_docker \
+   /home/username/sub-01_processing.inp \
+   /home/username/pet_data/rawdata \
+   /home/username/pet_data/derivatives/picnic_0.1.4 \
+   /usr/local/freesurfer/license.txt
+
+In this case, your input deck should refer to `/input/sub-01` and
+`/output/sub-01`, because the paths above would be mounted into the
+docker container as `/input` and `/output`.
+
+By default, docker runs as root, and writes files as root.
+If you have specific needs to run docker as yourself, you can use
+the alternative script, `./scripts/run_picnic_remapped_in_docker_as_user`.
+
 
 Step 2. (the direct method)
 ---------------------------

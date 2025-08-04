@@ -26,6 +26,11 @@ apt-get -y install git rsync python3-sphinx python3-sphinx-rtd-theme
 
 pwd
 ls -lah
+
+git config --global user.name "${GITHUB_ACTOR}"
+git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+git config --global --add safe.directory "$(pwd)"
+
 export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
 
 ##############
@@ -50,13 +55,10 @@ make -C docs html
 # Update GitHub Pages #
 #######################
 
-git config --global user.name "${GITHUB_ACTOR}"
-git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-
 docroot=`mktemp -d`
 rsync -av "docs/_build/html/" "${docroot}/"
 
-pushd "${docroot}"
+pushd "${docroot}" || exit 1
 
 # don't bother maintaining history; just generate fresh
 git init
@@ -85,13 +87,14 @@ EOF
 git add .
 
 # commit all the new files
-msg="Updating Docs for commit ${GITHUB_SHA} made on `date -d"@${SOURCE_DATE_EPOCH}" --iso-8601=seconds` from ${GITHUB_REF} by ${GITHUB_ACTOR}"
+TS=$(date -d"@${SOURCE_DATE_EPOCH}" --iso-8601=seconds)
+msg="Updating Docs for commit ${GITHUB_SHA} made on ${TS} from ${GITHUB_REF} by ${GITHUB_ACTOR}"
 git commit -am "${msg}"
 
 # overwrite the contents of the gh-pages branch on our github.com repo
 git push deploy gh-pages --force
 
-popd # return to main repo sandbox root
+popd || exit 1  # return to main repo sandbox root
 
 # exit cleanly
 exit 0

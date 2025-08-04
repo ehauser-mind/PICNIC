@@ -1,5 +1,5 @@
 
-PICNIC (release candidate v0.1.4)
+PICNIC (release candidate v__VERSION__)
 =======================================
 
 Quick Start
@@ -14,8 +14,8 @@ you can run PICNIC in docker like so:
    ./PICNIC/scripts/run_picnic_in_docker \
    /path/to/input_deck.inp \
    /path/to/your/read_only_input_data \
-   /path/to/freesurfer/license.txt \
-   /path/to/write/picnic_results
+   /path/to/write/picnic_results \
+   /path/to/freesurfer/license.txt
 
 For more details or alternatives, see :ref:`usage`,
 or explore the rest of the documentation.
