@@ -19,8 +19,8 @@ dataset. Edit the paths inside the input deck to reflect your system.
 /path/to/picnic/scripts/run_picnic_in_docker \
   /path/to/input_deck.inp \
   /path/to/your/read_only_input_data \
-  /path/to/freesurfer/license.txt \
-  /path/to/write/picnic_results
+  /path/to/write/picnic_results \
+  /path/to/freesurfer/license.txt
 ```
 
 Or you can use docker directly for more control.
