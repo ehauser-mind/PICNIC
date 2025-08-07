@@ -14,7 +14,7 @@ authors:
   - name: Eric Hauser
     affiliation: 1, 2
   - name: Mike Schmidt
-    orcid: 0000-0000-0000-0000
+    orcid: 0000-0003-4721-1457
     affiliation: 1, 2
   - name: Elizabeth A Bartlett
     orcid: 0000-0002-9174-9951
@@ -32,7 +32,7 @@ bibliography: paper.bib
 
 ---
 
-Positron Emission Tomography (PET) is a valuable tool used in research and
+Statement of need: Positron Emission Tomography (PET) is a valuable tool used in research and
 clinical settings to noninvasively image the human brain in vivo. PET can
 quantify up to nanomolar levels of specific components of brain metabolic and
 neurochemical processes, thus providing information on the distribution of
@@ -99,3 +99,4 @@ available at the following link: https://github.com/ehauser-mind/PICNIC.git.
 # Citations
 
 (see paper.bib)
+
