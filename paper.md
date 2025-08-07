@@ -12,7 +12,6 @@ authors:
     orcid: 0000-0001-6510-0676
     affiliation: 1, 2
   - name: Eric Hauser
-    orcid: 0000-0002-0000-0001
     affiliation: 1, 2
   - name: Mike Schmidt
     orcid: 0000-0003-4721-1457
