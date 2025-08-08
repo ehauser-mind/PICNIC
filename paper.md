@@ -36,7 +36,7 @@ bibliography: paper.bib
 
 PICNIC (Pipeline Initializing Container for Neuro-Imaging Computations) is an
 open-source Python-based coding library that includes modular wrappers for most
-standard preprocessing steps for quantification of (Positron Emission Tomography) PET brain imaging data.
+standard preprocessing steps for quantification of Positron Emission Tomography (PET) brain imaging data.
 PICNIC uniquely allows full, transparent modular control over the selection of
 strategy/software package and associated parameters for each preprocessing step
 throughout the pipeline. Therefore, the user is provided with the flexibility to
@@ -108,4 +108,5 @@ open-source library that can modularly and flexibly combine appropriate
 preprocessing strategies depending on the study design at hand is still missing.
 
 # References
+
 
