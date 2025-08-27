@@ -17,9 +17,9 @@ def _create_report(type_, in_files, additional_args=[]):
     a function to hold all the reports
     
     :Parameters:
-      -. `type_` : str, the star keyword
-      -. `in_files` : list, a list of image files
-      -. `additional_args` : list, a list of additional_args
+      -. `type_`: str, the star keyword
+      -. `in_files`: list, a list of image files
+      -. `additional_args`: list, a list of additional_args
     """
     # ============================================================== High Level
     STANDARD_WIDTH = 1120
@@ -31,8 +31,8 @@ def _create_report(type_, in_files, additional_args=[]):
         wrap the necessary steps to create a report of *image
 
         :Parameters:
-          -. `in_file` : file-like str, the nibabel readable image file
-          -. `basename` : str, name of the output filename
+          -. `in_file`: file-like str, the nibabel readable image file
+          -. `basename`: str, name of the output filename
         """
 
         import os
@@ -40,7 +40,8 @@ def _create_report(type_, in_files, additional_args=[]):
 
         # Load file
         image = nib.load(in_file)
-        
+        print(f"loaded image '{in_file}', shaped {image.shape}")
+
         # if the image is a 4d image, assume it is a pet image and create a mp4
         if len(image.shape) > 3:
             # create an optimized colormap for pet brains
@@ -51,7 +52,8 @@ def _create_report(type_, in_files, additional_args=[]):
             
             # calculate the bounds early so the mp4 and png have the same bound
             bounds = calculate_bounds(image)
-            
+            print("bounds", bounds)
+
             # create movie and png report
             mov = create_mp4_mosaic(
                 image,
@@ -71,6 +73,7 @@ def _create_report(type_, in_files, additional_args=[]):
             )
         else:
             # for 3d images, just make a mosaic image
+            print("creating png", image.shape, basename)
             png = create_png_mosaic(image, basename)
             
             # we need to return something so create a dummy txt file
@@ -78,7 +81,7 @@ def _create_report(type_, in_files, additional_args=[]):
             with open(mov, 'w') as f:
                 _ = f.write('3d image. No movie.')
         
-        return (png, mov)
+        return png, mov
     
     def motion_correction_report(
         base_file,
@@ -92,13 +95,13 @@ def _create_report(type_, in_files, additional_args=[]):
         Wrap the necessary steps to create a report of *motion correction
         
         :Parameters:
-          -. `base_file` : file-like str, the nibabel readable image file
-          -. `moco_file` : file-like str, the nibabel readable image file
-          -. `mats` : None or list of file-like str, the list of transformation
+          -. `base_file`: file-like str, the nibabel readable image file
+          -. `moco_file`: file-like str, the nibabel readable image file
+          -. `mats`: None or list of file-like str, the list of transformation
             files
-          -. `ref_frame` : None or int, the reference frame
-          -. `basename` : str, name of the output filename
-          -. `width` : int,number of pixels wide used in the report image
+          -. `ref_frame`: None or int, the reference frame
+          -. `basename`: str, name of the output filename
+          -. `width`: int,number of pixels wide used in the report image
         """
 
         import math
@@ -216,10 +219,10 @@ def _create_report(type_, in_files, additional_args=[]):
         wrap the necessary steps to create a report of *coregistration and camra
         
         :Parameters:
-          -. `base_file` : file-like str, the nibabel readable image file
-          -. `over_file` : file-like str, the nibabel readable image file
-          -. `basename` : str, name of the output filename
-          -. `width` : int, number of pixels wide used in the report image
+          -. `base_file`: file-like str, the nibabel readable image file
+          -. `over_file`: file-like str, the nibabel readable image file
+          -. `basename`: str, name of the output filename
+          -. `width`: int, number of pixels wide used in the report image
         """
 
         import numpy as np
@@ -273,10 +276,10 @@ def _create_report(type_, in_files, additional_args=[]):
         wrap the necessary steps to create a report of *tacs
         
         :Parameters:
-          -. `tac_file` : file-like str, the nibabel readable image file
-          -. `units` : str, 'uci' or 'Bq'
-          -. `basename` : str, name of the output filename
-          -. `width` : int, number of pixels wide used in the report image
+          -. `tac_file`: file-like str, the nibabel readable image file
+          -. `units`: str, 'uci' or 'Bq'
+          -. `basename`: str, name of the output filename
+          -. `width`: int, number of pixels wide used in the report image
         """
 
         import pandas as pd
@@ -317,16 +320,16 @@ def _create_report(type_, in_files, additional_args=[]):
         |----------------------|
         
         :Parameters:
-          -. `image` : nibabel.Nifti1Image, the nibabel image
-          -. `basename` : str or None, the base for the png filename. If None
+          -. `image`: nibabel.Nifti1Image, the nibabel image
+          -. `basename`: str or None, the base for the png filename. If None
             do not create png, return the Image obj
-          -. `bounds` : dict or None, {'x' : [float(lower bound), float(upper
-            bound), 'y' :...}
-          -. `cmap` : str, the colormap. Only tested with 'gray' and 'jet'
-          -. `vmin` : float, the min value for the colormap
-          -. `vmax` : float, the max value for the colormap
-          -. `n_cuts` : int, the number of stills in a panel
-          -. `width` : int, width (in pixels) for the output image
+          -. `bounds`: dict or None, {'x': [float(lower bound), float(upper
+            bound), 'y':...}
+          -. `cmap`: str, the colormap. Only tested with 'gray' and 'jet'
+          -. `vmin`: float, the min value for the colormap
+          -. `vmax`: float, the max value for the colormap
+          -. `n_cuts': int, the number of stills in a panel
+          -. `width`: int, width (in pixels) for the output image
         """
 
         import os
@@ -347,7 +350,7 @@ def _create_report(type_, in_files, additional_args=[]):
         # use nilearn's plot_anat to create each panel
         panels = {}
         for direction in 'xyz':
-            panels[direction] = tempfile.TemporaryFile(suffix='.png')
+            panels[direction] = tempfile.NamedTemporaryFile(suffix='.png').name
             if overlay_image is None:
                 _ = plot_anat(
                     image,
@@ -358,7 +361,7 @@ def _create_report(type_, in_files, additional_args=[]):
                     dim = 0.,
                     cmap = cmap,
                     vmin = vmin,
-                    vmax = vmax
+                    vmax = vmax,
                 )
             else:
                 _ = plot_roi(
@@ -437,7 +440,7 @@ def _create_report(type_, in_files, additional_args=[]):
             ortho_cuts = [np.mean(bounds[direction]) for direction in ['xyz']]
 
         # Use nilearn's plot_anat to create each panel
-        temp_panel = tempfile.TemporaryFile(suffix='.png')
+        temp_panel = tempfile.NamedTemporaryFile(suffix='.png').name
         _ = plot_anat(
             image,
             display_mode = 'ortho',
@@ -493,7 +496,7 @@ def _create_report(type_, in_files, additional_args=[]):
         from PIL import Image
 
         # create a pyplot
-        tmp_png = tempfile.TemporaryFile(suffix = '.png')
+        tmp_png = tempfile.NamedTemporaryFile(suffix = '.png').name
         fig, ax = plt.subplots(figsize = (9, 3))
         a, = ax.plot(t, dofs[:, 0])
         a.set_label(labels[0])
@@ -573,7 +576,7 @@ def _create_report(type_, in_files, additional_args=[]):
             title = 'Selected TACs'
         
         # create plot
-        tmp_png = tempfile.TemporaryFile(suffix = '.png')
+        tmp_png = tempfile.NamedTemporaryFile(suffix = '.png').name
         fig, ax = plt.subplots(figsize=(12, 4))
         ax = dataframe.plot(ax=ax)
         if len(selected_rois) == 0:
@@ -832,7 +835,7 @@ def _create_report(type_, in_files, additional_args=[]):
         
         # set lower bound to 0. and upper bound to the xth percentile (ignoring
         #  all values less than 0.)
-        return (0., np.percentile(wght_fdata[wght_fdata > 0.], upper_limit))
+        return 0., np.percentile(wght_fdata[wght_fdata > 0.], upper_limit)
     
     def draw_lines_on_image(image, numx, numy):
         """
@@ -840,9 +843,9 @@ def _create_report(type_, in_files, additional_args=[]):
         case outside of motion correction.
         
         :Parameters:
-          -. `image` : Image obj, the image
-          -. `numx` : int, number of equally spaced vertical lines
-          -. `numy` : int, number of equally spaced horizontal lines
+          -. `image`: Image obj, the image
+          -. `numx`: int, number of equally spaced vertical lines
+          -. `numy`: int, number of equally spaced horizontal lines
         """
 
         import numpy as np
