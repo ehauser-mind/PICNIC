@@ -6,13 +6,14 @@ Run PICNIC by providing an input deck or a group of input decks.
 How To Use This Module
 ======================
 1. call the `run.py` script directly
-    >>> python run.py path/to/input_deck.inp
+    >>> python run.py /path/to/input_deck.inp
 
 2. adding the -d argument will require a csv to create a dox
 
 3. PICNIC will sequentially loop over the input decks to create and run the
     pipelines.
 """
+
 # =======================================
 # Imports
 import os
@@ -30,7 +31,7 @@ from picnic.input_deck_reader import read_input_deck
 
 # =======================================
 # Classes
-class ProcessInputs():
+class ProcessInputs:
     """
     an object to process all inputs set up by the argument parser
     """
@@ -62,19 +63,19 @@ class ProcessInputs():
         for inp in self.inps:
             self.pipelines.append(Pipeline(inp))
 
-class Pipeline():
+class Pipeline:
     """
     an object to hold the important attributes of a completed pipeline. In this
     case a pipeline is equivalent to a series of workflows appended on to each
     other.
     """
-    def __init__(self, fn):
+    def __init__(self, input_deck_path):
         """
         :Parameters:
           -. `fn` : a file-like string, the filepath to the input deck
         """
-        self.input_deck_path = fn
-        self.inp = read_input_deck(fn)
+        self.input_deck_path = input_deck_path
+        self.inp = read_input_deck(input_deck_path)
 
         self.pipeline_instances = {}
         self.pipeline_workflows = {}
@@ -90,8 +91,8 @@ class Pipeline():
                 self.sink_directory = card.datalines[0][0]
         
         # start the html
-        report_lines = build_summary_report()
-        
+        report = Report()
+
         # loop over all the cards
         for card in self.inp.cards:
             if not card.cardname[1:] == 'sink':
@@ -130,17 +131,91 @@ class Pipeline():
                 self.pipeline_instances[name].set_outflows(self.sink_directory)
                 self.pipeline_workflows[name] = instance(card).build_workflow(self.sink_directory)
                 self.pipeline_workflows[name].workflow.run()
-                report_lines = build_summary_report(
-                    report_lines, 
+                report.integrate_report(
                     self.pipeline_instances[name].outflows['report'],
                     name
                 )
-        
+
         # finish building out the html and saving it
-        report_lines = build_summary_report(report_lines)
-        with open(os.path.join(self.sink_directory, 'full_report.html'), 'w') as f:
-            _ = f.write('\n'.join(report_lines))
-        
+        report.write_html(os.path.join(self.sink_directory, "full_report.html"))
+
+
+class Report:
+    """
+    an object to collect lines from sub-reports into an html summary
+    """
+
+    def __init__(self):
+        """ Initialize the report with a title and empty body. """
+
+        self.head_lines = [
+            "    <title>PICNIC Summary Report</title>",
+        ]
+        self.body_lines = list()
+        self.script_lines = list()
+
+    def integrate_report(self, individual_report, instance_name=""):
+        """ Read from sub_report and integrate it into this summary.
+
+        :Parameters:
+          -. `individual_report`: a subreport from one of many workflows
+        """
+
+        # A workflow has something to add to the global report.
+        include_in_head = False
+        include_in_body = False
+        include_in_script = False
+        with open(individual_report, 'r') as f:
+            for line in f.readlines():
+                if line.strip() == '<body>':
+                    include_in_body = True
+                elif line.strip() == '<head>':
+                    include_in_head = True
+                elif line.strip() == '</body>':
+                    include_in_body = False
+                elif line.strip() == '</head>':
+                    include_in_head = False
+                elif "<script>" in line:
+                    if "</script>" in line:
+                        # The whole line is a script.
+                        self.script_lines.append(line)
+                    else:
+                        include_in_script = True
+                elif "</script>" in line:
+                    include_in_script = False
+                else:
+                    if include_in_head and ("<title>" not in line):
+                        self.head_lines.append(line)
+                    if include_in_body:
+                        self.body_lines.append(
+                            line.replace(
+                                "src=\"",
+                                f"src=\"{instance_name}/")
+                        )
+                    if include_in_script:
+                        self.script_lines.append(line)
+
+    def write_html(self, html_file):
+        """ Write out the summary report. """
+        with open(html_file, 'w') as f:
+            # Use modern (as of 2025) html5
+            f.write('<!DOCTYPE html>')
+            f.write('<html lang="en">')
+            f.write('<head>')
+            f.write('  <meta charset="UTF-8">')
+            f.write('  <meta name = "viewport" content="width=device-width, initial-scale=1.0">')
+            for head_line in self.head_lines:
+                f.write(head_line)
+            f.write('</head>')
+            f.write('<body>')
+            for body_line in self.body_lines:
+                f.write(body_line)
+            for script_line in self.script_lines:
+                f.write(script_line)
+            f.write('</body>')
+            f.write('</html>')
+
+
 # =======================================
 # Functions
 def create_parser():
@@ -151,14 +226,21 @@ def create_parser():
       -. an ArgumentParser obj
     """
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('i', nargs='+', help='filepath to the input deck')
-    parser.add_argument(
+    _parser = argparse.ArgumentParser()
+    _parser.add_argument('i', nargs='+', help='filepath to the input deck')
+    _parser.add_argument(
         '-d',
         '--dox',
-        help='provide text-readable table and an unfulfilled parameterized input deck to create a Design Of Experiments'
+        help='provide text-readable table and an unfulfilled parameterized '
+             'input deck to create a Design Of Experiments'
     )
-    return parser
+    _parser.add_argument(
+        '--plot-regional-tacs',
+        action='store_true',
+        help='If True, an additional TACs plot with a smaller subset of '
+             'regions will be created and included in the report.'
+    )
+    return _parser
 
 
 def infer_class_name_from_card_name(card_name):
@@ -244,45 +326,6 @@ def insert_parameters(inps, dox_file):
 
     return new_inps
 
-def build_summary_report(all_lines=[], individual_report=None, instance_name=''):
-    """
-    creates an composite summary report building from all the individual
-    reports.
-
-    :Parameters:
-      -. `all_lines` : a list, strings that represent each html line
-      -. `individual_report` : a file-like str, the instance's report
-      -. `instance_name` : a str, the name of the instance
-
-    :Return:
-      -. a list, of strings representing html lines
-    """
-    # create a new html by not passing an individual report
-    if individual_report is None:
-        if not all_lines:
-            all_lines.append('<html xmlns="http://www.w3.org/1999/xhtml" lang="en">')
-            all_lines.append('  <head>')
-            all_lines.append('    <title>Full Report</title>')
-            all_lines.append('  </head>')
-            all_lines.append('  <body>')
-        else:
-            # end the html by not passing an individual report and passing lines
-            all_lines.append('  </body>')
-            all_lines.append('</html>')
-    
-    else:
-        # open the individual report and read everything between the body tags
-        include = False
-        with open(individual_report, 'r') as f:
-            for line in f.readlines():
-                if line.strip() == '<body>':
-                    include = True
-                elif line.strip() == '</body>':
-                    include = False
-                else:
-                    if include:
-                        all_lines.append(line.replace('src="', 'src="' + instance_name + '/'))
-    return all_lines
 
 # =======================================
 # Main
