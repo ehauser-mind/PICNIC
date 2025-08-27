@@ -492,7 +492,7 @@ def plot_anat(image, cut_coords_bounds, cmap='gray', vmin=None, vmax=None, n_cut
     # create the temporary images for each direction (x, y and z)
     coords = dict()
     for direction in 'xyz':
-        coords[direction] = tempfile.TemporaryFile(suffix='.png')
+        coords[direction] = tempfile.NamedTemporaryFile(suffix='.png').name
         _ = plot_anat(
             image,
             display_mode=direction,
@@ -540,7 +540,7 @@ def plot_image_overlay(
     all_coords = np.linspace(*cut_coords_bounds[direction], 3*n_cuts+1)
     coords = []
     for line in range(3):
-        coords.append(tempfile.TemporaryFile(suffix='.png'))
+        coords.append(tempfile.NamedTemporaryFile(suffix='.png').name)
         _ = plot_roi(
             overlay_image,
             base_image,
@@ -578,7 +578,7 @@ def plot_motion_correction_image(image, cut_coords_bounds, cmap='jet', vmin=None
 
     # create the temporary images for each direction (x, y and z)
     ortho_cut_coords = [np.mean(cut_coords_bounds[direction]) for direction in 'xyz']
-    temp_png = tempfile.NamedTemporaryFile(suffix='.png')
+    temp_png = tempfile.NamedTemporaryFile(suffix='.png').name
     _ = plot_anat(
         image,
         display_mode='ortho',
@@ -612,7 +612,7 @@ def plot_motion_correction_graph(t, all_dof, frame, ref_frame=None):
     import matplotlib.pyplot as plt
 
     # create a pyplot
-    temp_png = tempfile.TemporaryFile(suffix='.png')
+    temp_png = tempfile.NamedTemporaryFile(suffix='.png').name
     fig, ax = plt.subplots(figsize=(9, 3))
     a, = ax.plot(t, all_dof[:, 0])
     a.set_label('x')
@@ -673,7 +673,7 @@ def plot_coregistration(
     # create the temporary images for each direction (x, y and z)
     coords = dict()
     for direction in 'xyz':
-        coords[direction] = tempfile.TemporaryFile(suffix='.png')
+        coords[direction] = tempfile.NamedTemporaryFile(suffix='.png').name
         _ = plot_roi(
             overlay_image,
             base_image,
@@ -718,7 +718,7 @@ def plot_camra_image(
 
     # create the temporary images for each direction (x, y and z)
     ortho_cut_coords = [np.mean(cut_coords_bounds[direction]) for direction in 'xyz']
-    temp_png = tempfile.NamedTemporaryFile(suffix='.png')
+    temp_png = tempfile.NamedTemporaryFile(suffix='.png').name
     _ = plot_roi(
         overlay_image,
         base_image,
@@ -755,7 +755,7 @@ def plot_camra_graph(t, all_dof, idx, autoselect=None):
     import matplotlib.pyplot as plt
 
     # create a pyplot
-    temp_png = tempfile.TemporaryFile(suffix='.png')
+    temp_png = tempfile.NamedTemporaryFile(suffix='.png').name
     fig, ax = plt.subplots(figsize=(9, 3))
     a, = ax.plot(t, all_dof[:, 0])
     a.set_label('x')
