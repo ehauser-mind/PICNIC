@@ -40,7 +40,6 @@ def _create_report(type_, in_files, additional_args=[]):
 
         # Load file
         image = nib.load(in_file)
-        print(f"loaded image '{in_file}', shaped {image.shape}")
 
         # if the image is a 4d image, assume it is a pet image and create a mp4
         if len(image.shape) > 3:
@@ -52,7 +51,6 @@ def _create_report(type_, in_files, additional_args=[]):
             
             # calculate the bounds early so the mp4 and png have the same bound
             bounds = calculate_bounds(image)
-            print("bounds", bounds)
 
             # create movie and png report
             mov = create_mp4_mosaic(
@@ -73,7 +71,6 @@ def _create_report(type_, in_files, additional_args=[]):
             )
         else:
             # for 3d images, just make a mosaic image
-            print("creating png", image.shape, basename)
             png = create_png_mosaic(image, basename)
             
             # we need to return something so create a dummy txt file

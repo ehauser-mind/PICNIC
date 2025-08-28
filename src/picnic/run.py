@@ -85,18 +85,19 @@ class Pipeline:
         """
         build the entire pipeline's workflow
         """
+
+        # start the html
+        report = Report()
+
         # find if the user has defined a sink and set the sink path
         for card in self.inp.cards:
             if card.cardname[1:] == 'sink':
                 self.sink_directory = card.datalines[0][0]
         
-        # start the html
-        report = Report()
-
         # loop over all the cards
         for card in self.inp.cards:
             if not card.cardname[1:] == 'sink':
-                print(card.cardname[1:])
+                # print(card.cardname[1:])
                 instance_name = infer_class_name_from_card_name(card.cardname[1:])
                 module = importlib.import_module(
                     'picnic.cards.' + '_'.join(card.cardname[1:].lower().split(' '))
@@ -149,7 +150,7 @@ class Report:
         """ Initialize the report with a title and empty body. """
 
         self.head_lines = [
-            "    <title>PICNIC Summary Report</title>",
+            "  <title>PICNIC Summary Report</title>\n",
         ]
         self.body_lines = list()
         self.script_lines = list()
@@ -175,45 +176,42 @@ class Report:
                     include_in_body = False
                 elif line.strip() == '</head>':
                     include_in_head = False
-                elif "<script>" in line:
-                    if "</script>" in line:
-                        # The whole line is a script.
-                        self.script_lines.append(line)
-                    else:
-                        include_in_script = True
+                elif "<script" in line:
+                    self.script_lines.append(line)
+                    if "</script>" not in line:
+                        include_in_script = True  # more script to come
                 elif "</script>" in line:
-                    include_in_script = False
+                    self.script_lines.append(line)
+                    include_in_script = False  # got the last script line
                 else:
-                    if include_in_head and ("<title>" not in line):
-                        self.head_lines.append(line)
-                    if include_in_body:
+                    if include_in_script:
+                        self.script_lines.append(line)
+                    elif include_in_body:
                         self.body_lines.append(
                             line.replace(
                                 "src=\"",
                                 f"src=\"{instance_name}/")
                         )
-                    if include_in_script:
-                        self.script_lines.append(line)
+                    elif include_in_head and ("<title>" not in line):
+                        self.head_lines.append(line)
 
     def write_html(self, html_file):
         """ Write out the summary report. """
         with open(html_file, 'w') as f:
             # Use modern (as of 2025) html5
-            f.write('<!DOCTYPE html>')
-            f.write('<html lang="en">')
-            f.write('<head>')
-            f.write('  <meta charset="UTF-8">')
-            f.write('  <meta name = "viewport" content="width=device-width, initial-scale=1.0">')
-            for head_line in self.head_lines:
-                f.write(head_line)
-            f.write('</head>')
-            f.write('<body>')
-            for body_line in self.body_lines:
-                f.write(body_line)
-            for script_line in self.script_lines:
-                f.write(script_line)
-            f.write('</body>')
-            f.write('</html>')
+            f.write('<!DOCTYPE html>\n')
+            f.write('<html lang="en">\n')
+            f.write('<head>\n')
+            f.write('  <meta charset="UTF-8">\n')
+            f.write('  <meta name = "viewport" content="width=device-width, initial-scale=1.0">\n')
+            f.writelines(self.head_lines)
+            f.write('</head>\n')
+            f.write('<body>\n')
+            f.writelines(self.body_lines)
+            f.write('\n')
+            f.writelines(self.script_lines)
+            f.write('</body>\n')
+            f.write('</html>\n')
 
 
 # =======================================
@@ -240,6 +238,11 @@ def create_parser():
         help='If True, an additional TACs plot with a smaller subset of '
              'regions will be created and included in the report.'
     )
+    _parser.add_argument(
+        '--verbose',
+        action='store_true',
+        help='If True, additional information will be printed to the terminal.'
+    )
     return _parser
 
 
@@ -265,8 +268,8 @@ def insert_parameters(inps, dox_file):
     parameters for each new run in the dox.
 
     :Parameters:
-      -. `inps` : a list, the inp templates
-      -. `dox_file` : a file-like str, the text readable table
+      -. `inps`: a list, the inp templates
+      -. `dox_file`: a file-like str, the text readable table
 
     :Return:
       -. a list, of newly created input decks
@@ -335,23 +338,23 @@ if __name__ == '__main__':
     pargs = parser.parse_args()
     arginputs = ProcessInputs(pargs)
 
-    print("Environment variables:")
-    for k, v in os.environ.items():
-        print(f"  '{k}': '{v}'")
+    if pargs.verbose:
+        print("Environment variables:")
+        for k, v in os.environ.items():
+            print(f"  '{k}': '{v}'")
 
     # Create the pipelines
     pipelines = []
     failed_runs = []
     for inp in arginputs.inps:
-        print(f"'inp': {str(inp)}")
+        if pargs.verbose:
+            print(f"'inp': {str(inp)}")
         try:
             pipeline = Pipeline(inp)
             pipeline.build_workflow()
             pipelines.append(pipeline)
         # create a running tally of failed runs
         except Exception as e:
-            print(e)
-            print(traceback.format_exc())
             failed_runs.append(inp)
 
     if len(failed_runs) > 0:
