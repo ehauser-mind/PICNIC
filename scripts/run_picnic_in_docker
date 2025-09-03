@@ -58,9 +58,14 @@ fi
 ERRORS="FALSE"
 
 # Arg 1 is the input deck file
+# The php used to launch our containers expects this to be a subject_id
+# rather than a path. So this script handles both potentialities.
+INPUT_DECK=""
 if [[ -f "${1}" ]]; then
   echo "Loading input deck from ${1}"
   INPUT_DECK="${1}"
+  INPUT_DECK_FILENAME="${1##*/}"
+  INPUT_DECK_FILESTEM="${INPUT_DECK_FILENAME%.*}"
 elif [[ -e "${1}" ]]; then
   echo -e "${RED}"
   echo "'${1}' is not an input deck; it's a directory."
@@ -132,10 +137,12 @@ echo "  using FreeSurfer license at '${FS_LICENSE}'."
 # Execute the input deck in docker
 HOST_NAME=$(hostname)
 export HOST_NAME
-docker run -it \
+LOG_FILE="${OUTPUT_DIR}/${INPUT_DECK_FILESTEM}.log"
+lscpu >> "${LOG_FILE}"
+docker run \
   --env "HOST_NAME" \
   --mount "type=bind,\"src=${INPUT_DIR}\",\"dst=/input\",ro" \
   --mount "type=bind,\"src=${OUTPUT_DIR}\",\"dst=/output\"" \
   --mount "type=bind,\"src=${INPUT_DECK}\",\"dst=/input_deck.inp\"" \
   --mount "type=bind,\"src=${FS_LICENSE}\",\"dst=/opt/freesurfer/license.txt\",ro" \
-  ${PICNIC_IMG} /input_deck.inp
+  ${PICNIC_IMG} /input_deck.inp | tee -a "${LOG_FILE}"
