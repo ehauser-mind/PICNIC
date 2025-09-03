@@ -46,7 +46,7 @@ REPORT_TEMPLATE_PATH = os.path.join(
 
 # =======================================
 # Classes
-class ReconallWorkflow():
+class ReconallWorkflow:
     """ A parent class to all the individual reconall statuses. Most of the 
     steps will be the same across all types of this module (running/finding 
     freesurfer subject, reorienting important images, generate reports) This 
@@ -64,7 +64,7 @@ class ReconallWorkflow():
         'filepath': None
     }
     
-    def __init__(self, params, inflows):
+    def __init__(self, params, inflows, verbose=False):
         """
         Parameters
         ----------
@@ -78,6 +78,7 @@ class ReconallWorkflow():
         self.params = params
         self.inflows = copy.deepcopy(self.DEFAULT_INFLOWS)
         self.inflows.update(inflows)
+        self.verbose = verbose
     
     @property
     def params(self):
@@ -128,19 +129,19 @@ class ReconallWorkflow():
         """ this will be overloaded by all its children
         """
 
-        print("ERROR: ")
-        print("ERROR: This 'ReconallWorkflow::execute_reconall' ")
-        print("ERROR: should have been overloaded and never run.")
-        print("ERROR: ")
+        if self.verbose:
+            print("ERROR: ")
+            print("ERROR: This 'ReconallWorkflow::execute_reconall' ")
+            print("ERROR: should have been overloaded and never run.")
+            print("ERROR: ")
 
-        pass
-    
     def reorient_outflows(self):
         """ combine all the reoriented images to one volume and rename the file
         """
         # create an iterable connection for all outflows
-        for idx, a in enumerate(FREESURFER_OUTFLOWS_TO_EXPOSE):
-            print(f"  - inflow - 'in{str(idx + 1)}': '@execute_reconall.{a}'")
+        if self.verbose:
+            for idx, a in enumerate(FREESURFER_OUTFLOWS_TO_EXPOSE):
+                print(f"  - inflow - 'in{str(idx + 1)}': '@execute_reconall.{a}'")
         self.wf.add_node(
             interface = Merge(len(FREESURFER_OUTFLOWS_TO_EXPOSE)),
             name = 'merge_outflows_to_expose',
@@ -546,10 +547,11 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
-            print(f"  - t2 inflow - 'subject_id': '{self.inflows['subject_id']}'")
-            print(f"  - t2 inflow - 'T1_files': '{self.inflows['t1s']}'")
-            print(f"  - t2 inflow - 'T2_file': '{self.inflows['t2']}'")
-            print(f"  - t2 inflow - 'use_T2': '{True}'")
+            if self.verbose:
+                print(f"  - t2 inflow - 'subject_id': '{self.inflows['subject_id']}'")
+                print(f"  - t2 inflow - 'T1_files': '{self.inflows['t1s']}'")
+                print(f"  - t2 inflow - 'T2_file': '{self.inflows['t2']}'")
+                print(f"  - t2 inflow - 'use_T2': '{True}'")
         elif self.params['execution_type'] == 'flair':
             self.wf.add_node(
                 interface = ReconAll(),
@@ -562,10 +564,11 @@ class ExecuteReconallWorkflow(ReconallWorkflow):
                 },
                 outflows = FREESURFER_OUTFLOWS_TO_EXPOSE
             )
-            print(f"  - flair inflow - 'subject_id': '{self.inflows['subject_id']}'")
-            print(f"  - flair inflow - 'T1_files': '{self.inflows['t1s']}'")
-            print(f"  - flair inflow - 'FLAIR_file': '{self.inflows['flair']}'")
-            print(f"  - flair inflow - 'use_FLAIR': '{True}'")
+            if self.verbose:
+                print(f"  - flair inflow - 'subject_id': '{self.inflows['subject_id']}'")
+                print(f"  - flair inflow - 'T1_files': '{self.inflows['t1s']}'")
+                print(f"  - flair inflow - 'FLAIR_file': '{self.inflows['flair']}'")
+                print(f"  - flair inflow - 'use_FLAIR': '{True}'")
 
 class ReadReconallWorkflow(ReconallWorkflow):
     """ read a freesurfer directory using nipype's FreeSurferSource 

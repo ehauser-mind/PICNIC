@@ -1,9 +1,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-    <link rel="stylesheet" type="text/css" href="https://mindburst.jjm.network/static/papaya/papaya.css" />
-    <script type="text/javascript" src="https://mindburst.jjm.network/static/papaya/papaya.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://mindburst.nyspi.org/static/papaya/papaya.css" />
+<title>Reconall Report</title>
+  </head>
+  <body>
+    <H1>Reconall Report</H1>
+      <H2>Parameters</H2>
+${parameters}
+      <H2>T1 Overlays</H2>
+        <div style="width:800px; height: 600px;">
+          <div class="papaya" data-params="anat_params"></div>
+        </div>
+    <script type="text/javascript" src="https://mindburst.nyspi.org/static/papaya/papaya.js"></script>
     <script type="text/javascript">
-        var FreesurferLUT = function() { };
+        let FreesurferLUT = function() { };
         FreesurferLUT.prototype.lookupRed = function(screenVal, imageVal) {
             if (imageVal === 1) return 70;
             if (imageVal === 1) return 70;
@@ -2547,7 +2557,7 @@
             else if (imageVal === 4181) return 60;
             else return 0;
         }
-        var anat_params = [];
+        let anat_params = [];
         anat_params["worldSpace"] = false;
         anat_params["showOrientation"] = true;
         anat_params["radiological"] = true;
@@ -2559,7 +2569,7 @@
             "./wm_mask.nii.gz",
             "./wm_mask.nii.gz",
             "./subcortical_mask.nii.gz",
-            "./ventricle_mask.nii.gz",
+            "./ventricle_mask.nii.gz"
         ];
         anat_params["bilateral_wmparc.nii.gz"] = {"min": 0, "max": 3000, "alpha": 0.50, lut: new FreesurferLUT()}
         anat_params["brainmask.nii.gz"] = {"lut": "Red Overlay", "alpha": 0.50};
@@ -2568,15 +2578,5 @@
         anat_params["subcortical_mask.nii.gz"] = {"lut": "Yellow Overlay", "alpha": 0.50};
         anat_params["ventricle_mask.nii.gz"] = {"lut": "Pink Overlay", "alpha": 0.50};
     </script>
-<title>Reconall Report</title>
-  </head>
-  <body>
-    <H1>Reconall Report</H1>
-      <H2>Parameters</H2>
-${parameters}
-      <H2>T1 Overlays</H2>
-        <div style="width:800px; height: 600px;">
-          <div class="papaya" data-params="anat_params"></div>
-        </div>
   </body>
 </html>
