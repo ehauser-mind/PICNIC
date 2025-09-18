@@ -2,6 +2,7 @@
 # Imports
 import logging
 import os
+from pathlib import Path
 
 # from picnic.cards.card_builder import CardBuilder
 # from picnic.workflows.camra_workflows import LcfCamraWorkflow
@@ -52,15 +53,16 @@ class Camra(CardBuilder):
             't1' : self._datalines[1][0]
         }
         for dataline in self._datalines[2:]:
-            filename = dataline[0]
-            if 'brain' in filename:
-                self.inflows['brain'] = filename
-            elif 'wm' in filename or 'whitematter' in filename:
-                self.inflows['wmmask'] = filename
-            elif 'gm' in filename or 'graymatter' in filename:
-                self.inflows['gmmask'] = filename
-            elif 'ct' in filename:
-                self.inflows['ct'] = filename
+            file_name = dataline[0]
+            file_stem = Path(file_name).stem
+            if 'brain' in file_stem:
+                self.inflows['brain'] = file_name
+            elif 'wm' in file_stem or 'whitematter' in file_stem:
+                self.inflows['wmmask'] = file_name
+            elif 'gm' in file_stem or 'graymatter' in file_stem:
+                self.inflows['gmmask'] = file_name
+            elif 'ct' in file_stem:
+                self.inflows['ct'] = file_name
         self.outflows = {}
         self.set_outflows()
     
