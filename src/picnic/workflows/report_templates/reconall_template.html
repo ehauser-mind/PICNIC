@@ -2562,19 +2562,19 @@ ${parameters}
         anat_params["showOrientation"] = true;
         anat_params["radiological"] = true;
         anat_params["images"] = [
-            "${reconall_subdir}/brainmask.nii.gz",
+            "${reconall_subdir}/T1.nii.gz",
             "${reconall_subdir}/subcortical_mask.nii.gz",
             "${reconall_subdir}/ventricle_mask.nii.gz",
             "${reconall_subdir}/wm_mask.nii.gz",
             "${reconall_subdir}/gm_mask.nii.gz",
             "${reconall_subdir}/bilateral_wmparc.nii.gz"
         ];
-        anat_params["brainmask.nii.gz"] = {"lut": "Red Overlay", "alpha": 0.50};
-        anat_params["subcortical_mask.nii.gz"] = {"lut": "Yellow Overlay", "alpha": 0.50};
-        anat_params["ventricle_mask.nii.gz"] = {"lut": "Pink Overlay", "alpha": 0.50};
-        anat_params["wm_mask.nii.gz"] = {"lut": "Blue Overlay", "alpha": 0.50};
-        anat_params["gm_mask.nii.gz"] = {"lut": "Green Overlay", "alpha": 0.50};
-        anat_params["bilateral_wmparc.nii.gz"] = {"min": 0, "max": 3000, "alpha": 0.50, lut: new FreesurferLUT()}
+        anat_params["T1.nii.gz"] = {lut: "Grayscale", alpha: 0.00};
+        anat_params["subcortical_mask.nii.gz"] = {color: [1.0, 1.0, 0.8], min: 0.0, max: 1.1, alpha: 0.20};
+        anat_params["ventricle_mask.nii.gz"] = {color: [1.0, 0.1, 0.1], min: 0.0, max: 1.1, alpha: 0.20};
+        anat_params["wm_mask.nii.gz"] = {color: [0.0, 0.0, 1.0], min: 0.0, max: 1.1, alpha: 0.20};
+        anat_params["gm_mask.nii.gz"] = {color: [0.0, 0.5, 0.1], min: 0.0, max: 1.1, alpha: 0.20};
+        anat_params["bilateral_wmparc.nii.gz"] = {min: 0, max: 3000, alpha: 0.50, lut: new FreesurferLUT()}
     </script>
   </body>
 </html>
